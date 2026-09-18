@@ -141,3 +141,86 @@ describe("batas modul src/core", () => {
     expect(pelanggaran).toEqual([]);
   });
 });
+
+/**
+ * S05-5 — arah sebaliknya: src/vision hanya boleh mengimpor TIPE dari
+ * src/core, tidak pernah fungsi maupun nilai. Ini yang membuat pagar batas
+ * modul di atas tidak berat sebelah — core tidak boleh mengimpor vision SAMA
+ * SEKALI, dan vision hanya boleh mengambil BENTUK data dari core, tidak
+ * pernah perilakunya.
+ */
+const AKAR_VISION = join(process.cwd(), "src", "vision");
+
+function berkasTypeScriptVision(direktori: string): string[] {
+  const terkumpul: string[] = [];
+  for (const entri of readdirSync(direktori, { withFileTypes: true })) {
+    const jalur = join(direktori, entri.name);
+    if (entri.isDirectory()) {
+      terkumpul.push(...berkasTypeScriptVision(jalur));
+    } else if (/\.tsx?$/.test(entri.name)) {
+      terkumpul.push(jalur);
+    }
+  }
+  return terkumpul;
+}
+
+/**
+ * Menangkap `import [type] {...|*as X|X} from "<spesifier menuju core>"`.
+ * Klausa `{...}` sengaja dibatasi `[^{}]*` (bukan `[\s\S]*?`) — versi lazy
+ * generik akan membelah batas antar-pernyataan `import` yang berurutan
+ * (klausa impor kedua "menelan" penutup `}` milik impor pertama lewat
+ * backtracking), sehingga `type` dari satu impor bisa salah tertaut ke
+ * spesifier impor lain. Dibuktikan lewat verifikasi mutasi S05-5.
+ */
+const POLA_IMPOR_DARI_CORE =
+  /import\s+(type\s+)?(\{[^{}]*\}|\*\s+as\s+[\w$]+|[\w$]+)\s+from\s*["']((?:\.\.?\/)+core(?:\/[^"']*)?|@\/core(?:\/[^"']*)?)["']/g;
+
+function importBukanTipeDariCore(isi: string): string[] {
+  const pelanggaran: string[] = [];
+
+  for (const cocok of isi.matchAll(POLA_IMPOR_DARI_CORE)) {
+    const importTipe = Boolean(cocok[1]);
+    const klausa = cocok[2] ?? "";
+    const spesifier = cocok[3] ?? "";
+
+    if (importTipe) {
+      continue;
+    }
+
+    if (klausa.startsWith("{")) {
+      const anggota = klausa
+        .slice(1, -1)
+        .split(",")
+        .map((bagian) => bagian.trim())
+        .filter(Boolean);
+      const semuaTipeInline =
+        anggota.length > 0 && anggota.every((satu) => satu.startsWith("type "));
+      if (semuaTipeInline) {
+        continue;
+      }
+    }
+
+    pelanggaran.push(spesifier);
+  }
+
+  return pelanggaran;
+}
+
+describe("batas modul src/vision", () => {
+  it("ada berkas yang dipindai — pagar ini tidak boleh lulus secara hampa", () => {
+    expect(berkasTypeScriptVision(AKAR_VISION).length).toBeGreaterThan(0);
+  });
+
+  it("src/vision hanya mengimpor TIPE dari src/core, bukan fungsi atau nilai", () => {
+    const pelanggaran: string[] = [];
+
+    for (const berkas of berkasTypeScriptVision(AKAR_VISION)) {
+      const isi = readFileSync(berkas, "utf8");
+      for (const spesifier of importBukanTipeDariCore(isi)) {
+        pelanggaran.push(`${relative(process.cwd(), berkas)} → ${spesifier}`);
+      }
+    }
+
+    expect(pelanggaran).toEqual([]);
+  });
+});

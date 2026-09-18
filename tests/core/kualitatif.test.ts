@@ -72,7 +72,16 @@ const KASUS: readonly KasusSlot[] = [
     slot: 3,
     judul: "siapa yang akan mempekerjakan",
     lulus: ["Hanwha Techwin Co., Ltd.", "Chang Hwa Electronics Corporation", "PT. Garmen Tekstil Indonesia"],
-    gagal: ["perusahaan besar", "pabrik di Taiwan", "majikan baik"],
+    gagal: [
+      "perusahaan besar",
+      "pabrik di Taiwan",
+      "majikan baik",
+      // Penanda badan usaha telanjang tanpa nama (S16 batch-3): arah tidak aman
+      // bila lolos jadi "sudah disebutkan" — E.2 #1 menamai kasus ini.
+      "PT",
+      "CV",
+      "Co., Ltd.",
+    ],
     sebagian: ["Pabrik garmen di kawasan industri Taoyuan"],
     catatan:
       "E.2 baris 3 saling bertabrakan: 'pabrik di Taiwan' terdaftar di kolom GAGAL, padahal kolom SEBAGIAN berbunyi 'Jenis tempat kerja disebut, namanya tidak' yang persis menggambarkannya. Daftar contoh harfiah dimenangkan untuk kolom gagal; contoh sebagian diturunkan sebagai jenis tempat kerja yang lebih spesifik namun tetap tanpa nama entitas.",

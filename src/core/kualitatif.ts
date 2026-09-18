@@ -79,7 +79,21 @@ const PENANDA_JENIS_INDUSTRI =
   /\b(garmen|elektronik|otomotif|tekstil|makanan|farmasi|logam|manufaktur|konstruksi|pertanian|perikanan|perkebunan)\b/i;
 
 function ujiSlot3NamaPemberiKerja(teks: string): HasilUjiKualitatif {
-  if (PENANDA_ENTITAS_PEMBERI_KERJA.test(teks)) return "lulus";
+  const cocok = teks.match(PENANDA_ENTITAS_PEMBERI_KERJA);
+  if (cocok) {
+    // Penanda badan usaha harus ditemani NAMA — di depan atau di belakangnya.
+    // "Hanwha Techwin Co., Ltd." (nama dulu, penanda belakang) dan "PT ABC"
+    // keduanya lulus; "PT" / "Co., Ltd." TELANJANG gagal, karena E.2 #1
+    // menamai persis kasus itu ("PT resmi" tanpa nama). Tanpa cek ini arah
+    // kesalahannya tidak aman: baris pemberi kerja tanpa nama lolos jadi
+    // "sudah disebutkan".
+    const sebelum = teks.slice(0, cocok.index!).replace(/[\s.,;:()/&-]/g, "");
+    const sesudah = teks
+      .slice(cocok.index! + cocok[0].length)
+      .replace(/[\s.,;:()/&-]/g, "");
+    if (!sebelum && !sesudah) return "gagal";
+    return "lulus";
+  }
   // Baris E.2 #3 bertabrakan: "pabrik di Taiwan" dicontohkan gagal, padahal
   // deskripsinya persis kolom sebagian ("jenis tempat kerja disebut, nama
   // tidak"). Dimenangkan kolom gagal untuk frasa generik semacam itu; jenis

@@ -1,0 +1,27 @@
+{
+  "name": "Lembar Janji (Next.js)",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm",
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": {
+      "label": "Next.js Web App",
+      "onAutoForward": "openPreview"
+    }
+  },
+  "postCreateCommand": "npm install && (test -f .env.local || cp .env.example .env.local)",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+      },
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "bradlc.vscode-tailwindcss",
+        "esbenp.prettier-vscode",
+        "vitest.explorer"
+      ]
+    }
+  }
+}

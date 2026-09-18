@@ -53,6 +53,20 @@ const imgLogo = `${assetPathPrefix}/logo.svg`;
 // Id menu — labelnya datang dari kamus per bahasa (TEKS_HALAMAN_UI).
 const nav = ["beranda", "tentang"] as const;
 
+/**
+ * Saklar untuk MENYEMBUNYIKAN tombol peragaan "matikan pembacaan gambar"
+ * (S12-1) dari tampilan, atas permintaan tim — demo kini berupa video
+ * rekaman, bukan sesi live, sehingga tombol ini dianggap tidak perlu
+ * terlihat pengguna untuk saat ini. LOGIKANYA TETAP UTUH dan tetap
+ * diuji (`tests/alur/tombol-model.test.ts`, `pilihPembaca` di
+ * `src/vision/index.ts`) — hanya elemen UI-nya yang disembunyikan lewat
+ * flag ini, bukan di-comment manual di banyak tempat, supaya `modelDimatikan`
+ * dan fungsi penanganannya tidak dianggap "tidak terpakai" oleh TypeScript.
+ * Set kembali ke `true` kapan saja untuk memunculkannya lagi. Dicatat di
+ * PROGRESS.md.
+ */
+const TOMBOL_MATIKAN_MODEL_TAMPIL = false;
+
 // Metafora daftar periksa di panel kanan — murni ilustrasi statis, TIDAK
 // terhubung ke hasil baca sungguhan. Warna dan ikonnya bukan teks, jadi
 // tetap di sini; label dan catatannya ikut kamus per bahasa.
@@ -560,35 +574,38 @@ export default function App() {
             ) : null}
           </div>
           {/* Saklar demo S12-1 — sekarang di navbar; teks keterangannya
-              muncul sebagai modal (lihat di bawah), bukan paragraf tetap. */}
-          <button
-            type="button"
-            role="switch"
-            aria-checked={modelDimatikan}
-            onClick={tanganiSaklarModel}
-            disabled={sedangMemroses}
-            title={modelDimatikan ? tombolNyalakanModel : tombolMatikanModel}
-            className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[13px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
-              modelDimatikan
-                ? "border-[#fac10b] bg-[#fff4d6] text-[#a97400]"
-                : "border-[#dbe4fb] bg-white/70 text-[#3f4657] hover:text-[#0955d4]"
-            }`}
-          >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+              muncul sebagai modal (lihat di bawah), bukan paragraf tetap.
+              Disembunyikan sementara lewat TOMBOL_MATIKAN_MODEL_TAMPIL. */}
+          {TOMBOL_MATIKAN_MODEL_TAMPIL ? (
+            <button
+              type="button"
+              role="switch"
+              aria-checked={modelDimatikan}
+              onClick={tanganiSaklarModel}
+              disabled={sedangMemroses}
+              title={modelDimatikan ? tombolNyalakanModel : tombolMatikanModel}
+              className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[13px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+                modelDimatikan
+                  ? "border-[#fac10b] bg-[#fff4d6] text-[#a97400]"
+                  : "border-[#dbe4fb] bg-white/70 text-[#3f4657] hover:text-[#0955d4]"
+              }`}
             >
-              <path d="M12 2v10" />
-              <path d="M18.4 6.6a9 9 0 1 1-12.77.04" />
-            </svg>
-            {modelDimatikan ? tombolNyalakanModel : tombolMatikanModel}
-          </button>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M12 2v10" />
+                <path d="M18.4 6.6a9 9 0 1 1-12.77.04" />
+              </svg>
+              {modelDimatikan ? tombolNyalakanModel : tombolMatikanModel}
+            </button>
+          ) : null}
           <nav className="flex items-center gap-1 rounded-full border border-[#dbe4fb] bg-white/70 p-1 backdrop-blur">
             {nav.map((id) => (
               <button
@@ -693,32 +710,34 @@ export default function App() {
               ) : null}
             </button>
           ))}
-          <button
-            type="button"
-            role="switch"
-            aria-checked={modelDimatikan}
-            disabled={sedangMemroses}
-            onClick={() => {
-              tanganiSaklarModel();
-              setMenuTerbuka(false);
-            }}
-            className="flex items-center gap-2 rounded-xl px-4 py-3 text-left text-[15px] font-semibold text-[#3f4657] hover:bg-[#f2f6ff] disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+          {TOMBOL_MATIKAN_MODEL_TAMPIL ? (
+            <button
+              type="button"
+              role="switch"
+              aria-checked={modelDimatikan}
+              disabled={sedangMemroses}
+              onClick={() => {
+                tanganiSaklarModel();
+                setMenuTerbuka(false);
+              }}
+              className="flex items-center gap-2 rounded-xl px-4 py-3 text-left text-[15px] font-semibold text-[#3f4657] hover:bg-[#f2f6ff] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              <path d="M12 2v10" />
-              <path d="M18.4 6.6a9 9 0 1 1-12.77.04" />
-            </svg>
-            {modelDimatikan ? tombolNyalakanModel : tombolMatikanModel}
-          </button>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M12 2v10" />
+                <path d="M18.4 6.6a9 9 0 1 1-12.77.04" />
+              </svg>
+              {modelDimatikan ? tombolNyalakanModel : tombolMatikanModel}
+            </button>
+          ) : null}
         </div>
       ) : null}
 
@@ -951,10 +970,14 @@ export default function App() {
             </div>
           </section>
 
-          {/* RIGHT — panel ilustrasi statis (bukan hasil sungguhan) */}
-          <section className="relative hidden h-full items-center justify-center lg:flex">
-            <div className="absolute right-6 top-14 h-[420px] w-[300px] rotate-6 rounded-2xl border border-[#dbe4fb] bg-white/60" />
-            <div className="relative w-[360px] -rotate-2 rounded-2xl border border-[#dbe4fb] bg-white p-6 shadow-[0_40px_80px_-40px_rgba(11,18,32,0.4)]">
+          {/* RIGHT — panel ilustrasi statis (bukan hasil sungguhan). Dulu
+              hidden di bawah lg; sekarang selalu tampil supaya halaman
+              mobile tidak terasa kosong — kartu dekorasi belakang & rotasi
+              cuma aktif di lg ke atas, karena posisi absolut + rotasinya
+              didesain untuk ruang kolom kanan yang lega, bukan mobile. */}
+          <section className="relative mt-8 flex items-center justify-center lg:mt-0 lg:h-full">
+            <div className="absolute right-6 top-14 hidden h-[420px] w-[300px] rotate-6 rounded-2xl border border-[#dbe4fb] bg-white/60 lg:block" />
+            <div className="relative w-full max-w-[360px] rounded-2xl border border-[#dbe4fb] bg-white p-6 shadow-[0_40px_80px_-40px_rgba(11,18,32,0.4)] lg:w-[360px] lg:-rotate-2">
               <div className="flex items-center justify-between border-b border-[#eef1f6] pb-4">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-wider text-[#8890a0]">

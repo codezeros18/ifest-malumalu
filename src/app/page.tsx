@@ -822,7 +822,7 @@ export default function App() {
         <BagianTentang t={t} onKembali={() => setActive("beranda")} />
       ) : (
         <main className="relative z-10 grid flex-1 grid-cols-1 items-center gap-10 px-4 py-8 sm:px-6 sm:py-10 lg:grid-cols-[1.05fr_0.95fr] lg:px-44 lg:py-0">
-          <section className="order-2 max-w-[600px] lg:order-1">
+          <section className="order-1 max-w-[600px] lg:order-1 lg:col-start-1 lg:row-start-1">
             <span className="animasi-muncul inline-flex items-center gap-2 rounded-full border border-[#dbe4fb] bg-white/70 px-3 py-1 text-[12px] font-semibold uppercase tracking-wider text-[#0955d4]">
               <span className="h-1.5 w-1.5 rounded-full bg-[#fac10b]" />
               {t.heroLencana}
@@ -868,9 +868,17 @@ export default function App() {
                 </div>
               </div>
             ) : null}
+          </section>
 
-            {/* Action module — satu alur kerja, satu titik masuk gambar */}
-            <div className="animasi-muncul animasi-tunda-3 mt-7 rounded-2xl border border-[#dbe4fb] bg-white p-2 shadow-[0_24px_60px_-30px_rgba(9,85,212,0.45)]">
+          {/* Action module — satu alur kerja, satu titik masuk gambar.
+              Dipisah dari section judul/deskripsi di atas supaya di mobile
+              bisa disisipi kartu ilustrasi DI ANTARA deskripsi dan modul
+              aksi ini (lewat urutan order-1/2/3), sesuai alur yang diminta
+              pengguna: headline → deskripsi → kartu ilustrasi → kartu
+              seret-poster. Di desktop (lg:) kembali ke kolom kiri yang sama
+              seperti judul di atasnya lewat auto-placement grid 2 kolom. */}
+          <section className="order-3 max-w-[600px] lg:order-3 lg:col-start-1 lg:row-start-2">
+            <div className="animasi-muncul animasi-tunda-3 rounded-2xl border border-[#dbe4fb] bg-white p-2 shadow-[0_24px_60px_-30px_rgba(9,85,212,0.45)]">
               <div className="p-3">
                 <div
                   onDragOver={(e) => {
@@ -996,14 +1004,15 @@ export default function App() {
             </div>
           </section>
 
-          {/* RIGHT — panel ilustrasi statis (bukan hasil sungguhan). Ditaruh
-              DI ATAS kartu aksi lewat order-1 di mobile (order-2 di lg,
-              posisi asli kembali) — permintaan pengguna: "gunakan design 2
-              card layout kek di desktop" juga di mobile, bukan cuma kartu
-              tunggal datar. Kartu dekorasi belakang sekarang ikut tampil di
-              semua ukuran layar, hanya ukurannya menyusut di mobile supaya
-              tidak meluber. */}
-          <section className="relative order-1 mb-8 flex items-center justify-center lg:order-2 lg:mb-0 lg:h-full">
+          {/* RIGHT — panel ilustrasi statis (bukan hasil sungguhan). Alur
+              mobile: judul/deskripsi (order-1) → kartu ini (order-2) →
+              kartu seret-poster (order-3), sesuai permintaan pengguna.
+              Di desktop (lg:) `lg:row-span-2` membuatnya membentang penuh
+              di kolom kanan, sejajar dua section kolom kiri di atasnya —
+              posisi asli sebelum section ini dipecah jadi dua. Kartu
+              dekorasi belakang ikut tampil di semua ukuran layar, ukurannya
+              menyusut di mobile supaya tidak meluber. */}
+          <section className="relative order-2 mb-8 flex items-center justify-center lg:order-2 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:mb-0 lg:h-full">
             <div className="absolute right-3 top-8 h-[220px] w-[180px] rotate-6 rounded-2xl border border-[#dbe4fb] bg-white/60 sm:h-[300px] sm:w-[240px] lg:right-6 lg:top-14 lg:h-[420px] lg:w-[300px]" />
             <div className="animasi-mengapung relative w-full max-w-[360px] rounded-2xl border border-[#dbe4fb] bg-white p-6 shadow-[0_40px_80px_-40px_rgba(11,18,32,0.4)] lg:w-[360px] lg:-rotate-2">
               <div className="flex items-center justify-between border-b border-[#eef1f6] pb-4">

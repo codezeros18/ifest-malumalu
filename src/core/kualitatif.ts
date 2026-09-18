@@ -92,7 +92,7 @@ function ujiSlot3NamaPemberiKerja(teks: string): HasilUjiKualitatif {
 }
 
 const PENANDA_JABATAN_SPESIFIK =
-  /\b(operator|perawat|teknisi|sopir|supir|juru masak|koki|pembantu rumah tangga|asisten rumah tangga|buruh|tukang|petugas|pengasuh|cleaning service|satpam|pelayan|kasir|montir)\b/i;
+  /\b(operator|perawat|teknisi|sopir|supir|juru masak|koki|pembantu rumah tangga|asisten rumah tangga|buruh|tukang|petugas|pengasuh|cleaning service|satpam|pelayan|kasir|montir|staff|staf|helper|crew|penjahit|pengemas|packing|welder|fitter|kurir|barista|pengemudi|perakit)\b/i;
 const PENANDA_BIDANG = /\b(bidang|sektor)\b/i;
 const POLA_KERJA_GENERIK = /^kerja\b/i;
 
@@ -167,6 +167,14 @@ const POLA_ANGKA_BIAYA =
   /(rp\.?\s?\d[\d.,]*|idr\.?\s?\d[\d.,]*|\d+\s*(juta|jt|ribu|rb)\b)/gi;
 
 /**
+ * Jawaban biaya tanpa angka sama sekali — "GRATIS", "ditanggung perusahaan",
+ * "biaya 0", "tidak dipungut biaya". Poster nyata sering begini. Dibuat
+ * SEBAGIAN (bukan DISEBUTKAN) karena besarannya tetap tidak dirinci.
+ */
+const POLA_BIAYA_TANPA_ANGKA =
+  /\b(gratis|free|tanpa biaya|tidak ada biaya|tidak dipungut|ditanggung (perusahaan|majikan|pemberi kerja)|dibiayai (perusahaan|majikan)|biaya 0)\b/i;
+
+/**
  * Angka biaya yang SAMA dua kali bukan rincian — "Total Rp15 juta, dibayar
  * Rp15 juta" hanya menyebut satu angka. Karena itu yang dihitung adalah
  * jumlah nilai BERBEDA, bukan jumlah kemunculan.
@@ -181,6 +189,13 @@ function jumlahAngkaUnik(cocok: readonly string[]): number {
 function ujiSlot9BiayaDanTanggungan(teks: string): HasilUjiKualitatif {
   const cocok = teks.match(POLA_ANGKA_BIAYA) ?? [];
   const jumlah = jumlahAngkaUnik(cocok);
+
+  // Poster nyata sering menjawab pertanyaan biaya TANPA angka: "GRATIS",
+  // "ditanggung perusahaan", "biaya 0". E.2 #9 hanya mengurus bentuk
+  // berangka, sehingga bentuk ini dulu jatuh ke "belum dijawab" — padahal
+  // pertanyaannya jelas sudah dijawab. Tetap SEBAGIAN (bukan DISEBUTKAN):
+  // siapa menanggung / besarannya belum dirinci angka. Tidak pernah lulus.
+  if (jumlah === 0 && POLA_BIAYA_TANPA_ANGKA.test(teks)) return "sebagian";
 
   if (jumlah === 0) return "gagal";
   if (jumlah === 1) return "sebagian";

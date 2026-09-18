@@ -4,6 +4,7 @@ import { isiTemplat } from "../core/perakitan";
 import Lencana from "./Lencana";
 import {
   KAMUS_LEMBAR,
+  TAUTAN_SISKOP2MI_URL,
 } from "../core/teks";
 import type { KamusLembar } from "../core/teks";
 
@@ -48,9 +49,28 @@ export default function LembarPratinjau({
                   keterangan yang dicocokkan. Abu netral, tanpa lencana warna
                   atau ikon peringatan (CLAUDE.md §3.6). */}
               {baris.slot === 1 && isiLembar.hasilLapis1 ? (
-                <p className="text-right text-sm text-redup">
-                  {isiLembar.hasilLapis1.kalimat}
-                </p>
+                <>
+                  <p className="text-right text-sm text-redup">
+                    {isiLembar.hasilLapis1.kalimat}
+                  </p>
+                  {/* Tautan keluar ke sumber resmi — sengaja tampil sama
+                      datar untuk "ditemukan"/"mirip"/"tidak ditemukan":
+                      pelengkap, bukan tombol utama, bukan penanda status.
+                      Nol fetch/scraping — <a> biasa, tab baru. */}
+                  <p className="text-right">
+                    <a
+                      href={TAUTAN_SISKOP2MI_URL}
+                      target="_blank"
+                      rel={["noopener", "noreferrer"].join(" ")}
+                      className="text-sm text-redup underline decoration-garis underline-offset-2 hover:text-tinta-lembut"
+                    >
+                      {kamus.tautanSiskop2miLabel}
+                    </a>
+                  </p>
+                  <p className="text-right text-sm text-redup">
+                    {kamus.catatanSumberSiskop2mi}
+                  </p>
+                </>
               ) : null}
             </li>
           ))}

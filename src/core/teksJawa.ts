@@ -284,6 +284,9 @@ export const KAMUS_LEMBAR_JAWA: KamusLembar = {
     "Nama punika mboten kapanggih wonten salinan daftar perusahaan penempatan berizin per {tanggal salinan}. Daftaripun saged ewah lan nama saged kaserat beda, dados bab punika sanes ateges perusahaanipun mboten berizin. Cara mesthekaken: tangletaken nomer izinipun, lajeng priksa wonten kantor Layanan Terpadu Satu Atap ingkang paling caket.",
   lapis1Dimatikan:
     "Pamriksan dhateng daftar perusahaan berizin saweg mboten sumadya. Isinipun lembar punika tetep saged dipun-ginakaken. Kagem mriksa nama perusahaanipun, sowan dhateng kantor Layanan Terpadu Satu Atap utawi Badan Pelindungan Pekerja Migran Indonesia ing provinsi panjenengan.",
+  tautanSiskop2miLabel: "Priksa langsung ing SISKOP2MI →",
+  catatanSumberSiskop2mi:
+    "Kula ngginakaken salinan data kala-kala amargi SISKOP2MI mboten nyadhiyakaken akses umum kagem priksa otomatis.",
   barisHitunganLapis2Templat:
     "Wragad ingkang dipun-suwesti sami kaliyan ± {n} wulan bayaran ingkang dipun-janjekaken.",
   lapis2AngkaTidakAda:

@@ -115,6 +115,20 @@ export const LAPIS1_MIRIP_TEMPLAT =
 export const LAPIS1_DIMATIKAN =
   "Pemeriksaan terhadap daftar perusahaan berizin sedang tidak tersedia. Isi lembar ini tetap dapat digunakan. Untuk memeriksa nama perusahaan, hubungi kantor Layanan Terpadu Satu Atap atau Badan Pelindungan Pekerja Migran Indonesia di provinsi Anda.";
 
+/**
+ * 🟡 PENAMBAHAN DI LUAR F.1–F.10 — tautan keluar ke sumber resmi SISKOP2MI,
+ * ditaruh tepat di bawah kalimat hasil Lapis 1 (pratinjau teks) supaya
+ * jelas pencocokan memakai salinan berkala secara SADAR, bukan sebagai
+ * keterbatasan yang disembunyikan. Murni elemen `<a>` biasa — tidak ada
+ * fetch/scraping ke domain ini di kode mana pun. Tidak ikut dirender ke
+ * PNG (`src/lib/renderLembar.tsx` tidak mereferensikan kunci ini), jadi
+ * tidak menambah kata ke lembar gambar maupun anggaran §4 480 kata.
+ */
+export const TAUTAN_SISKOP2MI_URL = "https://siskop2mi.bp2mi.go.id";
+export const TAUTAN_SISKOP2MI_LABEL = "Cek langsung ke SISKOP2MI →";
+export const CATATAN_SUMBER_SISKOP2MI =
+  "Kami memakai salinan data berkala karena SISKOP2MI tidak menyediakan akses publik untuk pengecekan otomatis.";
+
 // ---------------------------------------------------------------------------
 // F.7 — Kalimat Lapis 2 (logikanya S09; teksnya sudah wajib ada sejak S04)
 // ---------------------------------------------------------------------------
@@ -170,6 +184,8 @@ export const KAMUS_LEMBAR = {
   lapis1MiripTemplat: LAPIS1_MIRIP_TEMPLAT,
   lapis1TidakDitemukanTemplat: LAPIS1_TIDAK_DITEMUKAN_TEMPLAT,
   lapis1Dimatikan: LAPIS1_DIMATIKAN,
+  tautanSiskop2miLabel: TAUTAN_SISKOP2MI_LABEL,
+  catatanSumberSiskop2mi: CATATAN_SUMBER_SISKOP2MI,
   barisHitunganLapis2Templat: BARIS_HITUNGAN_LAPIS2_TEMPLAT,
   lapis2AngkaTidakAda: LAPIS2_ANGKA_TIDAK_ADA,
   lapis2Dimatikan: LAPIS2_DIMATIKAN,

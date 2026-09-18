@@ -11,6 +11,7 @@ import {
   nilaiSlotKeRekaman,
   rekamanKeNilaiSlot,
   simpanIsian,
+  hapusIsian,
   ambilBahasaTersimpan,
   atributLang,
   simpanBahasa,
@@ -420,6 +421,13 @@ export default function HalamanPeriksa() {
       // S13: hasil dipindah ke layar terpisah (`/hasil`) — data URL aman
       // dari lifecycle blob/unmount dan tetap valid lintas navigasi.
       simpanHasilSementara({ perBahasa });
+
+      // Lembar sudah terbit → draf mentah tidak diperlukan lagi. Menghapusnya
+      // menutup celah privasi: tanpa ini, nama perusahaan yang diketik pada
+      // jalur manual bertahan tanpa batas di localStorage HP yang bisa dipakai
+      // bersama. `hapusIsian` ada sejak awal tetapi tidak pernah dipanggil —
+      // inilah satu-satunya titik yang benar untuk memanggilnya.
+      hapusIsian();
 
       // S10: pencatatan metrik anonim, fire-and-forget, persis di titik
       // lembar selesai dirakit (lihat komentar desain di src/lib/catat.ts).

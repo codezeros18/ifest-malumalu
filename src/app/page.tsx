@@ -9,6 +9,7 @@ import {
   type ClipboardEvent,
 } from "react";
 import { useRouter } from "next/navigation";
+import SitusFooter from "@/ui/SitusFooter";
 import { simpanIsian, nilaiSlotKeRekaman } from "@/lib/simpananLokal";
 import { pilihPembaca } from "@/vision";
 import type { HasilBaca } from "@/core/tipe";
@@ -1052,10 +1053,7 @@ export default function App() {
         </main>
       )}
 
-      <footer className="relative z-10 flex items-center justify-between px-44 pb-6 pt-2 text-[12px] text-[#8890a0]">
-        <p>{t.footerKiri}</p>
-        <p className="hidden sm:block">{t.footerKanan}</p>
-      </footer>
+      <SitusFooter bahasa={bahasa} />
     </div>
   );
 }

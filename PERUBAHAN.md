@@ -101,6 +101,29 @@ Protokol Postgres berbentuk biner lewat TCP, bukan HTTP/REST — berbeda dari pa
 Tidak ada dampak terhadap alur utama maupun batas privasi — `pg` hanya dipakai di satu titik (`src/app/api/catat/route.ts`) yang fire-and-forget dan bisa dinonaktifkan sepenuhnya dengan mengosongkan `DATABASE_URL` (dibuktikan `tests/alur/tanpa-basis-data.test.ts`). Dependensi runtime naik dari 3 menjadi 4, masih jauh di bawah batas 12 (CLAUDE.md bagian 4). `npm audit` diperiksa sebelum dan sesudah penambahan: tetap 4 kerentanan yang sama, seluruhnya pada dependensi dev-time yang tidak berkaitan (`@vitest/mocker`, `postcss`) dan sudah ada sejak S00 — `pg` tidak menambah satu pun kerentanan baru.
 
 ---
+
+## [PB-004] Tinggi lembar dinamis (bukan rasio 3:4 tetap), nomor pasal ditumpuk bukan sejajar
+
+**Jam ke-**         : ~13
+**Diputuskan oleh** : Fullstack, Window 2 (S08)
+
+**Kondisi di proposal penyisihan**
+
+BLUEPRINT bagian H.9 menetapkan "Rasio 3:4 tegak, lebar render 1080px" (menyiratkan tinggi tetap ±1440px), dan baris blok 2 berbentuk "lingkaran kosong di kiri dan nomor pasal redup rata kanan" — dibaca sebagai satu baris sejajar.
+
+**Hal yang diubah**
+
+Tinggi render dihitung DINAMIS mengikuti panjang konten sungguhan (fungsi `tinggiLembar`), bukan rasio 3:4 tetap. Nomor pasal pada baris blok 2 ditumpuk di baris terpisah DI BAWAH kalimatnya (tetap rata kanan), bukan disandingkan sejajar dalam satu baris.
+
+**Alasan perubahan**
+
+Dua kendala teknis nyata mendorong ini. Pertama, konten lembar sangat bervariasi — dari 0 sampai 10 baris di blok 1 maupun blok 2 tergantung kelengkapan tawaran — sehingga rasio tetap akan memotong konten pada tawaran padat atau menyisakan ruang kosong sangat besar pada tawaran ringkas. Kedua, mesin render (Satori, di balik `ImageResponse`) TIDAK mendukung tinggi kanvas otomatis mengikuti konten sama sekali — dibuktikan lewat percobaan langsung: tanpa tinggi eksplisit, kelebihan konten diam-diam terpotong tanpa galat apa pun. Nomor pasal khususnya perlu ditumpuk karena slot 10 bisa memuat 4 sitasi sekaligus (±87 karakter) yang akan meluber atau meremas kalimatnya bila dipaksa sejajar dalam satu baris sempit.
+
+**Dampak terhadap masalah inti**
+
+Lembar tetap lebar 1080px dan tetap portrait (sesuai H.9) — hanya tingginya yang menyesuaikan konten. Secara fungsional ini MENGUATKAN klaim "lembar terbaca lengkap tanpa terpotong", karena rasio tetap justru berisiko memotong kalimat penutup wajib (F.5) pada tawaran dengan banyak keterangan kosong. Nol dampak terhadap kosakata sistem, token warna, atau aturan penilaian — murni penyesuaian tata letak dan dimensi render.
+
+---
 ---
 
 # ⚠️ TIGA CONTOH ENTRI TELADAN

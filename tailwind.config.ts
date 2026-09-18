@@ -25,6 +25,11 @@ const config: Config = {
         "latar-blok": "#E9E6DE",
         kertas: "#FAF9F6",
         aksen: "#1B5E4B",
+        // Latar kepala lembar yang dirender (`/api/kartu`) — biru pilihan
+        // pemilik produk, sama dengan aksen biru halaman depan. Token
+        // terpisah dari `tinta` supaya teks isi lembar TIDAK ikut biru.
+        // Kontras: kertas 6,12:1 · garis 4,92:1 (ditegakkan kontras.test.ts).
+        kepala: "#0955D4",
       },
     },
   },

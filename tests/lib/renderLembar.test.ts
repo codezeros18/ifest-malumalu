@@ -5,7 +5,6 @@ import {
   tinggiLembar,
   LEBAR_LEMBAR,
   SKALA_RENDER,
-  WARNA_KEPALA_LEMBAR,
 } from "../../src/lib/renderLembar";
 import { Keadaan } from "../../src/core/tipe";
 import type { IsiLembar, Penilaian } from "../../src/core/tipe";
@@ -273,23 +272,22 @@ describe("Spesifikasi visual BLUEPRINT H.9", () => {
     }
   });
 
-  it("judul lembar tercetak di kepala, latar WARNA_KEPALA_LEMBAR", () => {
-    // Kepala lembar sengaja memakai warna sendiri (rebrand biru navbar),
-    // BUKAN token `tinta` — token itu dipakai untuk warna teks isi lembar
-    // di tempat lain (nilai keterangan, daftar pertanyaan), dan menumpangi
-    // "tinta" untuk latar kepala pernah membuat teks isi ikut jadi biru
-    // tanpa sengaja. Lihat komentar `WARNA_KEPALA_LEMBAR` di renderLembar.tsx.
+  it("judul lembar tercetak di kepala, latar biru token `kepala`", () => {
     const { simpul, teks } = bongkarLembar(LEMBAR_KOSONG);
     expect(teks).toContain("LEMBAR JANJI");
     const adaLatarKepala = simpul.some(
-      (s) => s.style?.["backgroundColor"] === WARNA_KEPALA_LEMBAR,
+      (s) => s.style?.["backgroundColor"] === WARNA.kepala,
     );
     expect(adaLatarKepala).toBe(true);
 
     // Teks isi (bukan kepala) tidak boleh ikut memakai warna kepala —
-    // buktikan warna teks isi tetap token `tinta` (ink gelap), bukan biru.
+    // bug nyata yang pernah terjadi: token warna kepala menumpangi kunci
+    // yang SAMA dengan warna teks isi (nilai keterangan, daftar pertanyaan),
+    // membuat teks isi ikut jadi biru tanpa sengaja. Token `kepala` sekarang
+    // terpisah dari token manapun yang dipakai warna teks, jadi ini harus
+    // selalu false.
     const adaTeksBiruDiIsi = simpul.some(
-      (s) => s.style?.["color"] === WARNA_KEPALA_LEMBAR,
+      (s) => s.style?.["color"] === WARNA.kepala,
     );
     expect(adaTeksBiruDiIsi).toBe(false);
   });

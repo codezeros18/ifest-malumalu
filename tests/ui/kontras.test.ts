@@ -91,6 +91,16 @@ const PASANGAN_DIPAKAI: readonly PasanganWarna[] = [
     dipakaiDi:
       "kalimat keterangan kosong (blok 2), kolom nonaktif 'tidak tahu' (S11, sebelumnya redup)",
   },
+  {
+    teks: "kertas",
+    latar: "kepala",
+    dipakaiDi: "judul lembar pada kepala biru (renderLembar, S16)",
+  },
+  {
+    teks: "garis",
+    latar: "kepala",
+    dipakaiDi: "subjudul & penanda waktu pada kepala biru (renderLembar, S16)",
+  },
 ];
 
 describe("kontras token warna — WCAG 2.1 minimal 4,5:1 (BLUEPRINT H.7)", () => {

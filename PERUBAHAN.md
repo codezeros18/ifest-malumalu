@@ -33,7 +33,7 @@ Ditulis konkret, bukan "karena keterbatasan waktu" saja.]
 
 ---
 
-## [PB-018] Tombol "Simpan PDF" tambahan di `/hasil` — dependensi baru `jspdf`
+## [PB-020] Tombol "Simpan PDF" tambahan di `/hasil` — dependensi baru `jspdf`
 
 **Jam ke-**         : ~21,5
 **Diputuskan oleh** : Pemilik produk (diminta langsung), dieksekusi Window 1
@@ -52,7 +52,7 @@ Tidak ada. Gambar tetap format WAJIB dan tetap yang pertama dibuat (§5: "lembar
 
 ---
 
-## [PB-017] Resolusi keluaran PNG lembar digandakan 2x — BLUEPRINT H.9 secara literal menyebut "1080px", keluaran sungguhan sekarang 2160px
+## [PB-019] Resolusi keluaran PNG lembar digandakan 2x — BLUEPRINT H.9 secara literal menyebut "1080px", keluaran sungguhan sekarang 2160px
 
 **Jam ke-**         : ~21,5
 **Diputuskan oleh** : Window 1, atas laporan blur di HP dari pemilik produk
@@ -68,6 +68,46 @@ Di layar HP rapat-piksel (device pixel ratio 2–3x, umum di kelas menengah-atas
 
 **Dampak terhadap masalah inti**
 Memperkuat, bukan melemahkan: tujuan lembar adalah "dipegang dan diteruskan lewat percakapan" (CLAUDE.md §1) — gambar yang blur di HP kelas menengah-atas justru menghambat itu. Tata letak, urutan keterangan, dan seluruh teks sistem sama sekali tidak berubah (`npm run verify` tetap 391/391 hijau, jumlah kata tidak tersentuh). Satu-satunya angka yang berubah adalah dimensi piksel keluaran akhir. Berkas PNG jadi lebih besar (~2-3x, dari test: render campuran ~495 KB sebelumnya lebih kecil), tapi masih jauh di bawah batas unggahan 8 MB dan wajar untuk dibagikan lewat aplikasi percakapan.
+
+**Catatan penggabungan (merge dari `origin/main`)**: entri ini ditulis SEBELUM menyadari `src/lib/renderLembar.tsx` juga sedang diperbaiki window lain pada waktu yang berdekatan (lihat PB-018/PB-017 di bawah — saga warna kepala lembar). Kedua perbaikan tidak bentrok secara teknis: PB-019/PB-020 ini menggandakan RESOLUSI (2160px vs 1080px), sedangkan PB-018/PB-017 di bawah mengganti WARNA kepala lembar lewat token `kepala` yang benar. Digabung lewat `git merge`, bukan salah satu ditimpa — token `warna("kepala")` dipertahankan persis di dalam pembungkus skala 2x.
+
+---
+
+## [PB-018] Kepala lembar jadi biru — kali ini lewat token baru, bukan menambal fungsi token
+
+**Jam ke-**         : ~15 (18 September 2026, 23.00 WIB)
+**Diputuskan oleh** : Pemilik produk (dikonfirmasi langsung: memang ingin kepala biru), dieksekusi Window 1
+
+**Kondisi di proposal penyisihan**
+BLUEPRINT H.9: kepala lembar berlatar `tinta` (gelap), seluruh warna lewat token, nol hex mentah.
+
+**Hal yang diubah**
+Token warna baru `kepala: "#0955D4"` di `tailwind.config.ts`. `src/lib/renderLembar.tsx` memakai `warna("kepala")` untuk latar kepala (baris ~279) — satu baris, tidak ada perubahan lain. Teks isi dan pertanyaan TETAP `warna("tinta")`. Dua pasangan kontras baru dikunci di `tests/ui/kontras.test.ts` (`kertas` di atas `kepala` = 6,12:1; `garis` di atas `kepala` = 4,92:1 — keduanya lolos 4,5:1). Test H.9 diperbarui: yang dituntut sekarang latar `kepala`, bukan `tinta`.
+
+**Alasan perubahan**
+Permintaan eksplisit pemilik produk setelah dua kali percobaan sebelumnya (`83c2c21` dan `ae8b3b5`) gagal karena menambal `warna("tinta")` — yang membuat SELURUH teks lembar biru dan menaruh hex mentah di luar jangkauan pagar kontras. Cara yang benar adalah token tersendiri, sehingga perubahan hanya menyentuh satu permukaan dan tetap terperiksa pagar.
+
+**Dampak terhadap masalah inti**
+Nol. Lembar tetap terbaca (kontras lolos 4,5:1), dan tampilan sesuai keinginan pemilik produk. `npm run verify` hijau (380 test).
+
+---
+
+## [PB-017] Revert kedua commit yang menaruh warna mentah di lembar & membajak fungsi token
+
+**Jam ke-**         : ~14 (18 September 2026, 22.55 WIB)
+**Diputuskan oleh** : Window 1 (kapten), setelah `npm run verify` merah
+
+**Kondisi di proposal penyisihan**
+BLUEPRINT H.9: kepala lembar berlatar token `tinta`, dan **seluruh warna lembar lewat token `warna(...)`, nol hex mentah** — supaya `tests/ui/kontras.test.ts` (yang hanya membaca token) benar-benar memeriksa warna lembar.
+
+**Hal yang diubah**
+Commit tim `ae8b3b5` ("FIX: LEMBAR AKHIR FIX BANGET") di-*revert* penuh. Commit itu (a) membajak `warna("tinta")` menjadi `#0955d4` — dan karena `warna("tinta")` juga dipakai untuk warna teks isi (baris 146) dan teks pertanyaan (baris 431), kepala lembar yang biru sekaligus membuat seluruh teks lembar biru; (b) menaruh hex mentah `#ffd346` dan `#000000` untuk label blok 2. Ini persis kekeliruan yang sudah dibatalkan sekali lewat PB-014 (commit `83c2c21`).
+
+**Alasan perubahan**
+`npm run verify` merah: test H.9 ("kepala lembar berlatar tinta") gagal. Lebih dari sekadar test merah, pendekatannya salah: memperbaiki warna dengan menambal fungsi token merusak tiga pemakaian sekaligus dan menyembunyikan hex dari semua pagar kontras. Bila pemilik produk memang ingin kepala lembar biru, jalurnya adalah menambah token warna baru di `tailwind.config.ts` dan menamainya, bukan menambal `warna()`.
+
+**Dampak terhadap masalah inti**
+Nol. Alur inti tidak tersentuh; yang dikembalikan hanyalah tampilan lembar ke spesifikasi H.9 yang sudah disepakati dan sudah diuji. `npm run verify` kembali hijau (378 test).
 
 ---
 

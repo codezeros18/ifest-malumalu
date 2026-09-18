@@ -5,13 +5,22 @@
  * BLUEPRINT.md bagian H.9.
  *
  * 🔴 Satori HANYA memahami subset CSS lewat prop `style` inline (mirip
- * flexbox) — TIDAK memproses className/Tailwind sama sekali.
+ * flexbox) — TIDAK memproses className/Tailwind sama sekali. Karena itu
+ * warnanya diambil langsung dari `tailwind.config.ts` (satu sumber
+ * kebenaran, sama seperti `tests/ui/warna.test.ts`), bukan lewat kelas
+ * Tailwind seperti di `src/ui/*` yang dipakai layar biasa.
+ *
+ * Nomor pasal per keterangan kosong TIDAK ditulis ulang di sini — sudah
+ * mengalir dari `src/core/slot.ts` lewat `BarisBlok2.dasarHukum`, yang
+ * diisi `rakitIsiLembar` (S04). Berkas ini hanya MENAMPILKANNYA.
  */
 
 import React from "react";
 import { Keadaan } from "../core/tipe";
 import type { IsiLembar } from "../core/tipe";
-import { KAMUS_LEMBAR } from "../core/teks";
+import {
+  KAMUS_LEMBAR,
+} from "../core/teks";
 import type { KamusLembar } from "../core/teks";
 import { isiTemplat } from "../core/perakitan";
 import { blokLembar } from "../ui/BlokLembar";
@@ -21,16 +30,6 @@ const DAFTAR_WARNA = tailwindConfig.theme!.extend!.colors as Record<
   string,
   string
 >;
-
-/**
- * Warna latar kepala lembar — sengaja BEDA dari token `tinta` (warna tinta
- * teks isi). Mengikuti rebranding biru navbar/beranda (`#0955d4`, lihat
- * SitusNavbar.tsx). Diberi nama sendiri, bukan menumpangi kunci "tinta",
- * karena "tinta" dipakai ulang sebagai warna TEKS di beberapa tempat lain
- * di berkas ini (nilai keterangan, daftar pertanyaan) — menumpanginya
- * sebelumnya membuat teks isi ikut berubah biru tanpa sengaja.
- */
-const WARNA_KEPALA_LEMBAR = "#0955d4";
 
 /** Akses token warna dengan jaminan non-undefined (tsconfig `noUncheckedIndexedAccess`). */
 function warna(kunci: string): string {
@@ -58,11 +57,28 @@ export const LEBAR_LEMBAR = 1080;
  */
 export const SKALA_RENDER = 2;
 
-export { WARNA_KEPALA_LEMBAR };
-
 const PADDING_HALAMAN = 48;
 const LEBAR_ISI = LEBAR_LEMBAR - PADDING_HALAMAN * 2;
 
+/**
+ * Ukuran huruf dalam PIKSEL pada render 1080px lebar.
+ *
+ * 🔴 ANGKA-ANGKA INI DIPILIH PEMILIK PRODUK (jam ~16, 18 September 2026) demi
+ * lembar yang kompak: 10–21px, turun dari 24–52px. Konsekuensinya ditulis
+ * terang-terangan, bukan disembunyikan: **lembar TIDAK lagi memenuhi lantai
+ * 14pt yang diminta CLAUDE.md 3.6.** Pada render 1080px yang ditampilkan
+ * selebar layar ponsel lima inci (±360 CSS px), 15px di sini setara ±5 CSS px;
+ * angka lama hanya bisa dibaca kalau penerima memperbesar gambarnya.
+ *
+ * Pagar `tests/lib/renderLembar.test.ts` ikut diturunkan (ambang 22 → 10,
+ * himpunan 30px → 15px) supaya build tetap hijau, dan angka lamanya masih ada
+ * di riwayat git + PERUBAHAN.md PB-016 kalau keputusan ini perlu dibalik
+ * (satu `git revert` pada commit ini).
+ *
+ * Yang TETAP dijaga: kepala lembar berlatar tinta (BLUEPRINT H.9), seluruh
+ * warna lewat token `warna(...)` tanpa hex mentah, dan tiap ukuran dipakai
+ * secara sengaja — bukan hasil perataan.
+ */
 const UKURAN = {
   judul: 20,
   subjudul: 13,
@@ -122,6 +138,10 @@ function lingkaranKosong() {
   );
 }
 
+/**
+ * Baris Blok 1 diubah menjadi susunan vertikal (label di atas, nilai di bawah dengan lebar penuh)
+ * agar teks yang panjang tidak terpotong (menghapus batasan karakter/potongNilai).
+ */
 function barisBlok1(
   baris: IsiLembar["blok1"][number],
   kamus: KamusLembar,
@@ -273,13 +293,16 @@ export function elemenLembar(
         transformOrigin: "top left",
       }}
     >
-      {/* 1. Kepala */}
+      {/* 1. Kepala — latar `kepala` (biru), teks kertas/garis (BLUEPRINT H.9).
+          Warna WAJIB lewat token `warna(...)`: berkas ini tidak boleh memuat
+          hex mentah sama sekali — pagar kontras (`tests/ui/kontras.test.ts`)
+          membaca TOKEN, jadi hex mentah di sini lolos dari semua pagar. */}
       <div
         style={{
           display: "flex",
           flexDirection: "column",
           width: "100%",
-          backgroundColor: WARNA_KEPALA_LEMBAR,
+          backgroundColor: warna("kepala"),
           padding: `32px ${PADDING_HALAMAN}px`,
           gap: 8,
         }}
@@ -362,13 +385,13 @@ export function elemenLembar(
         }}
       />
 
-      {/* 4. Blok 2 — Latar belakang label di-force ke warna #ffd346, teks gelap agar kontras */}
+      {/* 4. Blok 2 */}
       {blokLembar({
         labelTeks: isiTemplat(kamus.labelBlok2Templat, {
           n: String(isiLembar.blok2.length),
         }),
-        warnaLatarLabel: "#ffd346",
-        warnaTeksLabel: "#000000",
+        warnaLatarLabel: warna("tinta-lembut"),
+        warnaTeksLabel: warna("kertas"),
         ukuranLabel: UKURAN.labelBlok,
         children: (
           <div
@@ -539,11 +562,16 @@ function tinggiBarisBlok1(
     UKURAN.blok1Label,
     LEBAR_ISI_BLOK,
   );
+  // Menggunakan lebar penuh (LEBAR_ISI_BLOK) karena nilai sekarang membentang ke bawah
   let tinggiNilai = tinggiTeks(baris.nilai, UKURAN.blok1Nilai, LEBAR_ISI_BLOK);
   if (baris.keadaan === Keadaan.DISEBUTKAN_SEBAGIAN) {
     tinggiNilai += 6 + UKURAN.dasarHukum * TINGGI_BARIS;
   }
-  let tinggi = BLOK1_PADDING_BARIS_VERTIKAL * 2 + tinggiLabel + 8 + tinggiNilai;
+  let tinggi =
+    BLOK1_PADDING_BARIS_VERTIKAL * 2 +
+    tinggiLabel +
+    8 + // gap antara label dan nilai
+    tinggiNilai;
 
   if (kalimatLapis1) {
     tinggi += 4 + tinggiTeks(kalimatLapis1, UKURAN.dasarHukum, LEBAR_ISI_BLOK);
@@ -566,7 +594,13 @@ function tinggiBarisBlok2(baris: IsiLembar["blok2"][number]): number {
     UKURAN.dasarHukum,
     BLOK2_LEBAR_BARIS,
   );
-  return 16 * 2 + Math.max(16, tinggiKalimat) + 6 + tinggiPasal + 10;
+  return (
+    16 * 2 + // padding vertikal
+    Math.max(16, tinggiKalimat) +
+    6 +
+    tinggiPasal +
+    10 // margin bawah
+  );
 }
 
 export function tinggiLembar(
@@ -588,11 +622,8 @@ export function tinggiLembar(
   tinggi += PADDING_LABEL_BLOK_VERTIKAL * 2 + UKURAN.labelBlok * TINGGI_BARIS;
   tinggi += PADDING_ISI_BLOK_VERTIKAL * 2;
   tinggi +=
-    tinggiTeks(
-      kamus.kalimatPembukaBlok1,
-      UKURAN.kalimatPembuka,
-      LEBAR_ISI_BLOK,
-    ) + 12;
+    tinggiTeks(kamus.kalimatPembukaBlok1, UKURAN.kalimatPembuka, LEBAR_ISI_BLOK) +
+    12;
   for (const baris of isiLembar.blok1) {
     tinggi += tinggiBarisBlok1(
       baris,
@@ -607,20 +638,14 @@ export function tinggiLembar(
   tinggi += PADDING_LABEL_BLOK_VERTIKAL * 2 + UKURAN.labelBlok * TINGGI_BARIS;
   tinggi += PADDING_ISI_BLOK_VERTIKAL * 2;
   tinggi +=
-    tinggiTeks(
-      kamus.kalimatPembukaBlok2,
-      UKURAN.kalimatPembuka,
-      LEBAR_ISI_BLOK,
-    ) + 12;
+    tinggiTeks(kamus.kalimatPembukaBlok2, UKURAN.kalimatPembuka, LEBAR_ISI_BLOK) +
+    12;
   for (const baris of isiLembar.blok2) {
     tinggi += tinggiBarisBlok2(baris);
   }
   tinggi +=
-    tinggiTeks(
-      kamus.kalimatBawahBlok2,
-      UKURAN.kalimatBawahBlok2,
-      LEBAR_ISI_BLOK,
-    ) + 6;
+    tinggiTeks(kamus.kalimatBawahBlok2, UKURAN.kalimatBawahBlok2, LEBAR_ISI_BLOK) +
+    6;
 
   // Catatan hitungan
   if (isiLembar.catatanHitungan) {
@@ -640,11 +665,8 @@ export function tinggiLembar(
   tinggi += PADDING_LABEL_BLOK_VERTIKAL * 2 + UKURAN.labelBlok * TINGGI_BARIS;
   tinggi += PADDING_ISI_BLOK_VERTIKAL * 2;
   tinggi +=
-    tinggiTeks(
-      kamus.kalimatPembukaBlok3,
-      UKURAN.kalimatPembuka,
-      LEBAR_ISI_BLOK,
-    ) + 12;
+    tinggiTeks(kamus.kalimatPembukaBlok3, UKURAN.kalimatPembuka, LEBAR_ISI_BLOK) +
+    12;
   for (const [indeks, pertanyaan] of isiLembar.pertanyaan.entries()) {
     tinggi +=
       tinggiTeks(
@@ -657,7 +679,6 @@ export function tinggiLembar(
   // Kaki
   tinggi += 24 * 2 + tinggiTeks(kamus.penutup, UKURAN.penutup, LEBAR_ISI);
 
-  // Marjin aman diperkecil dari 120 menjadi 20 agar sisa ruang bawah sangat rapat/sedikit
-  const MARJIN_AMAN = 20;
+  const MARJIN_AMAN = 120;
   return Math.ceil(tinggi + MARJIN_AMAN);
 }

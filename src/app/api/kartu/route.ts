@@ -90,6 +90,10 @@ export async function POST(request: Request): Promise<Response> {
 
   return new ImageResponse(elemenLembar(isiLembar, kamus), {
     width: LEBAR_LEMBAR,
-    height: tinggiLembar(isiLembar, kamus),
+    // Batas keras kedua setelah `isiLembarValid`: walau validasi lolos,
+    // jangan pernah meminta Satori merender kanvas absurd (jaga-jaga bila
+    // bentuk sah berubah tanpa memperbarui pagar). 20.000px jauh di atas
+    // tinggi nyata (kasus penuh ~4.000px).
+    height: Math.min(20_000, Math.max(1, tinggiLembar(isiLembar, kamus))),
   });
 }

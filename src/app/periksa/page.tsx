@@ -56,7 +56,10 @@ function tanggalJamSekarang(): { tanggal: string; jam: string } {
     month: "long",
     year: "numeric",
   });
-  const jam = sekarang.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+  const jam = sekarang.toLocaleTimeString("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
   return { tanggal, jam };
 }
 
@@ -98,7 +101,10 @@ function apakahDikoreksi(
 ): boolean {
   if (!bacaanAsli) return false;
   if (tidakTahu.size > 0) return true;
-  return SLOT_IDS.some((id) => (bacaanAsli[String(id)] ?? "").trim() !== nilaiSlotSekarang[id].trim());
+  return SLOT_IDS.some(
+    (id) =>
+      (bacaanAsli[String(id)] ?? "").trim() !== nilaiSlotSekarang[id].trim(),
+  );
 }
 
 /**
@@ -128,9 +134,14 @@ async function muatSalinanP3MI(): Promise<SalinanP3MI | null> {
     const daftar = perusahaan
       .map((entri) => {
         if (typeof entri !== "object" || entri === null) return null;
-        const { nama, nama_lengkap: namaLengkap } = entri as Record<string, unknown>;
-        const namaTerpilih = typeof namaLengkap === "string" ? namaLengkap : nama;
-        return typeof namaTerpilih === "string" && namaTerpilih.trim().length > 0
+        const { nama, nama_lengkap: namaLengkap } = entri as Record<
+          string,
+          unknown
+        >;
+        const namaTerpilih =
+          typeof namaLengkap === "string" ? namaLengkap : nama;
+        return typeof namaTerpilih === "string" &&
+          namaTerpilih.trim().length > 0
           ? { nama: namaTerpilih }
           : null;
       })
@@ -151,7 +162,10 @@ async function muatAcuanBiaya(): Promise<AcuanBiaya | null> {
     const { tanggalAcuan, komponen } = mentah as Record<string, unknown>;
     if (typeof tanggalAcuan !== "string") return null;
 
-    return { tanggalAcuan, komponen: Array.isArray(komponen) ? komponen : [] } as AcuanBiaya;
+    return {
+      tanggalAcuan,
+      komponen: Array.isArray(komponen) ? komponen : [],
+    } as AcuanBiaya;
   } catch {
     return null;
   }
@@ -161,7 +175,8 @@ export default function HalamanPeriksa() {
   const router = useRouter();
   const [termuat, setTermuat] = useState(false);
   const [sumber, setSumber] = useState<SumberTawaran>("manual");
-  const [nilaiSlot, setNilaiSlot] = useState<Record<SlotId, string>>(nilaiKosong);
+  const [nilaiSlot, setNilaiSlot] =
+    useState<Record<SlotId, string>>(nilaiKosong);
   const [tidakTahu, setTidakTahu] = useState<Set<SlotId>>(new Set());
   const [galatAwal, setGalatAwal] = useState<KodeGalat | null>(null);
   const [galatPeriksa, setGalatPeriksa] = useState<KodeGalat | null>(null);
@@ -175,7 +190,9 @@ export default function HalamanPeriksa() {
   // dibuka — keduanya murni untuk metrik anonim (CLAUDE.md §3.5): "apakah
   // dikoreksi?" dan "berapa detik sampai lembar terbit?". Tidak pernah
   // dipakai untuk penilaian maupun ditampilkan ke pengguna.
-  const [bacaanAsli, setBacaanAsli] = useState<Readonly<Record<string, string>> | null>(null);
+  const [bacaanAsli, setBacaanAsli] = useState<Readonly<
+    Record<string, string>
+  > | null>(null);
   const [waktuBukaMs] = useState<number>(() => Date.now());
 
   // Muat preferensi bahasa pengguna bila tersimpan
@@ -196,7 +213,9 @@ export default function HalamanPeriksa() {
     const draf = ambilIsian();
     if (draf) {
       setSumber(draf.sumber);
-      setNilaiSlot(rekamanKeNilaiSlot(draf.nilai, SLOT_IDS) as Record<SlotId, string>);
+      setNilaiSlot(
+        rekamanKeNilaiSlot(draf.nilai, SLOT_IDS) as Record<SlotId, string>,
+      );
       setTidakTahu(tidakTahuDariRekaman(draf.ditandaiTidakTahu));
       setGalatAwal(kodeGalatValid(draf.kodeGalatAwal));
       setBacaanAsli(draf.nilaiAsli ?? null);
@@ -217,7 +236,8 @@ export default function HalamanPeriksa() {
 
   function ubahNilai(id: SlotId, teks: string) {
     if (galatPeriksa) setGalatPeriksa(null);
-    if (slotBelumLengkap === id && teks.trim().length > 0) setSlotBelumLengkap(null);
+    if (slotBelumLengkap === id && teks.trim().length > 0)
+      setSlotBelumLengkap(null);
     setNilaiSlot((sebelumnya) => ({ ...sebelumnya, [id]: teks }));
   }
 
@@ -245,7 +265,8 @@ export default function HalamanPeriksa() {
     // dan belum ada satu pun yang ditandai tidak tahu, tampilkan galat F.9
     // daripada menerbitkan lembar hampa.
     const adaMasukan =
-      SLOT_IDS.some((id) => nilaiSlot[id].trim().length > 0) || tidakTahu.size > 0;
+      SLOT_IDS.some((id) => nilaiSlot[id].trim().length > 0) ||
+      tidakTahu.size > 0;
     if (!adaMasukan) {
       setSlotBelumLengkap(null);
       setGalatPeriksa(KodeGalat.E_TIDAK_ADA_MASUKAN);
@@ -301,9 +322,14 @@ export default function HalamanPeriksa() {
       ]);
 
       const statusLapis1 = cocokkanNamaP3MI(nilaiFinal[1], salinanP3MI);
-      const statusLapis2 = hitungCatatanBiaya(nilaiFinal[5], nilaiFinal[9], acuanBiaya);
+      const statusLapis2 = hitungCatatanBiaya(
+        nilaiFinal[5],
+        nilaiFinal[9],
+        acuanBiaya,
+      );
 
-      const catatanLapis1 = statusLapis1.status === "dimatikan" ? LAPIS1_DIMATIKAN : null;
+      const catatanLapis1 =
+        statusLapis1.status === "dimatikan" ? LAPIS1_DIMATIKAN : null;
       const catatanLapis2 =
         statusLapis2.status === "dimatikan"
           ? LAPIS2_DIMATIKAN
@@ -315,9 +341,12 @@ export default function HalamanPeriksa() {
         penilaian,
         nilaiAsli: nilaiFinal,
         tanggal: isiTemplat(PENANDA_WAKTU_TEMPLAT, { tanggal, jam }),
-        hasilLapis1: statusLapis1.status === "aktif" ? statusLapis1.hasil : undefined,
+        hasilLapis1:
+          statusLapis1.status === "aktif" ? statusLapis1.hasil : undefined,
         catatanHitungan:
-          statusLapis2.status === "tersedia" ? statusLapis2.catatanHitungan : undefined,
+          statusLapis2.status === "tersedia"
+            ? statusLapis2.catatanHitungan
+            : undefined,
       });
 
       // S08: render gambar sungguhan sisi server (src/app/api/kartu). Bila
@@ -354,7 +383,12 @@ export default function HalamanPeriksa() {
 
       // S13: hasil dipindah ke layar terpisah (`/hasil`) — data URL aman
       // dari lifecycle blob/unmount dan tetap valid lintas navigasi.
-      simpanHasilSementara({ isiLembar, urlGambarLembar, catatanLapis1, catatanLapis2 });
+      simpanHasilSementara({
+        isiLembar,
+        urlGambarLembar,
+        catatanLapis1,
+        catatanLapis2,
+      });
 
       // S10: pencatatan metrik anonim, fire-and-forget, persis di titik
       // lembar selesai dirakit (lihat komentar desain di src/lib/catat.ts).
@@ -394,7 +428,8 @@ export default function HalamanPeriksa() {
           backgroundImage:
             "linear-gradient(#d9e4fb 1px, transparent 1px), linear-gradient(90deg, #d9e4fb 1px, transparent 1px)",
           backgroundSize: "44px 44px",
-          maskImage: "radial-gradient(120% 80% at 20% 10%, #000 40%, transparent 80%)",
+          maskImage:
+            "radial-gradient(120% 80% at 20% 10%, #000 40%, transparent 80%)",
         }}
       />
       <div
@@ -404,16 +439,16 @@ export default function HalamanPeriksa() {
 
       <SitusNavbar bahasa={bahasa} onPilihBahasa={pilihBahasa} />
 
-      <main className="relative z-10 mx-auto flex w-full max-w-4xl flex-1 flex-col gap-5 px-4 py-6 sm:px-6 sm:py-10 lg:px-14">
+      <main className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col gap-5 px-4 py-6 sm:px-6 sm:py-10 lg:px-14">
         {/* Kartu utama — satu permukaan yang menampung judul, kesepuluh
             keterangan, dan tombol terbitkan, supaya alurnya terasa seperti
             satu formulir yang mengalir, bukan daftar lepas di halaman. */}
         <div className="rounded-3xl border border-[#dbe4fb] bg-white p-5 shadow-[0_24px_60px_-30px_rgba(9,85,212,0.45)] sm:p-8">
           <div>
-            <h1 className="text-[28px] font-extrabold leading-tight tracking-tight text-[#0b1220] sm:text-[34px]">
+            <h1 className="text-[18px] md:text-[24px] font-extrabold leading-tight tracking-tight text-[#0b1220]">
               {bahasa === "jv" ? JUDUL_LAYAR_KOREKSI_JAWA : JUDUL_LAYAR_KOREKSI}
             </h1>
-            <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-[#52586b] sm:text-lg">
+            <p className="mt-2 max-w-2xl text-[12px] md:text-[14px] leading-relaxed text-[#52586b]">
               {bahasa === "jv" ? KETERANGAN_KOREKSI_JAWA : KETERANGAN_KOREKSI}
             </p>
           </div>
@@ -439,7 +474,7 @@ export default function HalamanPeriksa() {
             </div>
           ) : null}
 
-          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
             {SLOT_IDS.map((id) => (
               <BarisKeterangan
                 key={id}
@@ -449,7 +484,9 @@ export default function HalamanPeriksa() {
                 nilai={nilaiSlot[id]}
                 placeholder={contohIsianAktif[id]}
                 tidakTahu={tidakTahu.has(id)}
-                labelTidakTahu={bahasa === "jv" ? LABEL_TIDAK_TAHU_JAWA : LABEL_TIDAK_TAHU}
+                labelTidakTahu={
+                  bahasa === "jv" ? LABEL_TIDAK_TAHU_JAWA : LABEL_TIDAK_TAHU
+                }
                 onUbahNilai={(teks) => ubahNilai(id, teks)}
                 onUbahTidakTahu={(ditandai) => ubahTidakTahu(id, ditandai)}
                 disorot={slotBelumLengkap === id}
@@ -461,7 +498,7 @@ export default function HalamanPeriksa() {
             type="button"
             onClick={tanganiTerbitkanLembar}
             disabled={sedangMenerbitkan}
-            className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#0955d4] px-6 py-4 text-[16px] font-bold text-white shadow-[0_14px_30px_-12px_rgba(9,85,212,0.8)] transition-transform hover:-translate-y-0.5 hover:bg-[#0a4bbb] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+            className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#0955d4] px-6 py-4 text-[14px] font-bold text-white shadow-[0_14px_30px_-12px_rgba(9,85,212,0.8)] transition-transform hover:-translate-y-0.5 hover:bg-[#0a4bbb] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
           >
             {sedangMenerbitkan
               ? bahasa === "jv"

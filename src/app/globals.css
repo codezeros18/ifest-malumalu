@@ -2,8 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@500&display=swap");
-
 :root {
   --brand-blue: #0955d4;
   --brand-blue-soft: #d2dbff;
@@ -33,7 +31,6 @@ body {
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-family: var(--font-poppins), "Plus Jakarta Sans", sans-serif;
 }
 
 *:focus-visible {

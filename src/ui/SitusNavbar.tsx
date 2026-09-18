@@ -160,7 +160,16 @@ export default function SitusNavbar({ bahasa, onPilihBahasa }: SitusNavbarProps)
           aria-controls="menu-navbar-mobile-sub"
           className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#dbe4fb] bg-white/70 text-[#3f4657] backdrop-blur md:hidden"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             {menuTerbuka ? (
               <>
                 <path d="M18 6 6 18" />

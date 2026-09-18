@@ -84,7 +84,7 @@ function BagianTentang({
           <h2 className="mt-5 text-[34px] font-extrabold leading-[1.1] tracking-tight text-[#0b1220]">
             {t.tentang.judul}
           </h2>
-          <p className="mt-4 max-w-[640px] text-[16px] leading-relaxed text-[#52586b]">
+          <p className="mt-4 text-[16px] leading-relaxed text-[#52586b]">
             {t.tentang.paragraf}
           </p>
         </header>
@@ -291,7 +291,10 @@ export default function App() {
   // Dibuka dari SitusNavbar di /periksa atau /hasil ("Tentang Kami" hanya
   // ada di halaman ini) — bukan pengganti nav Beranda/Tentang yang sudah ada.
   useEffect(() => {
-    if (typeof window !== "undefined" && window.location.search.includes("tentang=1")) {
+    if (
+      typeof window !== "undefined" &&
+      window.location.search.includes("tentang=1")
+    ) {
       setActive("tentang");
     }
   }, []);
@@ -612,7 +615,16 @@ export default function App() {
           aria-controls="menu-navbar-mobile"
           className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#dbe4fb] bg-white/70 text-[#3f4657] backdrop-blur md:hidden"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             {menuTerbuka ? (
               <>
                 <path d="M18 6 6 18" />
@@ -692,7 +704,16 @@ export default function App() {
             }}
             className="flex items-center gap-2 rounded-xl px-4 py-3 text-left text-[15px] font-semibold text-[#3f4657] hover:bg-[#f2f6ff] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M12 2v10" />
               <path d="M18.4 6.6a9 9 0 1 1-12.77.04" />
             </svg>
@@ -771,222 +792,221 @@ export default function App() {
             </span>
           </h1>
 
-          <p className="mt-4 max-w-[480px] text-[15px] leading-relaxed text-[#52586b]">
-            {t.heroSubjudul}
-          </p>
+            <p className="mt-4 max-w-[480px] text-[15px] leading-relaxed text-[#52586b]">
+              {t.heroSubjudul}
+            </p>
 
-          {pesanGalatAktif ? (
-            <div
-              role="alert"
-              className="mt-4 rounded-xl border border-[#f7d7a1] bg-[#fff4d6] px-4 py-3 text-[13px] text-[#a97400]"
-            >
-              <p className="font-semibold">{pesanGalatAktif.pesan}</p>
-              <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
-                {pesanGalatAktif.tindakan && aksiGalatUtama ? (
-                  <button
-                    type="button"
-                    onClick={aksiGalatUtama}
-                    className="font-semibold underline underline-offset-2"
-                  >
-                    {pesanGalatAktif.tindakan}
-                  </button>
-                ) : null}
-                {pesanGalatAktif.tindakanSekunder && aksiGalatSekunder ? (
-                  <button
-                    type="button"
-                    onClick={aksiGalatSekunder}
-                    className="font-semibold underline underline-offset-2"
-                  >
-                    {pesanGalatAktif.tindakanSekunder}
-                  </button>
-                ) : null}
-              </div>
-            </div>
-          ) : null}
-
-          {/* Action module — satu alur kerja, satu titik masuk gambar */}
-          <div className="mt-7 rounded-2xl border border-[#dbe4fb] bg-white p-2 shadow-[0_24px_60px_-30px_rgba(9,85,212,0.45)]">
-            <div className="p-3">
+            {pesanGalatAktif ? (
               <div
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  setDragOver(true);
-                }}
-                onDragLeave={() => setDragOver(false)}
-                onDrop={tanganiDrop}
-                onPaste={tanganiPaste}
-                tabIndex={0}
+                role="alert"
+                className="mt-4 rounded-xl border border-[#f7d7a1] bg-[#fff4d6] px-4 py-3 text-[13px] text-[#a97400]"
               >
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={sedangMemroses}
-                  aria-busy={sedangMemroses}
-                  className={`flex w-full items-center gap-4 rounded-xl border-2 border-dashed px-4 py-5 text-left transition-colors disabled:cursor-not-allowed ${
-                    sedangMemroses
-                      ? "border-[#c3d4f7] bg-[#f7faff] opacity-90"
-                      : dragOver
-                        ? "border-[#0955d4] bg-[#eef4ff]"
-                        : "border-[#c3d4f7] bg-[#f7faff] hover:border-[#0955d4] hover:bg-[#eef4ff]"
-                  }`}
+                <p className="font-semibold">{pesanGalatAktif.pesan}</p>
+                <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
+                  {pesanGalatAktif.tindakan && aksiGalatUtama ? (
+                    <button
+                      type="button"
+                      onClick={aksiGalatUtama}
+                      className="font-semibold underline underline-offset-2"
+                    >
+                      {pesanGalatAktif.tindakan}
+                    </button>
+                  ) : null}
+                  {pesanGalatAktif.tindakanSekunder && aksiGalatSekunder ? (
+                    <button
+                      type="button"
+                      onClick={aksiGalatSekunder}
+                      className="font-semibold underline underline-offset-2"
+                    >
+                      {pesanGalatAktif.tindakanSekunder}
+                    </button>
+                  ) : null}
+                </div>
+              </div>
+            ) : null}
+
+            {/* Action module — satu alur kerja, satu titik masuk gambar */}
+            <div className="mt-7 rounded-2xl border border-[#dbe4fb] bg-white p-2 shadow-[0_24px_60px_-30px_rgba(9,85,212,0.45)]">
+              <div className="p-3">
+                <div
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setDragOver(true);
+                  }}
+                  onDragLeave={() => setDragOver(false)}
+                  onDrop={tanganiDrop}
+                  onPaste={tanganiPaste}
+                  tabIndex={0}
                 >
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#0955d4]/10 text-[#0955d4]">
-                    {sedangMemroses ? (
-                      <svg
-                        className="animate-spin"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                      >
-                        <circle
-                          cx="12"
-                          cy="12"
-                          r="9"
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={sedangMemroses}
+                    aria-busy={sedangMemroses}
+                    className={`flex w-full items-center gap-4 rounded-xl border-2 border-dashed px-4 py-5 text-left transition-colors disabled:cursor-not-allowed ${
+                      sedangMemroses
+                        ? "border-[#c3d4f7] bg-[#f7faff] opacity-90"
+                        : dragOver
+                          ? "border-[#0955d4] bg-[#eef4ff]"
+                          : "border-[#c3d4f7] bg-[#f7faff] hover:border-[#0955d4] hover:bg-[#eef4ff]"
+                    }`}
+                  >
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#0955d4]/10 text-[#0955d4]">
+                      {sedangMemroses ? (
+                        <svg
+                          className="animate-spin"
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                        >
+                          <circle
+                            cx="12"
+                            cy="12"
+                            r="9"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            strokeOpacity="0.25"
+                          />
+                          <path
+                            d="M21 12a9 9 0 0 0-9-9"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                      ) : (
+                        <svg
+                          width="22"
+                          height="22"
+                          viewBox="0 0 24 24"
+                          fill="none"
                           stroke="currentColor"
-                          strokeWidth="2.5"
-                          strokeOpacity="0.25"
-                        />
-                        <path
-                          d="M21 12a9 9 0 0 0-9-9"
-                          stroke="currentColor"
-                          strokeWidth="2.5"
+                          strokeWidth="2"
                           strokeLinecap="round"
-                        />
-                      </svg>
-                    ) : (
+                          strokeLinejoin="round"
+                        >
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                          <path d="M12 3v13" />
+                          <path d="m7 8 5-5 5 5" />
+                        </svg>
+                      )}
+                    </span>
+                    <span>
+                      <span className="block text-[14px] font-semibold text-[#0b1220]">
+                        {sedangMemroses
+                          ? statusSedangMembaca
+                          : (berkasTerpilih?.name ?? t.seretBerkas)}
+                      </span>
+                      <span className="block text-[12px] text-[#8890a0]">
+                        {sedangMemroses
+                          ? keteranganSedangMembaca
+                          : t.keteranganFormat}
+                      </span>
+                    </span>
+                  </button>
+                </div>
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={tanganiInputBerkas}
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={tanganiMulaiPeriksa}
+                    disabled={sedangMemroses || !berkasTerpilih}
+                    className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-[#0955d4] px-6 py-4 text-[16px] font-bold text-white shadow-[0_14px_30px_-12px_rgba(9,85,212,0.8)] transition-transform hover:-translate-y-0.5 hover:bg-[#0a4bbb] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 text-sm"
+                  >
+                    {sedangMemroses ? statusSedangMembaca : t.tombolMulai}
+                    {!sedangMemroses ? (
                       <svg
-                        width="22"
-                        height="22"
+                        width="14"
+                        height="14"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
-                        strokeWidth="2"
+                        strokeWidth="2.5"
                         strokeLinecap="round"
                         strokeLinejoin="round"
                       >
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                        <path d="M12 3v13" />
-                        <path d="m7 8 5-5 5 5" />
+                        <path d="M5 12h14" />
+                        <path d="m12 5 7 7-7 7" />
                       </svg>
-                    )}
-                  </span>
-                  <span>
-                    <span className="block text-[14px] font-semibold text-[#0b1220]">
-                      {sedangMemroses
-                        ? statusSedangMembaca
-                        : (berkasTerpilih?.name ?? t.seretBerkas)}
-                    </span>
-                    <span className="block text-[12px] text-[#8890a0]">
-                      {sedangMemroses
-                        ? keteranganSedangMembaca
-                        : t.keteranganFormat}
-                    </span>
-                  </span>
-                </button>
-              </div>
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                className="hidden"
-                onChange={tanganiInputBerkas}
-              />
-              <div className="flex gap-2">
-                <button
-                  onClick={tanganiMulaiPeriksa}
-                  disabled={sedangMemroses || !berkasTerpilih}
-                  className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-[#0955d4] px-6 py-4 text-[16px] font-bold text-white shadow-[0_14px_30px_-12px_rgba(9,85,212,0.8)] transition-transform hover:-translate-y-0.5 hover:bg-[#0a4bbb] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 text-sm"
-                >
-                  {sedangMemroses
-                    ? statusSedangMembaca
-                    : t.tombolMulai}
-                  {!sedangMemroses ? (
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M5 12h14" />
-                      <path d="m12 5 7 7-7 7" />
-                    </svg>
-                  ) : null}
-                </button>
-                <button
-                  onClick={tanganiJalurManual}
-                  className="mt-3 flex w-2/4 items-center justify-center gap-2 rounded-xl bg-[#ffc508] px-6 py-4 text-[16px] font-bold text-white shadow-[0_14px_30px_-12px_#FFD346] transition-transform hover:-translate-y-0.5 hover:bg-[#ffc400] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 text-sm"
-                >
-                  {sedangMemroses
-                    ? statusSedangMembaca
-                    : bahasa === "jv"
-                      ? TOMBOL_JALUR_MANUAL_JAWA
-                      : TOMBOL_JALUR_MANUAL}
-                </button>
+                    ) : null}
+                  </button>
+                  <button
+                    onClick={tanganiJalurManual}
+                    className="mt-3 flex w-2/4 items-center justify-center gap-2 rounded-xl bg-[#ffc508] px-6 py-4 text-[16px] font-bold text-white shadow-[0_14px_30px_-12px_#FFD346] transition-transform hover:-translate-y-0.5 hover:bg-[#ffc400] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 text-sm"
+                  >
+                    {sedangMemroses
+                      ? statusSedangMembaca
+                      : bahasa === "jv"
+                        ? TOMBOL_JALUR_MANUAL_JAWA
+                        : TOMBOL_JALUR_MANUAL}
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="mt-3 flex flex-col gap-1 text-center lg:text-left">
-            <p className="text-[12px] text-[#8890a0]">{keteranganKesetaraan}</p>
-            <p className="text-[12px] text-[#8890a0]">{catatanPrivasi}</p>
-          </div>
-        </section>
-
-        {/* RIGHT — panel ilustrasi statis (bukan hasil sungguhan) */}
-        <section className="relative hidden h-full items-center justify-center lg:flex">
-          <div className="absolute right-6 top-14 h-[420px] w-[300px] rotate-6 rounded-2xl border border-[#dbe4fb] bg-white/60" />
-          <div className="relative w-[360px] -rotate-2 rounded-2xl border border-[#dbe4fb] bg-white p-6 shadow-[0_40px_80px_-40px_rgba(11,18,32,0.4)]">
-            <div className="flex items-center justify-between border-b border-[#eef1f6] pb-4">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-[#8890a0]">
-                  {t.panel.judul}
-                </p>
-                <p className="text-[16px] font-bold text-[#0b1220]">
-                  {t.panel.loker}
-                </p>
-              </div>
-              <span className="rounded-full bg-[#e7f0ff] px-3 py-1 text-[12px] font-bold text-[#0955d4]">
-                3 / 5
-              </span>
+            <div className="mt-3 flex flex-col gap-1 text-center lg:text-left">
+              <p className="text-[12px] text-[#8890a0]">{keteranganKesetaraan}</p>
+              <p className="text-[12px] text-[#8890a0]">{catatanPrivasi}</p>
             </div>
+          </section>
 
-            <ul className="mt-4 space-y-3">
-              {t.panel.baris.map((item, i) => {
-                const s = statusStyles[statusPanel[i] ?? "ask"] ?? statusStyles.ask!;
-                return (
-                  <li key={item.label} className="flex items-start gap-3">
-                    <span
-                      className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[13px] font-bold ${s.ring}`}
-                    >
-                      {s.icon}
-                    </span>
-                    <span className="flex-1">
-                      <span className="block text-[14px] font-semibold text-[#0b1220]">
-                        {item.label}
+          {/* RIGHT — panel ilustrasi statis (bukan hasil sungguhan) */}
+          <section className="relative hidden h-full items-center justify-center lg:flex">
+            <div className="absolute right-6 top-14 h-[420px] w-[300px] rotate-6 rounded-2xl border border-[#dbe4fb] bg-white/60" />
+            <div className="relative w-[360px] -rotate-2 rounded-2xl border border-[#dbe4fb] bg-white p-6 shadow-[0_40px_80px_-40px_rgba(11,18,32,0.4)]">
+              <div className="flex items-center justify-between border-b border-[#eef1f6] pb-4">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-[#8890a0]">
+                    {t.panel.judul}
+                  </p>
+                  <p className="text-[16px] font-bold text-[#0b1220]">
+                    {t.panel.loker}
+                  </p>
+                </div>
+                <span className="rounded-full bg-[#e7f0ff] px-3 py-1 text-[12px] font-bold text-[#0955d4]">
+                  3 / 5
+                </span>
+              </div>
+
+              <ul className="mt-4 space-y-3">
+                {t.panel.baris.map((item, i) => {
+                  const s =
+                    statusStyles[statusPanel[i] ?? "ask"] ?? statusStyles.ask!;
+                  return (
+                    <li key={item.label} className="flex items-start gap-3">
+                      <span
+                        className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[13px] font-bold ${s.ring}`}
+                      >
+                        {s.icon}
                       </span>
-                      <span className="block text-[12px] text-[#8890a0]">
-                        {item.note}
+                      <span className="flex-1">
+                        <span className="block text-[14px] font-semibold text-[#0b1220]">
+                          {item.label}
+                        </span>
+                        <span className="block text-[12px] text-[#8890a0]">
+                          {item.note}
+                        </span>
                       </span>
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
+                    </li>
+                  );
+                })}
+              </ul>
 
-            <div className="mt-5 rounded-xl bg-[#f2f6ff] p-3 text-[12px] leading-relaxed text-[#52586b]">
-              <span className="font-semibold text-[#0955d4]">
-                {t.panel.catatanSorot}
-              </span>{" "}
-              {t.panel.catatanSisa}
+              <div className="mt-5 rounded-xl bg-[#f2f6ff] p-3 text-[12px] leading-relaxed text-[#52586b]">
+                <span className="font-semibold text-[#0955d4]">
+                  {t.panel.catatanSorot}
+                </span>{" "}
+                {t.panel.catatanSisa}
+              </div>
             </div>
-          </div>
-        </section>
-      </main>
+          </section>
+        </main>
       )}
 
       <footer className="relative z-10 mx-auto flex w-full max-w-[1440px] flex-col items-center gap-1 px-4 py-5 text-center text-[12px] text-[#8890a0] sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:text-left lg:px-14">

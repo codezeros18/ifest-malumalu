@@ -98,7 +98,8 @@ npm run start
 | Variabel | Untuk apa | Bila dikosongkan |
 |---|---|---|
 | `MODEL_API_KEY` | Kunci API model penglihatan yang membaca gambar menjadi data terstruktur | Jalur pembacaan gambar dinonaktifkan. Aplikasi tetap berjalan penuh lewat jalur pengetikan manual, dan layar masukan menyatakan hal itu apa adanya |
-| `MODEL_NAMA` | Nama model yang dipakai | Memakai nilai bawaan yang tertulis di `src/vision/modelProvider.ts` |
+| `MODEL_NAMA` | Nama model yang dipakai | Memakai nilai bawaan yang tertulis di `src/vision/modelProvider.ts` (`google/gemini-3.8-flash`) |
+| `MODEL_BASE_URL` | Alamat endpoint atau basis URL API model | Memakai endpoint bawaan OpenRouter (`https://openrouter.ai/api/v1/chat/completions`) |
 | `DATABASE_URL` | Sambungan Postgres untuk pencatatan metrik anonim | Pencatatan metrik dilewati diam-diam. Tidak ada pengaruh sama sekali terhadap alur inti maupun isi lembar |
 | `NEXT_PUBLIC_BASE_URL` | Alamat dasar aplikasi, dipakai saat merender lembar | Memakai `http://localhost:3000` |
 

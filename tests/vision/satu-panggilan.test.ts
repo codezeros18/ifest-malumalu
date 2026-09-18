@@ -14,6 +14,7 @@ import { GalatModelProvider, modelProvider } from "../../src/vision/modelProvide
 
 const KUNCI_LAMA = process.env["MODEL_API_KEY"];
 const NAMA_LAMA = process.env["MODEL_NAMA"];
+const BASE_URL_LAMA = process.env["MODEL_BASE_URL"];
 
 function tawaranGambar(tipe = "image/png"): Tawaran {
   return {
@@ -55,6 +56,11 @@ afterEach(() => {
     delete process.env["MODEL_NAMA"];
   } else {
     process.env["MODEL_NAMA"] = NAMA_LAMA;
+  }
+  if (BASE_URL_LAMA === undefined) {
+    delete process.env["MODEL_BASE_URL"];
+  } else {
+    process.env["MODEL_BASE_URL"] = BASE_URL_LAMA;
   }
 });
 
@@ -224,4 +230,66 @@ describe("modelProvider — delapan cara kegagalan, masing-masing berujung Galat
     const hasil = await modelProvider.baca(tawaranGambar());
     expect(hasil.nilai[1]).toBe("nilai 1");
   });
+
+  it("mendukung format respons OpenRouter / OpenAI (choices[0].message.content)", async () => {
+    const responsOpenRouter = new Response(
+      JSON.stringify({
+        choices: [
+          {
+            message: {
+              content: jsonPenuhValid(),
+            },
+          },
+        ],
+      }),
+      { status: 200, headers: { "content-type": "application/json" } },
+    );
+
+    vi.stubGlobal("fetch", vi.fn(async () => responsOpenRouter));
+
+    const hasil = await modelProvider.baca(tawaranGambar());
+    expect(hasil.nilai[1]).toBe("nilai 1");
+    expect(hasil.keyakinan[1]).toBe(0.9);
+  });
+
+  it("menormalkan MODEL_BASE_URL tanpa /chat/completions", async () => {
+    process.env["MODEL_BASE_URL"] = "https://openrouter.ai/api/v1";
+    const fetchTiruan = vi.fn(async () =>
+      responsModelBerhasil(jsonPenuhValid()),
+    );
+    vi.stubGlobal("fetch", fetchTiruan);
+
+    await modelProvider.baca(tawaranGambar());
+
+    expect(fetchTiruan).toHaveBeenCalledTimes(1);
+    const [panggilanUrl, panggilanInit] = fetchTiruan.mock.calls[0] as unknown as [
+      string,
+      RequestInit,
+    ];
+    expect(panggilanUrl).toBe("https://openrouter.ai/api/v1/chat/completions");
+    expect((panggilanInit.headers as Record<string, string>)["Authorization"]).toBe(
+      "Bearer kunci-uji-tidak-nyata",
+    );
+  });
+
+  it("tetap mempertahankan header Anthropic bila endpoint mengarah ke api.anthropic.com", async () => {
+    process.env["MODEL_BASE_URL"] = "https://api.anthropic.com/v1/messages";
+    const fetchTiruan = vi.fn(async () =>
+      responsModelBerhasil(jsonPenuhValid()),
+    );
+    vi.stubGlobal("fetch", fetchTiruan);
+
+    await modelProvider.baca(tawaranGambar());
+
+    expect(fetchTiruan).toHaveBeenCalledTimes(1);
+    const [panggilanUrl, panggilanInit] = fetchTiruan.mock.calls[0] as unknown as [
+      string,
+      RequestInit,
+    ];
+    expect(panggilanUrl).toBe("https://api.anthropic.com/v1/messages");
+    expect((panggilanInit.headers as Record<string, string>)["x-api-key"]).toBe(
+      "kunci-uji-tidak-nyata",
+    );
+  });
 });
+

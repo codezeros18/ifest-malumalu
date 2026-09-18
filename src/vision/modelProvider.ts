@@ -50,18 +50,13 @@ export class GalatModelProvider extends Error {
   }
 }
 
-const ENDPOINT_MODEL = "https://api.anthropic.com/v1/messages";
-const VERSI_API_MODEL = "2023-06-01";
+const ENDPOINT_OPENROUTER = "https://openrouter.ai/api/v1/chat/completions";
 
 /**
  * Nilai bawaan bila `MODEL_NAMA` kosong (lihat README.md § variabel
- * lingkungan). Dipilih model paling mampu per pedoman tim — tugas ekstraksi
- * ini sederhana (baca gambar jadi data), tetapi kesalahan baca menular ke
- * seluruh penilaian, jadi keakuratan lebih diutamakan daripada biaya.
- * Ganti lewat `MODEL_NAMA` tanpa mengubah kode bila tim memutuskan
- * sebaliknya setelah melihat hasil uji sepuluh poster (lihat PROGRESS.md).
+ * lingkungan). Model default diset ke google/gemini-3.8-flash via OpenRouter.
  */
-const MODEL_DEFAULT = "claude-opus-5";
+const MODEL_DEFAULT = "google/gemini-3.8-flash";
 
 /**
  * 20 detik. Fungsi Vercel punya batas eksekusi; nilai ini dipilih supaya
@@ -88,6 +83,22 @@ function ambilTeksDariResponsModel(json: unknown): string | null {
   if (typeof json !== "object" || json === null) {
     return null;
   }
+  // 1. Format OpenAI / OpenRouter: choices[0].message.content
+  const choices = (json as Record<string, unknown>)["choices"];
+  if (Array.isArray(choices) && choices.length > 0) {
+    const firstChoice = choices[0];
+    if (typeof firstChoice === "object" && firstChoice !== null) {
+      const message = (firstChoice as Record<string, unknown>)["message"];
+      if (typeof message === "object" && message !== null) {
+        const content = (message as Record<string, unknown>)["content"];
+        if (typeof content === "string" && content.length > 0) {
+          return content;
+        }
+      }
+    }
+  }
+
+  // 2. Format Anthropic: content[0].text
   const content = (json as Record<string, unknown>)["content"];
   if (!Array.isArray(content)) {
     return null;
@@ -115,6 +126,22 @@ function uraiJsonKeluaranModel(teksMentah: string): unknown {
   return JSON.parse(bersih);
 }
 
+function tentukanEndpoint(rawBaseUrl?: string): string {
+  const raw = rawBaseUrl?.trim();
+  if (!raw) {
+    return ENDPOINT_OPENROUTER;
+  }
+  const clean = raw.replace(/\/+$/, "");
+  if (
+    clean.includes("anthropic.com") ||
+    clean.endsWith("/chat/completions") ||
+    clean.endsWith("/messages")
+  ) {
+    return clean;
+  }
+  return `${clean}/chat/completions`;
+}
+
 export const modelProvider: Pembaca = {
   async baca(tawaran: Tawaran): Promise<HasilBaca> {
     const kunciApi = process.env["MODEL_API_KEY"];
@@ -140,20 +167,27 @@ export const modelProvider: Pembaca = {
 
     const base64 = await blobKeBase64(berkas);
     const namaModel = process.env["MODEL_NAMA"]?.trim() || MODEL_DEFAULT;
+    const endpoint = tentukanEndpoint(process.env["MODEL_BASE_URL"]);
+    const isAnthropic = endpoint.includes("api.anthropic.com");
 
     const pengontrol = new AbortController();
     const pewaktu = setTimeout(() => pengontrol.abort(), BATAS_WAKTU_MS);
 
-    let responsMentah: Response;
-    try {
-      responsMentah = await fetch(ENDPOINT_MODEL, {
-        method: "POST",
-        headers: {
+    const headers: Record<string, string> = isAnthropic
+      ? {
           "x-api-key": kunciApi,
-          "anthropic-version": VERSI_API_MODEL,
+          "anthropic-version": "2023-06-01",
           "content-type": "application/json",
-        },
-        body: JSON.stringify({
+        }
+      : {
+          Authorization: `Bearer ${kunciApi}`,
+          "Content-Type": "application/json",
+          "HTTP-Referer": "https://github.com/codezeros18/ifest-malumalu",
+          "X-Title": "Lembar Janji",
+        };
+
+    const body = isAnthropic
+      ? JSON.stringify({
           model: namaModel,
           max_tokens: 2048,
           messages: [
@@ -168,7 +202,32 @@ export const modelProvider: Pembaca = {
               ],
             },
           ],
-        }),
+        })
+      : JSON.stringify({
+          model: namaModel,
+          max_tokens: 2048,
+          temperature: 0.1,
+          response_format: { type: "json_object" },
+          messages: [
+            {
+              role: "user",
+              content: [
+                {
+                  type: "image_url",
+                  image_url: { url: `data:${tipeMime};base64,${base64}` },
+                },
+                { type: "text", text: PROMPT_EKSTRAKSI },
+              ],
+            },
+          ],
+        });
+
+    let responsMentah: Response;
+    try {
+      responsMentah = await fetch(endpoint, {
+        method: "POST",
+        headers,
+        body,
         signal: pengontrol.signal,
       });
     } catch (kesalahan) {

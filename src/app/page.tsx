@@ -16,8 +16,11 @@ import {
   SUBJUDUL_HALAMAN_UTAMA,
   TOMBOL_JALUR_GAMBAR,
   TOMBOL_JALUR_MANUAL,
-  TOMBOL_MATIKAN_PEMBACAAN_GAMBAR,
+  TOMBOL_MATIKAN_MODEL,
+  TOMBOL_NYALAKAN_MODEL,
   KETERANGAN_KESETARAAN,
+  KETERANGAN_MODEL_DIMATIKAN,
+  CATATAN_PRIVASI,
   PESAN_GALAT,
 } from "../core/teks";
 
@@ -61,7 +64,7 @@ async function bacaGambarSementara(
   // `pilihPembaca`), jadi satu-satunya cara menjamin model tidak tersentuh
   // adalah tidak mengirim permintaannya.
   if (modelDimatikan) {
-    const pembaca = pilihPembaca("gambar", { modelDimatikan: true });
+    const pembaca = pilihPembaca("gambar", { modelDimatikan: true, paksaManual: true });
     const hasilBaca = await pembaca.baca({ sumber: "gambar", berkas });
     return { jenis: "fallback-manual", hasilBaca };
   }
@@ -92,11 +95,18 @@ export default function HalamanUtama() {
   const router = useRouter();
   const [galat, setGalat] = useState<KodeGalat | null>(null);
   const [sedangMemroses, setSedangMemroses] = useState(false);
+  // S12-1 — tombol mematikan lapisan model. Bawaan MATI (model dipakai);
+  // dinyalakan secara sadar oleh penyaji saat demo di depan juri.
   const [modelDimatikan, setModelDimatikan] = useState(false);
 
   const tanganiJalurManual = useCallback(() => {
     router.push("/periksa");
   }, [router]);
+
+  const tanganiSaklarModel = useCallback(() => {
+    setModelDimatikan((sebelumnya) => !sebelumnya);
+    setGalat(null);
+  }, []);
 
   const tanganiBerkasDitolak = useCallback((alasan: AlasanBerkasDitolak) => {
     setGalat(alasanKeKodeGalat(alasan));
@@ -134,24 +144,19 @@ export default function HalamanUtama() {
   );
 
   const pesanGalatAktif = galat ? PESAN_GALAT[galat] : null;
-  const pesanModelDimatikan = PESAN_GALAT[KodeGalat.E_MODEL_TIDAK_TERSEDIA];
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-8 px-4 py-10">
-      <div className="flex flex-col gap-2 text-center">
-        <h1 className="text-[28px] font-bold text-tinta">{JUDUL_HALAMAN_UTAMA}</h1>
-        <p className="text-base text-tinta-lembut">{SUBJUDUL_HALAMAN_UTAMA}</p>
+    <main className="mx-auto flex min-h-[100dvh] max-w-3xl flex-col gap-8 px-5 py-10">
+      {/* Sprint UI-inklusif: pita aksen tipis di atas memberi identitas
+          visual tanpa menambah kata. */}
+      <div
+        aria-hidden="true"
+        className="fixed inset-x-0 top-0 h-1.5 bg-aksen"
+      />
+      <div className="flex flex-col gap-3 text-center">
+        <h1 className="text-[32px] font-bold leading-tight text-tinta">{JUDUL_HALAMAN_UTAMA}</h1>
+        <p className="text-lg leading-relaxed text-tinta-lembut">{SUBJUDUL_HALAMAN_UTAMA}</p>
       </div>
-
-      {/* S12-1: saat tombol peragaan aktif, layar menyatakannya apa adanya
-          lewat pesan F.9 yang sudah ada — bukan kalimat baru. */}
-      {modelDimatikan ? (
-        <PesanGalat
-          pesan={pesanModelDimatikan.pesan}
-          tindakan={pesanModelDimatikan.tindakan}
-          onTindakan={tanganiJalurManual}
-        />
-      ) : null}
 
       {pesanGalatAktif ? (
         <PesanGalat
@@ -160,6 +165,25 @@ export default function HalamanUtama() {
           onTindakan={pesanGalatAktif.tindakan ? tanganiJalurManual : undefined}
         />
       ) : null}
+
+      {/* S12-1 — saklar mematikan lapisan model untuk demo. Keadaannya
+          dinyatakan apa adanya lewat teks dari `src/core/teks.ts`, bukan
+          disembunyikan: saat menyala, layar menyebut lapisan model memang
+          dimatikan dan pembacaan gambar tidak dilakukan. */}
+      <div className="flex flex-col items-center gap-2">
+        <Tombol
+          varian={modelDimatikan ? "utama" : "sekunder"}
+          role="switch"
+          aria-checked={modelDimatikan}
+          onClick={tanganiSaklarModel}
+          disabled={sedangMemroses}
+        >
+          {modelDimatikan ? TOMBOL_NYALAKAN_MODEL : TOMBOL_MATIKAN_MODEL}
+        </Tombol>
+        {modelDimatikan ? (
+          <p className="text-center text-base text-redup">{KETERANGAN_MODEL_DIMATIKAN}</p>
+        ) : null}
+      </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <AreaUnggah
@@ -179,20 +203,12 @@ export default function HalamanUtama() {
         </Tombol>
       </div>
 
-      <p className="text-center text-base text-redup">{KETERANGAN_KESETARAAN}</p>
-
-      {/* S12-1: tombol peragaan. `aria-pressed` membawa keadaannya, labelnya
-          tetap (pola tombol-toggle WAI-ARIA), keadaan juga terlihat lewat
-          pesan di atas — tidak lewat warna saja (CLAUDE.md §3.6). */}
-      <div className="flex justify-center">
-        <Tombol
-          varian="sekunder"
-          aria-pressed={modelDimatikan}
-          onClick={() => setModelDimatikan((sebelumnya) => !sebelumnya)}
-          disabled={sedangMemroses}
-        >
-          {TOMBOL_MATIKAN_PEMBACAAN_GAMBAR}
-        </Tombol>
+      <div className="flex flex-col gap-2 text-center">
+        <p className="text-base text-redup">{KETERANGAN_KESETARAAN}</p>
+        {/* CATATAN_PRIVASI sudah ada di teks.ts tetapi belum pernah
+            ditampilkan — bagi pengguna awam yang dimintai foto dokumen,
+            kalimat ini penenang yang paling penting. */}
+        <p className="text-base text-redup">{CATATAN_PRIVASI}</p>
       </div>
     </main>
   );

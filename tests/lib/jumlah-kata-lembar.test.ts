@@ -6,8 +6,10 @@ import type { IsiLembar } from "../../src/core/tipe";
 import { SLOT_IDS } from "../../src/core/slot";
 import type { SlotId } from "../../src/core/slot";
 import { rakitIsiLembar } from "../../src/core/perakitan";
+import type { KamusLembar } from "../../src/core/teks";
 import { cocokkanNamaP3MI } from "../../src/core/pencocokan";
 import { hitungCatatanBiaya } from "../../src/core/biaya";
+import { KAMUS_LEMBAR_JAWA } from "../../src/core/teksJawa";
 import { elemenLembar } from "../../src/lib/renderLembar";
 
 /**
@@ -51,9 +53,9 @@ function hitungKata(teks: string): number {
   return teks.trim().split(/\s+/).filter(Boolean).length;
 }
 
-function kataTeksSistem(isi: IsiLembar): number {
+function kataTeksSistem(isi: IsiLembar, kamus?: KamusLembar): number {
   const potongan: string[] = [];
-  kumpulkanTeks(elemenLembar(isi), potongan);
+  kumpulkanTeks(elemenLembar(isi, kamus), potongan);
   const total = hitungKata(potongan.join(" "));
   const kutipanTawaran = isi.blok1.reduce((n, baris) => n + hitungKata(baris.nilai), 0);
   return total - kutipanTawaran;
@@ -65,7 +67,11 @@ const SALINAN = {
 };
 const ACUAN = { tanggalAcuan: "18 September 2026", komponen: [] };
 
-function isiUntukPola(pola: number, namaSlot1: string): IsiLembar {
+function isiUntukPola(
+  pola: number,
+  namaSlot1: string,
+  kamus?: KamusLembar,
+): IsiLembar {
   const nilai = {} as Record<SlotId, string | null>;
   const keadaan = {} as Record<SlotId, Keadaan>;
   for (const id of SLOT_IDS) {
@@ -92,6 +98,7 @@ function isiUntukPola(pola: number, namaSlot1: string): IsiLembar {
     tanggal: "Dicatat pada: 18 September 2026, 14.00",
     hasilLapis1: lapis1.status === "aktif" ? lapis1.hasil : undefined,
     catatanHitungan: lapis2.status === "tersedia" ? lapis2.catatanHitungan : undefined,
+    kamus,
   });
 }
 
@@ -114,4 +121,31 @@ describe("S12-6 jumlah kata di seluruh lembar yang dirender", () => {
       expect(terberat).toBeLessThanOrEqual(BATAS_KATA_TEKS_SISTEM);
     },
   );
+
+  /**
+   * Versi Basa Jawa memakai batas YANG SAMA (480). Pagar ini ada karena
+   * kalimat Jawa lebih panjang daripada Indonesia — tanpa pengukuran, lembar
+   * Jawa bisa menembus batas §4 tanpa ada yang tahu, sebab sapuan di atas
+   * hanya menjalankan kamus Indonesia. Diukur pada kasus terberatnya:
+   * "nama perusahaan tidak ditemukan" (kalimat Lapis 1 paling panjang, wajib
+   * memuat tiga bagian sekaligus).
+   */
+  it(`versi Basa Jawa, seluruh 1.024 kombinasi — teks sistem tetap ≤ ${BATAS_KATA_TEKS_SISTEM} kata`, () => {
+    let terberat = 0;
+    let polaTerberat = 0;
+    for (let pola = 0; pola < 1024; pola += 1) {
+      const jumlah = kataTeksSistem(
+        isiUntukPola(pola, "PT Maju Mundur", KAMUS_LEMBAR_JAWA),
+        KAMUS_LEMBAR_JAWA,
+      );
+      if (jumlah > terberat) {
+        terberat = jumlah;
+        polaTerberat = pola;
+      }
+    }
+    expect(
+      terberat,
+      `lembar Basa Jawa paling berat ${terberat} kata pada pola ${polaTerberat} (batas ${BATAS_KATA_TEKS_SISTEM})`,
+    ).toBeLessThanOrEqual(BATAS_KATA_TEKS_SISTEM);
+  });
 });

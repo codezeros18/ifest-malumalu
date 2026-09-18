@@ -8,18 +8,25 @@ import SitusFooter from "../../ui/SitusFooter";
 import { ambilHasilSementara } from "../../lib/hasilSementara";
 import type { HasilSementara } from "../../lib/hasilSementara";
 import { isiTemplat } from "../../core/perakitan";
+import { TOMBOL_UNDUH, TOMBOL_BAGIKAN } from "../../core/teks";
+import type { KamusLembar } from "../../core/teks";
 import {
-  TOMBOL_UNDUH,
-  TOMBOL_BAGIKAN,
-  LABEL_BLOK_2_TEMPLAT,
-  PENUTUP_LEMBAR,
-} from "../../core/teks";
-import { TOMBOL_UNDUH_JAWA, TOMBOL_BAGIKAN_JAWA } from "../../core/teksJawa";
+  kamusLembarUntuk,
+  TOMBOL_UNDUH_JAWA,
+  TOMBOL_BAGIKAN_JAWA,
+} from "../../core/teksJawa";
 
 const NAMA_BERKAS_LEMBAR = "lembar-janji.png";
 
-function teksAlternatifGambarLembar(hasil: HasilSementara): string {
-  return `${isiTemplat(LABEL_BLOK_2_TEMPLAT, { n: String(hasil.isiLembar.blok2.length) })}. ${PENUTUP_LEMBAR}`;
+/**
+ * Teks alternatif gambar lembar (dibaca pembaca layar). Memakai kamus yang
+ * sama dengan gambar dan pratinjaunya supaya tidak pernah berbeda bahasa.
+ */
+function teksAlternatifGambarLembar(
+  hasil: HasilSementara,
+  kamus: KamusLembar,
+): string {
+  return `${isiTemplat(kamus.labelBlok2Templat, { n: String(hasil.isiLembar.blok2.length) })}. ${kamus.penutup}`;
 }
 
 function urlKeBlob(url: string): Promise<Blob> {
@@ -65,6 +72,11 @@ export default function HalamanHasil() {
     setBahasa(baru);
     localStorage.setItem("lembar_janji_bahasa", baru);
   };
+
+  // Lembar yang SUDAH terbit dirakit dengan bahasa saat diterbitkan
+  // (`periksa/page.tsx`); kamus di sini hanya untuk teks sistem di layar ini
+  // — pratinjau dan teks alternatif gambar.
+  const kamusLembar = kamusLembarUntuk(bahasa);
 
   useEffect(() => {
     const tersimpan = ambilHasilSementara();
@@ -149,7 +161,7 @@ export default function HalamanHasil() {
               {/* eslint-disable-next-line @next/next/no-img-element -- blob/data URL sisi klien, bukan aset next/image */}
               <img
                 src={hasil.urlGambarLembar}
-                alt={teksAlternatifGambarLembar(hasil)}
+                alt={teksAlternatifGambarLembar(hasil, kamusLembar)}
                 className="w-full rounded-2xl border border-[#dbe4fb] shadow-lg"
               />
               <div className="flex flex-col gap-3 sm:flex-row">
@@ -170,7 +182,7 @@ export default function HalamanHasil() {
               </div>
             </div>
           ) : (
-            <LembarPratinjau isiLembar={hasil.isiLembar} />
+            <LembarPratinjau isiLembar={hasil.isiLembar} kamus={kamusLembar} />
           )}
         </div>
       </main>

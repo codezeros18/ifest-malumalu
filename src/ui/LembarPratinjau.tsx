@@ -3,17 +3,9 @@ import type { IsiLembar } from "../core/tipe";
 import { isiTemplat } from "../core/perakitan";
 import Lencana from "./Lencana";
 import {
-  LABEL_BLOK_1,
-  LABEL_BLOK_2_TEMPLAT,
-  LABEL_BLOK_3,
-  LABEL_SEBAGIAN,
-  LABEL_CATATAN_HITUNGAN,
-  KALIMAT_PEMBUKA_BLOK_1,
-  KALIMAT_PEMBUKA_BLOK_2,
-  KALIMAT_PEMBUKA_BLOK_3,
-  KALIMAT_BAWAH_BLOK_2,
-  PENUTUP_LEMBAR,
+  KAMUS_LEMBAR,
 } from "../core/teks";
+import type { KamusLembar } from "../core/teks";
 
 /**
  * 🟡 Pratinjau teks sementara — BUKAN lembar akhir. Render menjadi gambar
@@ -22,14 +14,23 @@ import {
  * Dipindahkan dari `src/app/periksa/page.tsx` ke sini (S13: layar hasil
  * terpisah) supaya bisa dipakai `src/app/hasil/page.tsx` tanpa duplikasi.
  */
-export default function LembarPratinjau({ isiLembar }: { isiLembar: IsiLembar }) {
+export default function LembarPratinjau({
+  isiLembar,
+  kamus = KAMUS_LEMBAR,
+}: {
+  isiLembar: IsiLembar;
+  /** Bahasa teks sistem pratinjau — dioper pemanggil, sama seperti render
+   * gambar (`elemenLembar`), supaya pratinjau dan gambar tidak pernah
+   * berbeda bahasa. */
+  kamus?: KamusLembar;
+}) {
   return (
     <section className="flex flex-col gap-6 rounded-2xl border border-garis bg-kertas p-5 shadow-sm">
       <div>
         <h2 className="rounded-lg bg-latar-blok px-3 py-2 text-lg font-bold text-tinta-lembut">
-          {LABEL_BLOK_1}
+          {kamus.labelBlok1}
         </h2>
-        <p className="mt-2 text-lg text-tinta-lembut">{KALIMAT_PEMBUKA_BLOK_1}</p>
+        <p className="mt-2 text-lg text-tinta-lembut">{kamus.kalimatPembukaBlok1}</p>
         <ul className="mt-2 flex flex-col gap-2">
           {isiLembar.blok1.map((baris) => (
             <li key={baris.slot} className="flex flex-col gap-1">
@@ -38,7 +39,7 @@ export default function LembarPratinjau({ isiLembar }: { isiLembar: IsiLembar })
                 <span className="flex items-center gap-2 text-right text-lg font-bold text-tinta">
                   {baris.nilai}
                   {baris.keadaan === Keadaan.DISEBUTKAN_SEBAGIAN ? (
-                    <Lencana bentuk="lingkaran-setengah" teks={LABEL_SEBAGIAN} />
+                    <Lencana bentuk="lingkaran-setengah" teks={kamus.labelSebagian} />
                   ) : null}
                 </span>
               </div>
@@ -58,9 +59,9 @@ export default function LembarPratinjau({ isiLembar }: { isiLembar: IsiLembar })
 
       <div>
         <h2 className="rounded-lg bg-tinta-lembut px-3 py-2 text-lg font-bold text-kertas">
-          {isiTemplat(LABEL_BLOK_2_TEMPLAT, { n: String(isiLembar.blok2.length) })}
+          {isiTemplat(kamus.labelBlok2Templat, { n: String(isiLembar.blok2.length) })}
         </h2>
-        <p className="mt-2 text-lg text-redup">{KALIMAT_PEMBUKA_BLOK_2}</p>
+        <p className="mt-2 text-lg text-redup">{kamus.kalimatPembukaBlok2}</p>
         <ul className="mt-2 flex flex-col gap-2">
           {isiLembar.blok2.map((baris) => (
             <li
@@ -79,7 +80,7 @@ export default function LembarPratinjau({ isiLembar }: { isiLembar: IsiLembar })
             </li>
           ))}
         </ul>
-        <p className="mt-2 text-lg italic text-redup">{KALIMAT_BAWAH_BLOK_2}</p>
+        <p className="mt-2 text-lg italic text-redup">{kamus.kalimatBawahBlok2}</p>
       </div>
 
       {/* 6. Catatan hitungan — BLUEPRINT H.9 butir 6: HANYA muncul bila
@@ -87,16 +88,16 @@ export default function LembarPratinjau({ isiLembar }: { isiLembar: IsiLembar })
           netral, tanpa warna merah maupun ikon peringatan. */}
       {isiLembar.catatanHitungan ? (
         <div className="rounded-xl border-2 border-dashed border-garis p-4">
-          <h3 className="text-lg font-bold text-tinta-lembut">{LABEL_CATATAN_HITUNGAN}</h3>
+          <h3 className="text-lg font-bold text-tinta-lembut">{kamus.labelCatatanHitungan}</h3>
           <p className="mt-2 text-lg text-tinta-lembut">{isiLembar.catatanHitungan}</p>
         </div>
       ) : null}
 
       <div>
         <h2 className="rounded-lg bg-latar-blok px-3 py-2 text-lg font-bold text-tinta-lembut">
-          {LABEL_BLOK_3}
+          {kamus.labelBlok3}
         </h2>
-        <p className="mt-2 text-lg text-tinta-lembut">{KALIMAT_PEMBUKA_BLOK_3}</p>
+        <p className="mt-2 text-lg text-tinta-lembut">{kamus.kalimatPembukaBlok3}</p>
         <ol className="mt-2 flex flex-col gap-2">
           {isiLembar.pertanyaan.map((pertanyaan, indeks) => (
             <li key={indeks} className="text-lg text-tinta">
@@ -107,7 +108,7 @@ export default function LembarPratinjau({ isiLembar }: { isiLembar: IsiLembar })
       </div>
 
       <p className="border-t border-garis pt-4 text-lg text-tinta-lembut">
-        {PENUTUP_LEMBAR}
+        {kamus.penutup}
       </p>
     </section>
   );

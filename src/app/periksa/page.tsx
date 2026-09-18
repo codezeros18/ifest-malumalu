@@ -34,12 +34,10 @@ import {
   PENANDA_WAKTU_TEMPLAT,
   PESAN_GALAT,
   CONTOH_ISIAN_PER_SLOT,
-  LAPIS1_DIMATIKAN,
-  LAPIS2_ANGKA_TIDAK_ADA,
-  LAPIS2_DIMATIKAN,
   SATUAN_KATA,
 } from "../../core/teks";
 import {
+  kamusLembarUntuk,
   JUDUL_LAYAR_KOREKSI_JAWA,
   KETERANGAN_KOREKSI_JAWA,
   LABEL_TIDAK_TAHU_JAWA,
@@ -315,6 +313,11 @@ export default function HalamanPeriksa() {
       const { tanggal, jam } = tanggalJamSekarang();
       const penilaian = nilaiPenilaian(hasilBacaFinal, keyakinan);
 
+      // Bahasa lembar mengikuti bahasa antarmuka SAAT MENERBITKAN: seluruh
+      // kalimat sistem dirakit dan dirender dari kamus ini, jadi tak ada satu
+      // bagian pun yang tertinggal berbahasa lain (bawaan: Indonesia).
+      const kamus = kamusLembarUntuk(bahasa);
+
       // S09: Lapis 1 dan 2 dijalankan di sini — SATU-SATUNYA titik di app yang
       // memuat data/*.json (lihat komentar muatSalinanP3MI/muatAcuanBiaya di
       // atas). Kegagalan memuat berkas apa pun TIDAK PERNAH menghentikan
@@ -324,26 +327,28 @@ export default function HalamanPeriksa() {
         muatAcuanBiaya(),
       ]);
 
-      const statusLapis1 = cocokkanNamaP3MI(nilaiFinal[1], salinanP3MI);
+      const statusLapis1 = cocokkanNamaP3MI(nilaiFinal[1], salinanP3MI, kamus);
       const statusLapis2 = hitungCatatanBiaya(
         nilaiFinal[5],
         nilaiFinal[9],
         acuanBiaya,
+        kamus,
       );
 
       const catatanLapis1 =
-        statusLapis1.status === "dimatikan" ? LAPIS1_DIMATIKAN : null;
+        statusLapis1.status === "dimatikan" ? kamus.lapis1Dimatikan : null;
       const catatanLapis2 =
         statusLapis2.status === "dimatikan"
-          ? LAPIS2_DIMATIKAN
+          ? kamus.lapis2Dimatikan
           : statusLapis2.status === "data-kurang"
-            ? LAPIS2_ANGKA_TIDAK_ADA
+            ? kamus.lapis2AngkaTidakAda
             : null;
 
       const isiLembar = rakitIsiLembar({
         penilaian,
         nilaiAsli: nilaiFinal,
         tanggal: isiTemplat(PENANDA_WAKTU_TEMPLAT, { tanggal, jam }),
+        kamus,
         hasilLapis1:
           statusLapis1.status === "aktif" ? statusLapis1.hasil : undefined,
         catatanHitungan:
@@ -361,7 +366,7 @@ export default function HalamanPeriksa() {
         const respons = await fetch("/api/kartu", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ isiLembar }),
+          body: JSON.stringify({ isiLembar, bahasa }),
         });
         if (!respons.ok) {
           throw new Error("kartu-gagal");

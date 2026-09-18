@@ -17,11 +17,8 @@
  */
 
 import type { HasilLapis1, KeluaranPencocokan } from "./tipe";
-import {
-  LAPIS1_DITEMUKAN_TEMPLAT,
-  LAPIS1_MIRIP_TEMPLAT,
-  LAPIS1_TIDAK_DITEMUKAN_TEMPLAT,
-} from "./teks";
+import { KAMUS_LEMBAR } from "./teks";
+import type { KamusLembar } from "./teks";
 import { isiTemplat } from "./perakitan";
 
 export interface EntriP3MI {
@@ -107,17 +104,18 @@ function cariPalingMirip(
 function rakitHasilLapis1(
   keluaran: KeluaranPencocokan,
   tanggalSalinan: string,
+  kamus: KamusLembar,
   namaMirip?: string,
 ): HasilLapis1 {
   const kalimat =
     keluaran === "ditemukan"
-      ? isiTemplat(LAPIS1_DITEMUKAN_TEMPLAT, { "tanggal salinan": tanggalSalinan })
+      ? isiTemplat(kamus.lapis1DitemukanTemplat, { "tanggal salinan": tanggalSalinan })
       : keluaran === "mirip"
-        ? isiTemplat(LAPIS1_MIRIP_TEMPLAT, {
+        ? isiTemplat(kamus.lapis1MiripTemplat, {
             nama: namaMirip ?? "",
             "tanggal salinan": tanggalSalinan,
           })
-        : isiTemplat(LAPIS1_TIDAK_DITEMUKAN_TEMPLAT, { "tanggal salinan": tanggalSalinan });
+        : isiTemplat(kamus.lapis1TidakDitemukanTemplat, { "tanggal salinan": tanggalSalinan });
 
   return { keluaran, kalimat, tanggalSalinan };
 }
@@ -131,6 +129,7 @@ function rakitHasilLapis1(
 export function cocokkanNamaP3MI(
   nama: string | null,
   salinan: SalinanP3MI | null,
+  kamus: KamusLembar = KAMUS_LEMBAR,
 ): StatusLapis1 {
   if (salinan === null) {
     return { status: "dimatikan" };
@@ -149,7 +148,7 @@ export function cocokkanNamaP3MI(
   if (cocokPersis) {
     return {
       status: "aktif",
-      hasil: rakitHasilLapis1("ditemukan", salinan.tanggalSalinan),
+      hasil: rakitHasilLapis1("ditemukan", salinan.tanggalSalinan, kamus),
     };
   }
 
@@ -157,12 +156,17 @@ export function cocokkanNamaP3MI(
   if (kandidat && namaDinormalisasi.length >= 3 && kandidat.jarak <= ambangToleransi(namaDinormalisasi.length)) {
     return {
       status: "aktif",
-      hasil: rakitHasilLapis1("mirip", salinan.tanggalSalinan, kandidat.entri.nama),
+      hasil: rakitHasilLapis1(
+        "mirip",
+        salinan.tanggalSalinan,
+        kamus,
+        kandidat.entri.nama,
+      ),
     };
   }
 
   return {
     status: "aktif",
-    hasil: rakitHasilLapis1("tidak-ditemukan", salinan.tanggalSalinan),
+    hasil: rakitHasilLapis1("tidak-ditemukan", salinan.tanggalSalinan, kamus),
   };
 }

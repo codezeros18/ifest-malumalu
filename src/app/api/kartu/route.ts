@@ -13,6 +13,7 @@
 import { NextResponse } from "next/server";
 import { ImageResponse } from "next/og";
 import type { IsiLembar } from "@/core/tipe";
+import { kamusLembarUntuk } from "@/core/teksJawa";
 import { elemenLembar, LEBAR_LEMBAR, tinggiLembar } from "@/lib/renderLembar";
 
 // Perlu API Node lengkap (dipakai next/og secara internal) — bukan edge.
@@ -44,8 +45,15 @@ export async function POST(request: Request): Promise<Response> {
     return NextResponse.json({ pesan: "Data lembar tidak lengkap." }, { status: 400 });
   }
 
-  return new ImageResponse(elemenLembar(isiLembar), {
+  // Bahasa gambar mengikuti bahasa antarmuka saat lembar diterbitkan; apa pun
+  // selain "jv" jatuh ke Indonesia (bawaan), jadi permintaan lama tanpa medan
+  // ini tidak berubah perilakunya.
+  const bahasa =
+    (body as { bahasa?: unknown } | null)?.bahasa === "jv" ? "jv" : "id";
+  const kamus = kamusLembarUntuk(bahasa);
+
+  return new ImageResponse(elemenLembar(isiLembar, kamus), {
     width: LEBAR_LEMBAR,
-    height: tinggiLembar(isiLembar),
+    height: tinggiLembar(isiLembar, kamus),
   });
 }

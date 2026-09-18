@@ -15,7 +15,8 @@ import { Keadaan } from "./tipe";
 import type { BarisBlok1, BarisBlok2, HasilLapis1, IsiLembar, Penilaian } from "./tipe";
 import { SLOT_IDS, slotDenganId } from "./slot";
 import type { SlotId } from "./slot";
-import { KALIMAT_KOSONG_PER_SLOT, PERTANYAAN } from "./teks";
+import { KAMUS_LEMBAR } from "./teks";
+import type { KamusLembar } from "./teks";
 
 export interface ParameterRakitan {
   readonly penilaian: Penilaian;
@@ -26,10 +27,24 @@ export interface ParameterRakitan {
   readonly hasilLapis1?: HasilLapis1;
   /** Belum dihitung di S04. Diteruskan apa adanya bila sudah tersedia (S09). */
   readonly catatanHitungan?: string;
+  /**
+   * Bahasa lembar. Bawaannya Indonesia (`KAMUS_LEMBAR`); versi Jawa ada di
+   * `teksJawa.ts` dan dipilih pemanggil lewat `kamusLembarUntuk()`. Seluruh
+   * kalimat sistem (nama keterangan, kalimat "belum menyebutkan", ketujuh
+   * pertanyaan) diambil dari sini — tidak ada yang ditulis ulang di berkas ini.
+   */
+  readonly kamus?: KamusLembar;
 }
 
 export function rakitIsiLembar(parameter: ParameterRakitan): IsiLembar {
-  const { penilaian, nilaiAsli, tanggal, hasilLapis1, catatanHitungan } = parameter;
+  const {
+    penilaian,
+    nilaiAsli,
+    tanggal,
+    hasilLapis1,
+    catatanHitungan,
+    kamus = KAMUS_LEMBAR,
+  } = parameter;
 
   const blok1: BarisBlok1[] = [];
   const blok2: BarisBlok2[] = [];
@@ -41,13 +56,13 @@ export function rakitIsiLembar(parameter: ParameterRakitan): IsiLembar {
     if (keadaan === Keadaan.BELUM_DIJAWAB) {
       blok2.push({
         slot: id,
-        kalimat: KALIMAT_KOSONG_PER_SLOT[id],
+        kalimat: kamus.kalimatKosongPerSlot[id],
         dasarHukum: slot.dasarHukum,
       });
     } else {
       blok1.push({
         slot: id,
-        label: slot.nama,
+        label: kamus.namaSlot[id],
         nilai: nilaiAsli[id] ?? "",
         keadaan,
       });
@@ -57,7 +72,7 @@ export function rakitIsiLembar(parameter: ParameterRakitan): IsiLembar {
   return {
     blok1,
     blok2,
-    pertanyaan: PERTANYAAN,
+    pertanyaan: kamus.pertanyaan,
     catatanHitungan,
     hasilLapis1,
     tanggal,

@@ -33,6 +33,30 @@ Ditulis konkret, bukan "karena keterbatasan waktu" saja.]
 
 ---
 
+## [PB-015] Lembar (gambar) dapat diterbitkan dalam Basa Jawa — kamus lembar + medan `bahasa` di `/api/kartu`
+
+**Jam ke-**         : ~14,5
+**Diputuskan oleh** : PM/pengguna ("bikinkan jadi kalo ganti bahasa /hasilnya juga keganti bahasanya"), dieksekusi Window 2
+
+**Kondisi di proposal penyisihan**
+BLUEPRINT F menetapkan seluruh kalimat lembar sebagai salinan harfiah SATU bahasa (`src/core/teks.ts`), dan `src/lib/renderLembar.tsx` mengambil labelnya langsung dari konstanta itu. Basa Jawa (ditambahkan PB-009) hanya hidup di lapisan antarmuka: pemilih bahasa, judul layar, label keterangan, pesan galat. Akibatnya orang yang memilih Jawa tetap menerima lembar berbahasa Indonesia — termasuk di `/hasil`, layar tempat lembar itu dilihat dan diteruskan.
+
+**Hal yang diubah**
+Lembar sekarang punya kamus, sejajar dengan antarmuka:
+
+1. **`KAMUS_LEMBAR` (`teks.ts` F.9) + `KAMUS_LEMBAR_JAWA` (`teksJawa.ts`) + `kamusLembarUntuk(bahasa)`.** Seluruh teks SISTEM lembar dikelompokkan jadi satu objek yang nilainya MENUNJUK konstanta BLUEPRINT F (tidak ditulis ulang), dengan tipe `KamusLembar` sehingga terjemahan yang lupa satu kunci gagal di `tsc`.
+2. **Kamus menjadi parameter opsional dengan bawaan Indonesia** di `rakitIsiLembar`, `cocokkanNamaP3MI`, `hitungCatatanBiaya`, `elemenLembar`, `tinggiLembar`, dan prop `kamus` di `LembarPratinjau`. Karena bawaannya Indonesia, seluruh pemanggil lama (dan 3 test yang mengunci kalimat Indonesia) tidak berubah perilakunya.
+3. **`/api/kartu` menerima `bahasa`** (`"jv"` → kamus Jawa, apa pun selain itu → Indonesia), dan `periksa/page.tsx` mengirim `bahasa` yang sedang aktif saat tombol terbitkan ditekan. Di `/hasil`, kamus yang sama dipakai untuk pratinjau teks dan `alt` gambar, sehingga tidak mungkin gambar dan teksnya berbeda bahasa.
+4. **Pagar baru:** sapuan anggaran kata (batas 480 §4) dijalankan ULANG untuk kamus Jawa di seluruh 1.024 kombinasi, plus pagar yang memastikan (a) kunci kamus Jawa lengkap, (b) tidak ada nilainya yang masih identik dengan Indonesia (kecuali nama produk "LEMBAR JANJI"), (c) placeholder templat tidak hilang, (d) kalimat "tidak ditemukan" tetap memuat tiga bagian wajib §3.1, dan (e) lembar yang dirender dalam Jawa **nol** memuat kalimat sistem Indonesia (dan sebaliknya).
+
+**Alasan perubahan**
+Permintaan eksplisit pengguna. Menyebut satu keterangan berbahasa Jawa di antarmuka lalu menerbitkan lembar berbahasa Indonesia berarti manfaat Basa Jawa berhenti tepat sebelum artefak yang paling penting — gambar yang dipegang dan diteruskan keluarga.
+
+**Dampak terhadap masalah inti**
+Alur inti tidak berubah dan bawaan tidak bergeser: permintaan `/api/kartu` tanpa `bahasa` menghasilkan gambar yang identik dengan sebelumnya (dibuktikan: `bahasa` absen = `bahasa:"id"`), dan seluruh pagar lama tetap hijau. Bukti lintas-lapis: permintaan id menghasilkan PNG **1080×1929** sementara jv **1080×1965** (tinggi berbeda karena teks Jawa lebih panjang — artinya kamus sampai ke perender tinggi, bukan hanya ke teks), dan alur Jawa di peramban sampai `/hasil` menghasilkan PNG **1080×4141** dengan `alt` berbahasa Jawa. Batas kata §4 tidak dinaikkan: teks sistem terberat diukur 436 kata (Indonesia) dan 437 kata (Jawa) pada kasus tanpa Lapis 1/2, dan kedua sapuan penuh tetap di bawah 480. Catatan produk yang tetap berlaku: lembar Jawa yang diteruskan kembali ke percakapan mungkin tidak terbaca oleh penerimanya di ujung sana — itu pilihan bahasa pengirim, bukan sesuatu yang bisa diputuskan produk.
+
+---
+
 ## [PB-014] Ukuran huruf lembar dikembalikan ke lantai 14pt, kepala lembar kembali berlatar tinta
 
 **Jam ke-**         : ~14

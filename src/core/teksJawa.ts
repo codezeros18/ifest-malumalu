@@ -14,7 +14,8 @@
 
 import type { SlotId } from "./slot";
 import { KodeGalat } from "./galat";
-import { TEKS_HALAMAN_UI } from "./teks";
+import { KAMUS_LEMBAR, TEKS_HALAMAN_UI } from "./teks";
+import type { KamusLembar } from "./teks";
 
 export const JUDUL_HALAMAN_UTAMA_JAWA = "Priksa tawaran nyambut damel ing luar negeri";
 export const SUBJUDUL_HALAMAN_UTAMA_JAWA =
@@ -220,3 +221,75 @@ export const PERTANYAAN_JAWA: readonly string[] = [
   '"Yatra ingkang dipunsuwun punika rincianipun kagem punapa kemawon? Sabarang ingkang kula mangertosi, saperangan wragad budhal dipuntanggung juragan — ingkang pundi kemawon?"',
   '"Pareng kula maos lan nyimpen salinan prajanjian penempatan kaliyan prajanjian damelipun saderengipun kula bayar?"',
 ];
+
+// ---------------------------------------------------------------------------
+// Kamus Lembar Basa Jawa
+//
+// Pasangan `KAMUS_LEMBAR` (teks.ts bagian F.9): seluruh teks SISTEM yang masuk
+// ke lembar, dipakai ketika pengguna memilih Jawa — dirakit oleh
+// `rakitIsiLembar`, dirender oleh `src/lib/renderLembar.tsx` (gambar) dan
+// `src/ui/LembarPratinjau.tsx` (teks). Dipilih lewat `kamusLembarUntuk()`.
+//
+// Tipe `KamusLembar` menutup daftar kuncinya: terjemahan yang lupa satu bagian
+// jadi galat `tsc`, bukan lembar campur bahasa di tangan pengguna.
+//
+// Dua pantangan yang berlaku sama seperti versi Indonesia:
+// - kosakata tiga keadaan tetap (CLAUDE.md 3.1): "sampun kaserat" ·
+//   "kaserat saperangan" · "dereng dipunwangsuli" — tanpa kata pandakwa;
+// - kalimat "tidak ditemukan" WAJIB tetap memuat tiga bagian sekaligus:
+//   tanggal salinan, pernyataan bahwa itu bukan berarti perusahaannya tidak
+//   berizin, dan langkah konkret untuk memastikan (CLAUDE.md 3.1).
+// ---------------------------------------------------------------------------
+
+export const KAMUS_LEMBAR_JAWA: KamusLembar = {
+  // Nama produk — tetap, bukan terjemahan.
+  judul: "LEMBAR JANJI",
+  subjudul: "Cathetan tumrap setunggal tawaran damel ing luar nagari",
+  labelBlok1: "SAMPUN KASERAT WONTEN TAWARAN",
+  labelBlok2Templat: "DERENG DIPUNWANGSULI WONTEN TAWARAN — {n} saking 10",
+  labelBlok3: "INGKANG SAGED DIPUN-TANGLETAKEN",
+  labelCatatanHitungan: "CATHETAN ETANGAN",
+  labelSebagian: "kaserat saperangan",
+  kalimatPembukaBlok1:
+    "Menika bab-bab ingkang sampun kaserat wonten tawaran punika.",
+  kalimatPembukaBlok2:
+    "Menika bab-bab ingkang miturut Undang-Undang Nomer 18 Taun 2017 kedah wonten ing prajanjian damel PMI, nanging dereng kaserat wonten tawaran punika.",
+  kalimatPembukaBlok3:
+    "Pitakenan ing ngandhap menika saged panjenengan aturaken dhateng sinten kemawon ingkang nawaraken padamelan punika. Sedayanipun nangletaken bab ingkang wajib wonten.",
+  kalimatBawahBlok2:
+    "Dereng kaserat sanes ateges mboten wonten. Saged kemawon bab-bab menika sampun dipun-cawisaken nanging dereng dipun-serat. Pitakenan ing ngandhap dipun-damel kagem nangletaken.",
+  penutup:
+    "Lembar punika nyathet isinipun setunggal tawaran. Lembar punika mboten nilai sinten kemawon lan mboten nyatakaken tawaran punika leres utawi lepat. Kagem mesthekaken, sowan dhateng Layanan Terpadu Satu Atap utawi kantor Badan Pelindungan Pekerja Migran Indonesia ing provinsi panjenengan.",
+  kalimatKosongPerSlot: {
+    1: "Tawaran punika dereng nyerataken nama perusahaan penempatan ingkang ngurus budhal panjenengan.",
+    2: "Tawaran punika dereng nyerataken nomer izin perekrutan kagem penempatan dhateng nagari punika.",
+    3: "Tawaran punika dereng nyerataken nama lan alamat tiyang ingkang badhe maringi padamelan.",
+    4: "Tawaran punika dereng nyerataken jabatan utawi jinising padamelanipun kanthi cetha.",
+    5: "Tawaran punika dereng nyerataken cara lan wekdalipun paring bayaran.",
+    6: "Tawaran punika dereng nyerataken jam damel lan dinten preinipun.",
+    7: "Tawaran punika dereng nyerataken pinten laminipun prajanjianipun.",
+    8: "Tawaran punika dereng nyerataken jaminan sosial utawi asuransi ingkang badhe dipun-caos.",
+    9: "Tawaran punika dereng nyerataken rincian wragad lan perangan punapa ingkang dipun-tanggung pemberi kerja.",
+    10: "Tawaran punika dereng nyerataken kapan panjenengan badhe nampi salinan prajanjian penempatan lan prajanjian damel.",
+  },
+  pertanyaan: PERTANYAAN_JAWA,
+  namaSlot: NAMA_SLOT_JAWA,
+  lapis1DitemukanTemplat:
+    "Nama punika kapanggih wonten salinan daftar perusahaan penempatan berizin per {tanggal salinan}.",
+  lapis1MiripTemplat:
+    'Nama ingkang panjenengan serat mirip kaliyan "{nama}" wonten salinan daftar per {tanggal salinan}. Priksa malih ejaanipun dhateng ingkang nawaraken.',
+  lapis1TidakDitemukanTemplat:
+    "Nama punika mboten kapanggih wonten salinan daftar perusahaan penempatan berizin per {tanggal salinan}. Daftaripun saged ewah lan nama saged kaserat beda, dados bab punika sanes ateges perusahaanipun mboten berizin. Cara mesthekaken: tangletaken nomer izinipun, lajeng priksa wonten kantor Layanan Terpadu Satu Atap ingkang paling caket.",
+  lapis1Dimatikan:
+    "Pamriksan dhateng daftar perusahaan berizin saweg mboten sumadya. Isinipun lembar punika tetep saged dipun-ginakaken. Kagem mriksa nama perusahaanipun, sowan dhateng kantor Layanan Terpadu Satu Atap utawi Badan Pelindungan Pekerja Migran Indonesia ing provinsi panjenengan.",
+  barisHitunganLapis2Templat:
+    "Wragad ingkang dipun-suwesti sami kaliyan ± {n} wulan bayaran ingkang dipun-janjekaken.",
+  lapis2AngkaTidakAda:
+    "Etangan punika betahaken agengipun bayaran lan agengipun wragad. Salah setunggalipun dereng kaserat wonten tawaran punika.",
+  lapis2Dimatikan: "Pandhingan komponen wragad saweg mboten sumadya.",
+};
+
+/** Pilih kamus lembar sesuai bahasa antarmuka. Bawaannya Indonesia. */
+export function kamusLembarUntuk(bahasa: "id" | "jv"): KamusLembar {
+  return bahasa === "jv" ? KAMUS_LEMBAR_JAWA : KAMUS_LEMBAR;
+}

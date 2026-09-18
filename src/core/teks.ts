@@ -15,6 +15,7 @@
  */
 
 import { KodeGalat } from "./galat";
+import { DAFTAR_SLOT } from "./slot";
 import type { SlotId } from "./slot";
 
 // ---------------------------------------------------------------------------
@@ -126,6 +127,55 @@ export const LAPIS2_ANGKA_TIDAK_ADA =
 
 export const LAPIS2_DIMATIKAN =
   "Pembandingan komponen biaya sedang tidak tersedia.";
+
+// ---------------------------------------------------------------------------
+// F.9 — Kamus lembar
+//
+// Seluruh teks SISTEM yang masuk ke lembar (dan ke pratinjau teksnya),
+// dikelompokkan jadi satu objek supaya lembar dapat dirakit dan dirender
+// dalam bahasa lain — pasangannya `KAMUS_LEMBAR_JAWA` di `teksJawa.ts`,
+// dipilih lewat `kamusLembarUntuk()`.
+//
+// Nilainya TIDAK ditulis ulang di sini: setiap kunci menunjuk konstanta
+// F.1–F.7 di atasnya, jadi tidak ada kalimat kedua yang bisa berbeda
+// diam-diam dari BLUEPRINT F. Tipe `typeof KAMUS_LEMBAR` membuat terjemahan
+// yang lupa satu kunci gagal di `tsc`, bukan muncul sebagai lembar campur
+// bahasa di tangan pengguna.
+// ---------------------------------------------------------------------------
+
+/** Nama kesepuluh keterangan sebagai data — versi Indonesia dari `NAMA_SLOT_JAWA`. */
+const namaSlotDariData = {} as Record<SlotId, string>;
+for (const slot of DAFTAR_SLOT) {
+  namaSlotDariData[slot.id] = slot.nama;
+}
+export const NAMA_SLOT: Readonly<Record<SlotId, string>> = namaSlotDariData;
+
+export const KAMUS_LEMBAR = {
+  judul: JUDUL_LEMBAR,
+  subjudul: SUBJUDUL_LEMBAR,
+  labelBlok1: LABEL_BLOK_1,
+  labelBlok2Templat: LABEL_BLOK_2_TEMPLAT,
+  labelBlok3: LABEL_BLOK_3,
+  labelCatatanHitungan: LABEL_CATATAN_HITUNGAN,
+  labelSebagian: LABEL_SEBAGIAN,
+  kalimatPembukaBlok1: KALIMAT_PEMBUKA_BLOK_1,
+  kalimatPembukaBlok2: KALIMAT_PEMBUKA_BLOK_2,
+  kalimatPembukaBlok3: KALIMAT_PEMBUKA_BLOK_3,
+  kalimatBawahBlok2: KALIMAT_BAWAH_BLOK_2,
+  penutup: PENUTUP_LEMBAR,
+  kalimatKosongPerSlot: KALIMAT_KOSONG_PER_SLOT,
+  pertanyaan: PERTANYAAN,
+  namaSlot: NAMA_SLOT,
+  lapis1DitemukanTemplat: LAPIS1_DITEMUKAN_TEMPLAT,
+  lapis1MiripTemplat: LAPIS1_MIRIP_TEMPLAT,
+  lapis1TidakDitemukanTemplat: LAPIS1_TIDAK_DITEMUKAN_TEMPLAT,
+  lapis1Dimatikan: LAPIS1_DIMATIKAN,
+  barisHitunganLapis2Templat: BARIS_HITUNGAN_LAPIS2_TEMPLAT,
+  lapis2AngkaTidakAda: LAPIS2_ANGKA_TIDAK_ADA,
+  lapis2Dimatikan: LAPIS2_DIMATIKAN,
+};
+
+export type KamusLembar = typeof KAMUS_LEMBAR;
 
 // ---------------------------------------------------------------------------
 // F.8 — Teks antarmuka

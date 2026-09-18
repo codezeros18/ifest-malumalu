@@ -19,19 +19,9 @@ import React from "react";
 import { Keadaan } from "../core/tipe";
 import type { IsiLembar } from "../core/tipe";
 import {
-  JUDUL_LEMBAR,
-  SUBJUDUL_LEMBAR,
-  LABEL_BLOK_1,
-  LABEL_BLOK_2_TEMPLAT,
-  LABEL_BLOK_3,
-  LABEL_SEBAGIAN,
-  LABEL_CATATAN_HITUNGAN,
-  KALIMAT_PEMBUKA_BLOK_1,
-  KALIMAT_PEMBUKA_BLOK_2,
-  KALIMAT_PEMBUKA_BLOK_3,
-  KALIMAT_BAWAH_BLOK_2,
-  PENUTUP_LEMBAR,
+  KAMUS_LEMBAR,
 } from "../core/teks";
+import type { KamusLembar } from "../core/teks";
 import { isiTemplat } from "../core/perakitan";
 import { blokLembar } from "../ui/BlokLembar";
 import tailwindConfig from "../../tailwind.config";
@@ -59,28 +49,36 @@ const PADDING_HALAMAN = 48;
 const LEBAR_ISI = LEBAR_LEMBAR - PADDING_HALAMAN * 2;
 
 /**
- * Ukuran huruf dalam PIKSEL pada render 1080px lebar. Telah dioptimalkan
- * agar lebih proporsional, kompak, dan nyaman dibaca (tidak terlalu besar/intimidatif)
- * namun tetap mematuhi batas keterbacaan minimum.
+ * Ukuran huruf dalam PIKSEL pada render 1080px lebar.
+ *
+ * 🔴 JANGAN DIPERKECIL. Lembar ini diteruskan lewat percakapan WhatsApp dan
+ * dibaca di ponsel lima inci TANPA perbesaran — CLAUDE.md 3.6 menetapkan teks
+ * pada lembar minimal setara 14pt, dan angka-angka di bawah adalah lantainya,
+ * bukan pilihan gaya. `tests/lib/renderLembar.test.ts` (S08-7) mengunci dua
+ * hal: setiap fontSize isi wajib >= 22px, dan himpunan 30px wajib tepat 20
+ * elemen (3 label blok + 10 kalimat blok2 + 7 pertanyaan). Percobaan
+ * mengecilkannya (judul 20, isi 15, dasar hukum 10) pada commit "fix: hasil
+ * lembar janji" membuat ketiga pagar itu merah dan sudah dibatalkan — lihat
+ * PERUBAHAN.md PB-014.
  */
 const UKURAN = {
-  judul: 20,
-  subjudul: 13,
-  penandaWaktu: 11,
-  labelBlok: 11,
-  kalimatPembuka: 14,
-  blok1Label: 12,
-  blok1Nilai: 21,
-  blok2Kalimat: 15,
-  dasarHukum: 10,
-  kalimatBawahBlok2: 13,
-  pertanyaan: 15,
-  penutup: 12,
+  judul: 52,
+  subjudul: 28,
+  penandaWaktu: 24,
+  labelBlok: 30,
+  kalimatPembuka: 26,
+  blok1Label: 26,
+  blok1Nilai: 30,
+  blok2Kalimat: 30,
+  dasarHukum: 24,
+  kalimatBawahBlok2: 26,
+  pertanyaan: 30,
+  penutup: 26,
 } as const;
 
 const TINGGI_BARIS = 1.4;
 
-function lencanaSebagian() {
+function lencanaSebagian(kamus: KamusLembar) {
   return (
     <div
       style={{
@@ -101,7 +99,7 @@ function lencanaSebagian() {
           border: `1px solid ${warna("tinta-lembut")}`,
         }}
       />
-      <span>{LABEL_SEBAGIAN}</span>
+      <span>{kamus.labelSebagian}</span>
     </div>
   );
 }
@@ -126,7 +124,11 @@ function lingkaranKosong() {
  * Baris Blok 1 diubah menjadi susunan vertikal (label di atas, nilai di bawah dengan lebar penuh)
  * agar teks yang panjang tidak terpotong (menghapus batasan karakter/potongNilai).
  */
-function barisBlok1(baris: IsiLembar["blok1"][number], kalimatLapis1?: string) {
+function barisBlok1(
+  baris: IsiLembar["blok1"][number],
+  kamus: KamusLembar,
+  kalimatLapis1?: string,
+) {
   return (
     <div
       key={baris.slot}
@@ -171,7 +173,7 @@ function barisBlok1(baris: IsiLembar["blok1"][number], kalimatLapis1?: string) {
           {baris.nilai}
         </span>
         {baris.keadaan === Keadaan.DISEBUTKAN_SEBAGIAN
-          ? lencanaSebagian()
+          ? lencanaSebagian(kamus)
           : null}
       </div>
       {kalimatLapis1 ? (
@@ -243,7 +245,10 @@ function barisBlok2(baris: IsiLembar["blok2"][number]) {
   );
 }
 
-export function elemenLembar(isiLembar: IsiLembar) {
+export function elemenLembar(
+  isiLembar: IsiLembar,
+  kamus: KamusLembar = KAMUS_LEMBAR,
+) {
   return (
     <div
       style={{
@@ -256,13 +261,16 @@ export function elemenLembar(isiLembar: IsiLembar) {
         borderRadius: 0,
       }}
     >
-      {/* 1. Kepala — Di-force menggunakan warna #0955D4 */}
+      {/* 1. Kepala — latar tinta, teks kertas/garis (BLUEPRINT H.9).
+          Warna WAJIB lewat token `warna(...)`: berkas ini tidak boleh memuat
+          hex mentah sama sekali — pagar kontras (`tests/ui/kontras.test.ts`)
+          membaca TOKEN, jadi hex mentah di sini lolos dari semua pagar. */}
       <div
         style={{
           display: "flex",
           flexDirection: "column",
           width: "100%",
-          backgroundColor: "#0955D4",
+          backgroundColor: warna("tinta"),
           padding: `32px ${PADDING_HALAMAN}px`,
           gap: 8,
         }}
@@ -275,16 +283,16 @@ export function elemenLembar(isiLembar: IsiLembar) {
             color: warna("kertas"),
           }}
         >
-          {JUDUL_LEMBAR}
+          {kamus.judul}
         </span>
         <span
           style={{
             display: "flex",
             fontSize: UKURAN.subjudul,
-            color: "#E2E8F0",
+            color: warna("garis"),
           }}
         >
-          {SUBJUDUL_LEMBAR}
+          {kamus.subjudul}
         </span>
         <span
           style={{
@@ -292,7 +300,7 @@ export function elemenLembar(isiLembar: IsiLembar) {
             justifyContent: "flex-end",
             width: "100%",
             fontSize: UKURAN.penandaWaktu,
-            color: "#E2E8F0",
+            color: warna("garis"),
           }}
         >
           {isiLembar.tanggal}
@@ -301,7 +309,7 @@ export function elemenLembar(isiLembar: IsiLembar) {
 
       {/* 2. Blok 1 */}
       {blokLembar({
-        labelTeks: LABEL_BLOK_1,
+        labelTeks: kamus.labelBlok1,
         warnaLatarLabel: warna("latar-blok"),
         warnaTeksLabel: warna("tinta-lembut"),
         ukuranLabel: UKURAN.labelBlok,
@@ -322,11 +330,12 @@ export function elemenLembar(isiLembar: IsiLembar) {
                 marginBottom: 12,
               }}
             >
-              {KALIMAT_PEMBUKA_BLOK_1}
+              {kamus.kalimatPembukaBlok1}
             </span>
             {isiLembar.blok1.map((baris) =>
               barisBlok1(
                 baris,
+                kamus,
                 baris.slot === 1 ? isiLembar.hasilLapis1?.kalimat : undefined,
               ),
             )}
@@ -346,11 +355,11 @@ export function elemenLembar(isiLembar: IsiLembar) {
 
       {/* 4. Blok 2 */}
       {blokLembar({
-        labelTeks: isiTemplat(LABEL_BLOK_2_TEMPLAT, {
+        labelTeks: isiTemplat(kamus.labelBlok2Templat, {
           n: String(isiLembar.blok2.length),
         }),
-        warnaLatarLabel: "#ffd346",
-        warnaTeksLabel: "#000000",
+        warnaLatarLabel: warna("tinta-lembut"),
+        warnaTeksLabel: warna("kertas"),
         ukuranLabel: UKURAN.labelBlok,
         children: (
           <div
@@ -364,7 +373,7 @@ export function elemenLembar(isiLembar: IsiLembar) {
                 marginBottom: 12,
               }}
             >
-              {KALIMAT_PEMBUKA_BLOK_2}
+              {kamus.kalimatPembukaBlok2}
             </span>
             {isiLembar.blok2.map((baris) => barisBlok2(baris))}
             <span
@@ -376,7 +385,7 @@ export function elemenLembar(isiLembar: IsiLembar) {
                 marginTop: 6,
               }}
             >
-              {KALIMAT_BAWAH_BLOK_2}
+              {kamus.kalimatBawahBlok2}
             </span>
           </div>
         ),
@@ -403,7 +412,7 @@ export function elemenLembar(isiLembar: IsiLembar) {
               color: warna("tinta-lembut"),
             }}
           >
-            {LABEL_CATATAN_HITUNGAN}
+            {kamus.labelCatatanHitungan}
           </span>
           <span
             style={{
@@ -420,7 +429,7 @@ export function elemenLembar(isiLembar: IsiLembar) {
 
       {/* 7. Blok 3 — pertanyaan */}
       {blokLembar({
-        labelTeks: LABEL_BLOK_3,
+        labelTeks: kamus.labelBlok3,
         warnaLatarLabel: warna("latar-blok"),
         warnaTeksLabel: warna("tinta-lembut"),
         ukuranLabel: UKURAN.labelBlok,
@@ -436,7 +445,7 @@ export function elemenLembar(isiLembar: IsiLembar) {
                 marginBottom: 12,
               }}
             >
-              {KALIMAT_PEMBUKA_BLOK_3}
+              {kamus.kalimatPembukaBlok3}
             </span>
             {isiLembar.pertanyaan.map((pertanyaan, indeks) => (
               <span
@@ -471,7 +480,7 @@ export function elemenLembar(isiLembar: IsiLembar) {
             color: warna("tinta-lembut"),
           }}
         >
-          {PENUTUP_LEMBAR}
+          {kamus.penutup}
         </span>
       </div>
     </div>
@@ -561,7 +570,10 @@ function tinggiBarisBlok2(baris: IsiLembar["blok2"][number]): number {
   );
 }
 
-export function tinggiLembar(isiLembar: IsiLembar): number {
+export function tinggiLembar(
+  isiLembar: IsiLembar,
+  kamus: KamusLembar = KAMUS_LEMBAR,
+): number {
   let tinggi = 0;
 
   // Kepala
@@ -577,7 +589,7 @@ export function tinggiLembar(isiLembar: IsiLembar): number {
   tinggi += PADDING_LABEL_BLOK_VERTIKAL * 2 + UKURAN.labelBlok * TINGGI_BARIS;
   tinggi += PADDING_ISI_BLOK_VERTIKAL * 2;
   tinggi +=
-    tinggiTeks(KALIMAT_PEMBUKA_BLOK_1, UKURAN.kalimatPembuka, LEBAR_ISI_BLOK) +
+    tinggiTeks(kamus.kalimatPembukaBlok1, UKURAN.kalimatPembuka, LEBAR_ISI_BLOK) +
     12;
   for (const baris of isiLembar.blok1) {
     tinggi += tinggiBarisBlok1(
@@ -593,13 +605,13 @@ export function tinggiLembar(isiLembar: IsiLembar): number {
   tinggi += PADDING_LABEL_BLOK_VERTIKAL * 2 + UKURAN.labelBlok * TINGGI_BARIS;
   tinggi += PADDING_ISI_BLOK_VERTIKAL * 2;
   tinggi +=
-    tinggiTeks(KALIMAT_PEMBUKA_BLOK_2, UKURAN.kalimatPembuka, LEBAR_ISI_BLOK) +
+    tinggiTeks(kamus.kalimatPembukaBlok2, UKURAN.kalimatPembuka, LEBAR_ISI_BLOK) +
     12;
   for (const baris of isiLembar.blok2) {
     tinggi += tinggiBarisBlok2(baris);
   }
   tinggi +=
-    tinggiTeks(KALIMAT_BAWAH_BLOK_2, UKURAN.kalimatBawahBlok2, LEBAR_ISI_BLOK) +
+    tinggiTeks(kamus.kalimatBawahBlok2, UKURAN.kalimatBawahBlok2, LEBAR_ISI_BLOK) +
     6;
 
   // Catatan hitungan
@@ -620,7 +632,7 @@ export function tinggiLembar(isiLembar: IsiLembar): number {
   tinggi += PADDING_LABEL_BLOK_VERTIKAL * 2 + UKURAN.labelBlok * TINGGI_BARIS;
   tinggi += PADDING_ISI_BLOK_VERTIKAL * 2;
   tinggi +=
-    tinggiTeks(KALIMAT_PEMBUKA_BLOK_3, UKURAN.kalimatPembuka, LEBAR_ISI_BLOK) +
+    tinggiTeks(kamus.kalimatPembukaBlok3, UKURAN.kalimatPembuka, LEBAR_ISI_BLOK) +
     12;
   for (const [indeks, pertanyaan] of isiLembar.pertanyaan.entries()) {
     tinggi +=
@@ -632,7 +644,7 @@ export function tinggiLembar(isiLembar: IsiLembar): number {
   }
 
   // Kaki
-  tinggi += 24 * 2 + tinggiTeks(PENUTUP_LEMBAR, UKURAN.penutup, LEBAR_ISI);
+  tinggi += 24 * 2 + tinggiTeks(kamus.penutup, UKURAN.penutup, LEBAR_ISI);
 
   const MARJIN_AMAN = 120;
   return Math.ceil(tinggi + MARJIN_AMAN);

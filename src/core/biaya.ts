@@ -13,7 +13,8 @@
  */
 
 import { isiTemplat } from "./perakitan";
-import { BARIS_HITUNGAN_LAPIS2_TEMPLAT } from "./teks";
+import { KAMUS_LEMBAR } from "./teks";
+import type { KamusLembar } from "./teks";
 
 export interface KomponenBiaya {
   readonly nama: string;
@@ -61,6 +62,7 @@ export function hitungCatatanBiaya(
   nilaiUpah: string | null,
   nilaiBiaya: string | null,
   acuan: AcuanBiaya | null,
+  kamus: KamusLembar = KAMUS_LEMBAR,
 ): StatusLapis2 {
   if (acuan === null) {
     return { status: "dimatikan" };
@@ -76,6 +78,6 @@ export function hitungCatatanBiaya(
   const n = Math.round((biaya / upah) * 10) / 10;
   return {
     status: "tersedia",
-    catatanHitungan: isiTemplat(BARIS_HITUNGAN_LAPIS2_TEMPLAT, { n: String(n) }),
+    catatanHitungan: isiTemplat(kamus.barisHitunganLapis2Templat, { n: String(n) }),
   };
 }

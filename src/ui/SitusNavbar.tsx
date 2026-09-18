@@ -123,7 +123,7 @@ export default function SitusNavbar({
                     role="option"
                     aria-selected={bahasa === kode}
                     onClick={() => pilihBahasa(kode)}
-                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-[13px] font-semibold transition-colors ${
+                    className={`flex min-h-11 w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-semibold transition-colors ${
                       bahasa === kode
                         ? "bg-[#e7f0ff] text-[#0955d4]"
                         : "text-[#3f4657] hover:bg-[#f2f6ff]"

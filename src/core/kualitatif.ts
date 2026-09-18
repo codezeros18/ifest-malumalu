@@ -21,12 +21,27 @@ export type HasilUjiKualitatif = "lulus" | "sebagian" | "gagal";
 
 const PENANDA_BADAN_USAHA = /\b(pt|cv|ud|pd|firma|koperasi|perseroan terbatas)\b\.?/i;
 const KATA_GENERIK_TANPA_NAMA = /^(resmi|lengkap|terpercaya|berizin|besar)$/i;
-const PENANDA_ORANG = /\b(bapak|ibu|pak|bu|tuan|nyonya|nona|haji|hj)\b\.?/i;
-const HANYA_TELEPON = /^[\d\s+()-]+$/;
+const PENANDA_ORANG =
+  /\b(bapak|ibu|pak|bu|tuan|nyonya|nona|haji|hj|mr|mrs|ms|mister|miss)\b\.?/i;
 const AKUN_MEDSOS = /^[@#]/;
 
+/**
+ * Benar bila teks tidak menyisakan apa pun yang bisa jadi NAMA setelah
+ * angka, tanda baca, dan kata label kontak dibuang — mis. "0812-3456-7890"
+ * atau "agen: 0812-3456-7890" (dulu bentuk kedua lolos jadi sebagian karena
+ * pola lama hanya cocok bila SELURUH teks berupa telepon).
+ */
+const POLA_LABEL_KONTAK = /^(agen|kontak|telp|tel|hp|wa|whatsapp|cp|hubungi)\b[:.]?/i;
+function tanpaNama(teks: string): boolean {
+  const sisa = teks
+    .replace(/[\d\s+()\-./]/g, "")
+    .replace(POLA_LABEL_KONTAK, "")
+    .trim();
+  return sisa === "";
+}
+
 function ujiSlot1PerusahaanMemberangkatkan(teks: string): HasilUjiKualitatif {
-  if (HANYA_TELEPON.test(teks) || AKUN_MEDSOS.test(teks) || PENANDA_ORANG.test(teks)) {
+  if (tanpaNama(teks) || AKUN_MEDSOS.test(teks) || PENANDA_ORANG.test(teks)) {
     return "gagal";
   }
 
@@ -58,13 +73,27 @@ function ujiSlot2IzinDanNegara(teks: string): HasilUjiKualitatif {
 }
 
 const PENANDA_ENTITAS_PEMBERI_KERJA =
-  /\b(co\.?,?\s*ltd\.?|corporation|corp\.?|inc\.?|company|group|enterprise|gmbh|sdn\.?\s*bhd\.?|pte\.?\s*ltd\.?)\b/i;
+  /\b(pt|cv|ud|pd|co\.?,?\s*ltd\.?|corporation|corp\.?|inc\.?|company|group|enterprise|gmbh|sdn\.?\s*bhd\.?|pte\.?\s*ltd\.?)\b/i;
 const PENANDA_KAWASAN_INDUSTRI = /\bkawasan industri\b/i;
 const PENANDA_JENIS_INDUSTRI =
   /\b(garmen|elektronik|otomotif|tekstil|makanan|farmasi|logam|manufaktur|konstruksi|pertanian|perikanan|perkebunan)\b/i;
 
 function ujiSlot3NamaPemberiKerja(teks: string): HasilUjiKualitatif {
-  if (PENANDA_ENTITAS_PEMBERI_KERJA.test(teks)) return "lulus";
+  const cocok = teks.match(PENANDA_ENTITAS_PEMBERI_KERJA);
+  if (cocok) {
+    // Penanda badan usaha harus ditemani NAMA — di depan atau di belakangnya.
+    // "Hanwha Techwin Co., Ltd." (nama dulu, penanda belakang) dan "PT ABC"
+    // keduanya lulus; "PT" / "Co., Ltd." TELANJANG gagal, karena E.2 #1
+    // menamai persis kasus itu ("PT resmi" tanpa nama). Tanpa cek ini arah
+    // kesalahannya tidak aman: baris pemberi kerja tanpa nama lolos jadi
+    // "sudah disebutkan".
+    const sebelum = teks.slice(0, cocok.index!).replace(/[\s.,;:()/&-]/g, "");
+    const sesudah = teks
+      .slice(cocok.index! + cocok[0].length)
+      .replace(/[\s.,;:()/&-]/g, "");
+    if (!sebelum && !sesudah) return "gagal";
+    return "lulus";
+  }
   // Baris E.2 #3 bertabrakan: "pabrik di Taiwan" dicontohkan gagal, padahal
   // deskripsinya persis kolom sebagian ("jenis tempat kerja disebut, nama
   // tidak"). Dimenangkan kolom gagal untuk frasa generik semacam itu; jenis
@@ -77,7 +106,7 @@ function ujiSlot3NamaPemberiKerja(teks: string): HasilUjiKualitatif {
 }
 
 const PENANDA_JABATAN_SPESIFIK =
-  /\b(operator|perawat|teknisi|sopir|supir|juru masak|koki|pembantu rumah tangga|asisten rumah tangga|buruh|tukang|petugas|pengasuh|cleaning service|satpam|pelayan|kasir|montir)\b/i;
+  /\b(operator|perawat|teknisi|sopir|supir|juru masak|koki|pembantu rumah tangga|asisten rumah tangga|buruh|tukang|petugas|pengasuh|cleaning service|satpam|pelayan|kasir|montir|staff|staf|helper|crew|penjahit|pengemas|packing|welder|fitter|kurir|barista|pengemudi|perakit)\b/i;
 const PENANDA_BIDANG = /\b(bidang|sektor)\b/i;
 const POLA_KERJA_GENERIK = /^kerja\b/i;
 
@@ -90,9 +119,9 @@ function ujiSlot4JenisPekerjaan(teks: string): HasilUjiKualitatif {
 
 function adaNominalMataUang(teks: string): boolean {
   if (/(rp\.?\s?\d|nt\$\s?\d|usd\s?\d|\$\s?\d|idr\s?\d)/i.test(teks)) return true;
-  // "15 juta rupiah" — angka dan kata mata uang terpisah, bukan berdempet
-  // dengan simbol seperti "Rp".
-  return /\d+\s*(juta|ribu)\b/i.test(teks) && /\brupiah\b/i.test(teks);
+  // "15 juta rupiah" / "15jt" / "15 jt" — angka dengan kata pengali, dengan
+  // atau tanpa kata "rupiah" (poster nyata sering menyingkat "jt").
+  return /\d+\s*(juta|jt|ribu|rb)\b/i.test(teks);
 }
 
 const POLA_TATA_CARA_PEMBAYARAN = /\b(ditransfer|transfer|dibayar|pembayaran|rekening|tunai|cash)\b/i;
@@ -148,7 +177,16 @@ function ujiSlot8JaminanSosial(teks: string): HasilUjiKualitatif {
  * dimenangkan. Konsekuensinya: satu kemunculan angka biaya = sebagian,
  * dua atau lebih (total + minimal satu rincian) = lulus, nol = gagal.
  */
-const POLA_ANGKA_BIAYA = /(rp\.?\s?\d[\d.,]*|idr\.?\s?\d[\d.,]*|\d+\s*juta\b)/gi;
+const POLA_ANGKA_BIAYA =
+  /(rp\.?\s?\d[\d.,]*|idr\.?\s?\d[\d.,]*|\d+\s*(juta|jt|ribu|rb)\b)/gi;
+
+/**
+ * Jawaban biaya tanpa angka sama sekali — "GRATIS", "ditanggung perusahaan",
+ * "biaya 0", "tidak dipungut biaya". Poster nyata sering begini. Dibuat
+ * SEBAGIAN (bukan DISEBUTKAN) karena besarannya tetap tidak dirinci.
+ */
+const POLA_BIAYA_TANPA_ANGKA =
+  /\b(gratis|free|tanpa biaya|tidak ada biaya|tidak dipungut|ditanggung (perusahaan|majikan|pemberi kerja)|dibiayai (perusahaan|majikan)|biaya 0)\b/i;
 
 /**
  * Angka biaya yang SAMA dua kali bukan rincian — "Total Rp15 juta, dibayar
@@ -165,6 +203,13 @@ function jumlahAngkaUnik(cocok: readonly string[]): number {
 function ujiSlot9BiayaDanTanggungan(teks: string): HasilUjiKualitatif {
   const cocok = teks.match(POLA_ANGKA_BIAYA) ?? [];
   const jumlah = jumlahAngkaUnik(cocok);
+
+  // Poster nyata sering menjawab pertanyaan biaya TANPA angka: "GRATIS",
+  // "ditanggung perusahaan", "biaya 0". E.2 #9 hanya mengurus bentuk
+  // berangka, sehingga bentuk ini dulu jatuh ke "belum dijawab" — padahal
+  // pertanyaannya jelas sudah dijawab. Tetap SEBAGIAN (bukan DISEBUTKAN):
+  // siapa menanggung / besarannya belum dirinci angka. Tidak pernah lulus.
+  if (jumlah === 0 && POLA_BIAYA_TANPA_ANGKA.test(teks)) return "sebagian";
 
   if (jumlah === 0) return "gagal";
   if (jumlah === 1) return "sebagian";

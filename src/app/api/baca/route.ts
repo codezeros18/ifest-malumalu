@@ -85,9 +85,11 @@ export async function POST(request: Request): Promise<Response> {
     hasil = await modelProvider.baca(tawaran);
   } catch (kesalahan) {
     if (kesalahan instanceof GalatModelProvider) {
+      console.error(`[api/baca] GalatModelProvider (${kesalahan.alasan}):`, kesalahan.message);
       const { kode, status } = PEMETAAN_ALASAN_MODEL[kesalahan.alasan];
       return responsGalat(kode, status);
     }
+    console.error("[api/baca] Galat tak terduga:", kesalahan);
     return responsGalat(KodeGalat.E_PEMBACAAN_GAGAL, 500);
   }
 

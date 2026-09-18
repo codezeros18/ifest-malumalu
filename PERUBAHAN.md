@@ -33,6 +33,25 @@ Ditulis konkret, bukan "karena keterbatasan waktu" saja.]
 
 ---
 
+## [PB-014] Ukuran huruf lembar dikembalikan ke lantai 14pt, kepala lembar kembali berlatar tinta
+
+**Jam ke-**         : ~14
+**Diputuskan oleh** : PM/pengguna (memilih opsi "balikin ukuran huruf"), dieksekusi Window 2
+
+**Kondisi di proposal penyisihan**
+BLUEPRINT H.9 menetapkan lembar dirender 1080px lebar dengan judul tercetak di kepala berlatar **tinta**, dan CLAUDE.md §3.6 menetapkan teks pada lembar minimal **setara 14pt** agar terbaca di layar lima inci tanpa perbesaran. Nilai lamanya: judul 52px, isi/pertanyaan 30px, teks sekunder (dasar hukum) 24px, seluruhnya lewat token `warna(...)` — berkas `src/lib/renderLembar.tsx` tidak memuat satu pun hex mentah.
+
+**Hal yang diubah**
+Commit `83c2c21 "fix: hasil lembar janji"` (bukan dari Window 2) mengecilkan seluruh tipografi lembar — judul 52→20, subjudul 28→13, isi 30→15, dasar hukum 24→10, penanda waktu 11 — mengganti latar kepala dari tinta menjadi biru `#0955D4`, dan mengganti warna teks label blok 2 menjadi hitam `#000000` di atas latar abu-gelap, tanpa memperbarui pagar testnya. Setelah konflik rebase diselesaikan, entri ini mengembalikan: seluruh 12 nilai `UKURAN` ke angka lama, latar kepala ke `warna("tinta")`, teks label blok 2 ke `warna("kertas")`, dan dua warna `#E2E8F0` ke `warna("garis")` — sehingga berkas itu kembali bebas hex mentah. Perbaikan tata letak lain dari commit yang sama (padding, margin, tata letak kartu ilustrasi di mobile) DIPERTAHANKAN.
+
+**Alasan perubahan**
+`npm run verify` MERAH di `83c2c21` — dibuktikan dengan menjalankan test pada commit itu tanpa perubahan Window 2 (`git checkout 83c2c21` → `tests/lib/renderLembar.test.ts`: 3 gagal, 18 lulus). Ketiga pagar itu bukan test basi: satu menegakkan lantai 14pt untuk SETIAP teks isi, satu mengunci himpunan 30px (3 label blok + 10 kalimat + 7 pertanyaan), satu menuntut kepala lembar berlatar tinta sesuai H.9. Pengecilan huruf sebesar ~50% pada artefak yang justru diteruskan lewat WhatsApp dan dibaca di ponsel murah adalah pelanggaran §3.6 (guardrail, bukan batas yang bisa dinaikkan lewat entri). Hex mentah tambahan memperparah: pagar kontras hanya membaca TOKEN `tailwind.config.ts`, jadi warna mentah di berkas render lolos dari semua pagar.
+
+**Dampak terhadap masalah inti**
+Positif langsung: lembar kembali terbaca tanpa perbesaran di ponsel lima inci — itu satu-satunya artefak yang dilihat orang yang menerima hasilnya. Harganya tinggi render bertambah (lembar kosong kini **1080×3981px**), dan itu memang konsekuensi yang dipilih: tinggi boleh, keterbacaan tidak. Tinggi tidak masuk batas kuantitatif mana pun (§4) dan pagar anggaran kata (480) tidak tersentuh karena ia menghitung teks sistem. Alur inti tidak berubah; diverifikasi ulang di peramban sesudah perbaikan: jalur manual → sepuluh keterangan → terbit → `/hasil` menampilkan PNG 1080×3981 sungguhan.
+
+---
+
 ## [PB-013] Lapisan 3D hiasan di halaman depan DICABUT — `three` dilepas dari dependensi
 
 **Jam ke-**         : ~13

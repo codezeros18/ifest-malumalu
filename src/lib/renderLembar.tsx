@@ -59,23 +59,31 @@ const PADDING_HALAMAN = 48;
 const LEBAR_ISI = LEBAR_LEMBAR - PADDING_HALAMAN * 2;
 
 /**
- * Ukuran huruf dalam PIKSEL pada render 1080px lebar. Telah dioptimalkan
- * agar lebih proporsional, kompak, dan nyaman dibaca (tidak terlalu besar/intimidatif)
- * namun tetap mematuhi batas keterbacaan minimum.
+ * Ukuran huruf dalam PIKSEL pada render 1080px lebar.
+ *
+ * 🔴 JANGAN DIPERKECIL. Lembar ini diteruskan lewat percakapan WhatsApp dan
+ * dibaca di ponsel lima inci TANPA perbesaran — CLAUDE.md 3.6 menetapkan
+ * teks pada lembar minimal setara 14pt, dan angka-angka di bawah adalah
+ * lantainya, bukan pilihan gaya. `tests/lib/renderLembar.test.ts` (S08-7)
+ * mengunci dua hal: setiap fontSize isi wajib >= 22px, dan himpunan 30px
+ * wajib tepat 20 elemen (3 label blok + 10 kalimat blok2 + 7 pertanyaan).
+ * Percobaan mengecilkannya (judul 20, isi 15, dasar hukum 10) pada commit
+ * "fix: hasil lembar janji" membuat ketiga pagar itu merah dan sudah
+ * dibatalkan — lihat PERUBAHAN.md PB-014.
  */
 const UKURAN = {
-  judul: 20,
-  subjudul: 13,
-  penandaWaktu: 11,
-  labelBlok: 11,
-  kalimatPembuka: 14,
-  blok1Label: 12,
-  blok1Nilai: 21,
-  blok2Kalimat: 15,
-  dasarHukum: 10,
-  kalimatBawahBlok2: 13,
-  pertanyaan: 15,
-  penutup: 12,
+  judul: 52,
+  subjudul: 28,
+  penandaWaktu: 24,
+  labelBlok: 30,
+  kalimatPembuka: 26,
+  blok1Label: 26,
+  blok1Nilai: 30,
+  blok2Kalimat: 30,
+  dasarHukum: 24,
+  kalimatBawahBlok2: 26,
+  pertanyaan: 30,
+  penutup: 26,
 } as const;
 
 const TINGGI_BARIS = 1.4;
@@ -256,13 +264,16 @@ export function elemenLembar(isiLembar: IsiLembar) {
         borderRadius: 0,
       }}
     >
-      {/* 1. Kepala — Di-force menggunakan warna #0955D4 */}
+      {/* 1. Kepala — latar tinta, teks kertas/garis (BLUEPRINT H.9).
+          Warna WAJIB lewat token `warna(...)`: berkas ini tidak boleh memuat
+          hex mentah sama sekali — pagar kontras (`tests/ui/kontras.test.ts`)
+          membaca TOKEN, jadi hex mentah di sini lolos dari semua pagar. */}
       <div
         style={{
           display: "flex",
           flexDirection: "column",
           width: "100%",
-          backgroundColor: "#0955D4",
+          backgroundColor: warna("tinta"),
           padding: `32px ${PADDING_HALAMAN}px`,
           gap: 8,
         }}
@@ -281,7 +292,7 @@ export function elemenLembar(isiLembar: IsiLembar) {
           style={{
             display: "flex",
             fontSize: UKURAN.subjudul,
-            color: "#E2E8F0",
+            color: warna("garis"),
           }}
         >
           {SUBJUDUL_LEMBAR}
@@ -292,7 +303,7 @@ export function elemenLembar(isiLembar: IsiLembar) {
             justifyContent: "flex-end",
             width: "100%",
             fontSize: UKURAN.penandaWaktu,
-            color: "#E2E8F0",
+            color: warna("garis"),
           }}
         >
           {isiLembar.tanggal}
@@ -349,8 +360,8 @@ export function elemenLembar(isiLembar: IsiLembar) {
         labelTeks: isiTemplat(LABEL_BLOK_2_TEMPLAT, {
           n: String(isiLembar.blok2.length),
         }),
-        warnaLatarLabel: "#ffd346",
-        warnaTeksLabel: "#000000",
+        warnaLatarLabel: warna("tinta-lembut"),
+        warnaTeksLabel: warna("kertas"),
         ukuranLabel: UKURAN.labelBlok,
         children: (
           <div

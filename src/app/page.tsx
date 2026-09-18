@@ -822,7 +822,7 @@ export default function App() {
         <BagianTentang t={t} onKembali={() => setActive("beranda")} />
       ) : (
         <main className="relative z-10 grid flex-1 grid-cols-1 items-center gap-10 px-4 py-8 sm:px-6 sm:py-10 lg:grid-cols-[1.05fr_0.95fr] lg:px-44 lg:py-0">
-          <section className="max-w-[600px]">
+          <section className="order-2 max-w-[600px] lg:order-1">
             <span className="animasi-muncul inline-flex items-center gap-2 rounded-full border border-[#dbe4fb] bg-white/70 px-3 py-1 text-[12px] font-semibold uppercase tracking-wider text-[#0955d4]">
               <span className="h-1.5 w-1.5 rounded-full bg-[#fac10b]" />
               {t.heroLencana}
@@ -996,16 +996,15 @@ export default function App() {
             </div>
           </section>
 
-          {/* RIGHT — panel ilustrasi statis (bukan hasil sungguhan). Dulu
-              hidden di bawah lg; sekarang selalu tampil supaya halaman
-              mobile tidak terasa kosong — kartu dekorasi belakang & rotasi
-              cuma aktif di lg ke atas, karena posisi absolut + rotasinya
-              didesain untuk ruang kolom kanan yang lega, bukan mobile.
-              Animasi mengapungnya ikut dibatasi ke lg saja (lihat
-              globals.css): keyframe-nya membawa rotasi -2deg, jadi di
-              mobile yang kartunya tegak ia akan memaksa kartunya miring. */}
-          <section className="relative mt-8 flex items-center justify-center lg:mt-0 lg:h-full">
-            <div className="absolute right-6 top-14 hidden h-[420px] w-[300px] rotate-6 rounded-2xl border border-[#dbe4fb] bg-white/60 lg:block" />
+          {/* RIGHT — panel ilustrasi statis (bukan hasil sungguhan). Ditaruh
+              DI ATAS kartu aksi lewat order-1 di mobile (order-2 di lg,
+              posisi asli kembali) — permintaan pengguna: "gunakan design 2
+              card layout kek di desktop" juga di mobile, bukan cuma kartu
+              tunggal datar. Kartu dekorasi belakang sekarang ikut tampil di
+              semua ukuran layar, hanya ukurannya menyusut di mobile supaya
+              tidak meluber. */}
+          <section className="relative order-1 mb-8 flex items-center justify-center lg:order-2 lg:mb-0 lg:h-full">
+            <div className="absolute right-3 top-8 h-[220px] w-[180px] rotate-6 rounded-2xl border border-[#dbe4fb] bg-white/60 sm:h-[300px] sm:w-[240px] lg:right-6 lg:top-14 lg:h-[420px] lg:w-[300px]" />
             <div className="animasi-mengapung relative w-full max-w-[360px] rounded-2xl border border-[#dbe4fb] bg-white p-6 shadow-[0_40px_80px_-40px_rgba(11,18,32,0.4)] lg:w-[360px] lg:-rotate-2">
               <div className="flex items-center justify-between border-b border-[#eef1f6] pb-4">
                 <div>

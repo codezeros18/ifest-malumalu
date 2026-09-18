@@ -74,14 +74,14 @@ function BagianTentang({
   onKembali: () => void;
 }) {
   return (
-    <main className="relative z-10 flex-1 overflow-y-auto px-44 py-10">
-      <div className="mx-auto flex  flex-col gap-8">
+    <main className="relative z-10 w-full flex-1 px-4 py-8 sm:px-6 sm:py-10 lg:px-14 lg:py-14">
+      <div className="mx-auto flex w-full max-w-[880px] flex-col gap-8">
         <header>
           <span className="inline-flex items-center gap-2 rounded-full border border-[#dbe4fb] bg-white/70 px-3 py-1 text-[12px] font-semibold uppercase tracking-wider text-[#0955d4]">
             <span className="h-1.5 w-1.5 rounded-full bg-[#fac10b]" />
             {t.tentang.lencana}
           </span>
-          <h2 className="mt-5 text-[34px] font-extrabold leading-[1.1] tracking-tight text-[#0b1220]">
+          <h2 className="mt-5 text-[26px] font-extrabold leading-[1.15] tracking-tight text-[#0b1220] sm:text-[30px] lg:text-[34px] lg:leading-[1.1]">
             {t.tentang.judul}
           </h2>
           <p className="mt-4 text-[16px] leading-relaxed text-[#52586b]">
@@ -261,9 +261,11 @@ export default function App() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const berkasTerakhirRef = useRef<File | null>(null);
+  const bahasaMenuRef = useRef<HTMLDivElement>(null);
 
   const [active, setActive] = useState("beranda");
   const [menuTerbuka, setMenuTerbuka] = useState(false);
+  const [bahasaMenuTerbuka, setBahasaMenuTerbuka] = useState(false);
 
   const [berkasTerpilih, setBerkasTerpilih] = useState<File | null>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -297,13 +299,23 @@ export default function App() {
     }
   }, []);
 
-  const gantiBahasa = useCallback(() => {
-    setBahasa((sebelumnya) => {
-      const baru = sebelumnya === "id" ? "jv" : "id";
-      localStorage.setItem("lembar_janji_bahasa", baru);
-      return baru;
-    });
+  const pilihBahasa = useCallback((baru: "id" | "jv") => {
+    setBahasa(baru);
+    localStorage.setItem("lembar_janji_bahasa", baru);
+    setBahasaMenuTerbuka(false);
   }, []);
+
+  // Tutup dropdown bahasa saat pengguna mengklik di luar area saklarnya.
+  useEffect(() => {
+    if (!bahasaMenuTerbuka) return;
+    function tanganiKlikLuar(peristiwa: MouseEvent) {
+      if (!bahasaMenuRef.current?.contains(peristiwa.target as Node)) {
+        setBahasaMenuTerbuka(false);
+      }
+    }
+    document.addEventListener("mousedown", tanganiKlikLuar);
+    return () => document.removeEventListener("mousedown", tanganiKlikLuar);
+  }, [bahasaMenuTerbuka]);
 
   const tanganiJalurManual = useCallback(() => {
     router.push("/periksa");
@@ -458,7 +470,7 @@ export default function App() {
       : KETERANGAN_SEDANG_MEMBACA;
 
   return (
-    <div className="relative flex h-screen w-full flex-col overflow-hidden bg-[#f2f6ff] text-[#0b1220]">
+    <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-[#f2f6ff] text-[#0b1220]">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 opacity-[0.5]"
@@ -476,7 +488,7 @@ export default function App() {
       />
 
       {/* Header */}
-      <header className="relative z-20 flex items-center justify-between px-4 py-4 sm:px-6 sm:py-5 lg:px-44 lg:pt-7">
+      <header className="relative z-20 flex items-center justify-between px-4 py-4 sm:px-6 sm:py-5 lg:px-14 lg:pt-7">
         <div className="flex items-center gap-2 sm:gap-3">
           <img src={imgLogo} alt={ALT_LOGO} className="h-9 w-auto sm:h-11" />
           <span className="text-[17px] font-bold tracking-tight text-[#0955d4] sm:text-[20px]">
@@ -486,15 +498,67 @@ export default function App() {
 
         {/* Kontrol navbar — baris penuh dari md ke atas */}
         <div className="hidden items-center gap-2 md:flex">
-          {/* Saklar Bahasa Daerah — inklusivitas keluarga PMI di desa */}
-          <button
-            type="button"
-            onClick={gantiBahasa}
-            aria-label={LABEL_PILIH_BAHASA}
-            className="inline-flex items-center gap-1.5 rounded-full border border-[#dbe4fb] bg-white/70 px-3.5 py-1.5 text-[13px] font-semibold text-[#3f4657] backdrop-blur transition-colors hover:text-[#0955d4]"
-          >
-            🌐 {bahasa === "id" ? LABEL_GANTI_BAHASA_JV : LABEL_GANTI_BAHASA_ID}
-          </button>
+          {/* Saklar Bahasa Daerah — inklusivitas keluarga PMI di desa.
+              Dipencet membuka dropdown berisi kedua pilihan, bukan langsung
+              bertukar (S13 polish). */}
+          <div ref={bahasaMenuRef} className="relative">
+            <button
+              type="button"
+              onClick={() => setBahasaMenuTerbuka((sebelumnya) => !sebelumnya)}
+              aria-label={LABEL_PILIH_BAHASA}
+              aria-haspopup="listbox"
+              aria-expanded={bahasaMenuTerbuka}
+              className="inline-flex items-center gap-1.5 rounded-full border border-[#dbe4fb] bg-white/70 px-3.5 py-1.5 text-[13px] font-semibold text-[#3f4657] backdrop-blur transition-colors hover:text-[#0955d4]"
+            >
+              🌐 {bahasa === "id" ? LABEL_GANTI_BAHASA_ID : LABEL_GANTI_BAHASA_JV}
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={`transition-transform ${bahasaMenuTerbuka ? "rotate-180" : ""}`}
+              >
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </button>
+            {bahasaMenuTerbuka ? (
+              <div
+                role="listbox"
+                className="absolute right-0 top-[calc(100%+8px)] z-30 w-44 overflow-hidden rounded-xl border border-[#dbe4fb] bg-white p-1 shadow-[0_20px_50px_-25px_rgba(11,18,32,0.35)]"
+              >
+                {(
+                  [
+                    ["id", LABEL_GANTI_BAHASA_ID],
+                    ["jv", LABEL_GANTI_BAHASA_JV],
+                  ] as const
+                ).map(([kode, label]) => (
+                  <button
+                    key={kode}
+                    type="button"
+                    role="option"
+                    aria-selected={bahasa === kode}
+                    onClick={() => pilihBahasa(kode)}
+                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-[13px] font-semibold transition-colors ${
+                      bahasa === kode
+                        ? "bg-[#e7f0ff] text-[#0955d4]"
+                        : "text-[#3f4657] hover:bg-[#f2f6ff]"
+                    }`}
+                  >
+                    {label}
+                    {bahasa === kode ? (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                    ) : null}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
           {/* Saklar demo S12-1 — sekarang di navbar; teks keterangannya
               muncul sebagai modal (lihat di bawah), bukan paragraf tetap. */}
           <button
@@ -600,16 +664,35 @@ export default function App() {
             </button>
           ))}
           <div className="my-1 h-px bg-[#eef1f6]" />
-          <button
-            type="button"
-            onClick={() => {
-              gantiBahasa();
-              setMenuTerbuka(false);
-            }}
-            className="rounded-xl px-4 py-3 text-left text-[15px] font-semibold text-[#3f4657] hover:bg-[#f2f6ff]"
-          >
-            🌐 {bahasa === "id" ? LABEL_GANTI_BAHASA_JV : LABEL_GANTI_BAHASA_ID}
-          </button>
+          {(
+            [
+              ["id", LABEL_GANTI_BAHASA_ID],
+              ["jv", LABEL_GANTI_BAHASA_JV],
+            ] as const
+          ).map(([kode, label]) => (
+            <button
+              key={kode}
+              type="button"
+              role="option"
+              aria-selected={bahasa === kode}
+              onClick={() => {
+                pilihBahasa(kode);
+                setMenuTerbuka(false);
+              }}
+              className={`flex items-center justify-between rounded-xl px-4 py-3 text-left text-[15px] font-semibold transition-colors ${
+                bahasa === kode
+                  ? "bg-[#e7f0ff] text-[#0955d4]"
+                  : "text-[#3f4657] hover:bg-[#f2f6ff]"
+              }`}
+            >
+              🌐 {label}
+              {bahasa === kode ? (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+              ) : null}
+            </button>
+          ))}
           <button
             type="button"
             role="switch"
@@ -694,14 +777,14 @@ export default function App() {
       {active === "tentang" ? (
         <BagianTentang t={t} onKembali={() => setActive("beranda")} />
       ) : (
-        <main className="relative z-10 grid flex-1 grid-cols-1 items-center gap-10 px-44 lg:grid-cols-[1.05fr_0.95fr]">
+        <main className="relative z-10 grid flex-1 grid-cols-1 items-center gap-10 px-4 py-8 sm:px-6 sm:py-10 lg:grid-cols-[1.05fr_0.95fr] lg:px-14 lg:py-10">
           <section className="max-w-[600px]">
             <span className="inline-flex items-center gap-2 rounded-full border border-[#dbe4fb] bg-white/70 px-3 py-1 text-[12px] font-semibold uppercase tracking-wider text-[#0955d4]">
               <span className="h-1.5 w-1.5 rounded-full bg-[#fac10b]" />
               {t.heroLencana}
             </span>
 
-            <h1 className="mt-5 text-[46px] font-extrabold leading-[1.05] tracking-tight text-[#0b1220]">
+            <h1 className="mt-5 text-[32px] font-extrabold leading-[1.1] tracking-tight text-[#0b1220] sm:text-[38px] lg:text-[46px] lg:leading-[1.05]">
               {t.heroJudulAwal}{" "}
               <span className="relative whitespace-nowrap">
                 <span className="relative z-10">{t.heroJudulSorot}</span>
@@ -921,9 +1004,9 @@ export default function App() {
         </main>
       )}
 
-      <footer className="relative z-10 flex items-center justify-between px-14 pb-6 pt-2 text-[12px] text-[#8890a0]">
+      <footer className="relative z-10 flex flex-col items-center gap-1 px-4 py-5 text-center text-[12px] text-[#8890a0] sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:text-left lg:px-14">
         <p>{t.footerKiri}</p>
-        <p className="hidden sm:block">{t.footerKanan}</p>
+        <p>{t.footerKanan}</p>
       </footer>
     </div>
   );

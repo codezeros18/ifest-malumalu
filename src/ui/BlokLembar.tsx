@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import React, { type ReactNode } from "react";
 
 /**
  * Komponen presentasional murni untuk RENDER LEMBAR (sisi server, Satori)

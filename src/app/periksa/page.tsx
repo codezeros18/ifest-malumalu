@@ -23,6 +23,9 @@ import {
   KETERANGAN_KOREKSI,
   LABEL_TIDAK_TAHU,
   TOMBOL_LANJUT,
+  TOMBOL_UNDUH,
+  TOMBOL_BAGIKAN,
+  PENANDA_WAKTU_TEMPLAT,
   PESAN_GALAT,
   LABEL_BLOK_1,
   LABEL_BLOK_2_TEMPLAT,
@@ -34,6 +37,7 @@ import {
   KALIMAT_BAWAH_BLOK_2,
   PENUTUP_LEMBAR,
 } from "../../core/teks";
+import { catat } from "../../lib/catat";
 
 function nilaiKosong(): Record<SlotId, string> {
   const hasil = {} as Record<SlotId, string>;
@@ -61,20 +65,50 @@ function kodeGalatValid(nilai: string | undefined): KodeGalat | null {
     : null;
 }
 
+async function mintaBlobGambar(dataLembar: IsiLembar): Promise<Blob | null> {
+  try {
+    const respons = await fetch("/api/kartu", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ isiLembar: dataLembar }),
+    });
+    if (!respons.ok) return null;
+    return await respons.blob();
+  } catch {
+    return null;
+  }
+}
+
+function simpanBerkasGambar(blob: Blob) {
+  const url = URL.createObjectURL(blob);
+  const tautan = document.createElement("a");
+  tautan.href = url;
+  tautan.download = "lembar-janji.png";
+  document.body.appendChild(tautan);
+  tautan.click();
+  document.body.removeChild(tautan);
+  URL.revokeObjectURL(url);
+}
+
 export default function HalamanPeriksa() {
+  const [waktuMulai] = useState<number>(() => Date.now());
   const [termuat, setTermuat] = useState(false);
   const [sumber, setSumber] = useState<SumberTawaran>("manual");
   const [nilaiSlot, setNilaiSlot] = useState<Record<SlotId, string>>(nilaiKosong);
+  const [nilaiAwal, setNilaiAwal] = useState<Record<SlotId, string> | null>(null);
   const [tidakTahu, setTidakTahu] = useState<Set<SlotId>>(new Set());
   const [galatAwal, setGalatAwal] = useState<KodeGalat | null>(null);
   const [hasilTerbit, setHasilTerbit] = useState<IsiLembar | null>(null);
+  const [sedangUnduh, setSedangUnduh] = useState(false);
 
   // Muat draf tersimpan (bila ada) sekali saat halaman dibuka — S07-6.
   useEffect(() => {
     const draf = ambilIsian();
     if (draf) {
       setSumber(draf.sumber);
-      setNilaiSlot(rekamanKeNilaiSlot(draf.nilai, SLOT_IDS) as Record<SlotId, string>);
+      const slotAwal = rekamanKeNilaiSlot(draf.nilai, SLOT_IDS) as Record<SlotId, string>;
+      setNilaiSlot(slotAwal);
+      setNilaiAwal(slotAwal);
       setTidakTahu(tidakTahuDariRekaman(draf.ditandaiTidakTahu));
       setGalatAwal(kodeGalatValid(draf.kodeGalatAwal));
     }
@@ -108,6 +142,22 @@ export default function HalamanPeriksa() {
     });
   }
 
+  function cekDikoreksi(): boolean {
+    if (sumber !== "gambar" || !nilaiAwal) {
+      return false;
+    }
+    for (const id of SLOT_IDS) {
+      if ((nilaiAwal[id] ?? "").trim() !== (nilaiSlot[id] ?? "").trim()) {
+        return true;
+      }
+    }
+    return tidakTahu.size > 0;
+  }
+
+  function hitungDurasi(): number {
+    return Math.max(1, Math.round((Date.now() - waktuMulai) / 1000));
+  }
+
   // 🔴 SATU-SATUNYA tempat `nilai()` (penilaian) dipanggil di seluruh app —
   // dari sebuah handler tombol, bukan dari useEffect maupun dari keluaran
   // Pembaca secara langsung. Lihat tests/alur/koreksi-wajib.test.ts.
@@ -126,14 +176,101 @@ export default function HalamanPeriksa() {
       ditandaiTidakTahu: [...tidakTahu],
     };
 
+    const sekarang = new Date();
+    const formatTanggal = sekarang.toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+    const formatJam = sekarang
+      .toLocaleTimeString("id-ID", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      })
+      .replace(":", ".");
+    const teksWaktu = isiTemplat(PENANDA_WAKTU_TEMPLAT, {
+      tanggal: formatTanggal,
+      jam: formatJam,
+    });
+
     const penilaian = nilaiPenilaian(hasilBacaFinal, keyakinan);
     const isiLembar = rakitIsiLembar({
       penilaian,
       nilaiAsli: nilaiFinal,
-      tanggal: new Date().toLocaleString("id-ID"),
+      tanggal: teksWaktu,
     });
 
     setHasilTerbit(isiLembar);
+
+    catat({
+      jalur_masukan: sumber,
+      jumlah_kosong: isiLembar.blok2.length,
+      dikoreksi: cekDikoreksi(),
+      dibagikan: false,
+      durasi_detik: hitungDurasi(),
+    });
+  }
+
+  async function tanganiUnduh() {
+    if (!hasilTerbit || sedangUnduh) return;
+    setSedangUnduh(true);
+    catat({
+      jalur_masukan: sumber,
+      jumlah_kosong: hasilTerbit.blok2.length,
+      dikoreksi: cekDikoreksi(),
+      dibagikan: false,
+      durasi_detik: hitungDurasi(),
+    });
+    try {
+      const blob = await mintaBlobGambar(hasilTerbit);
+      if (blob) {
+        simpanBerkasGambar(blob);
+      }
+    } finally {
+      setSedangUnduh(false);
+    }
+  }
+
+  async function tanganiBagikan() {
+    if (!hasilTerbit || sedangUnduh) return;
+    setSedangUnduh(true);
+    catat({
+      jalur_masukan: sumber,
+      jumlah_kosong: hasilTerbit.blok2.length,
+      dikoreksi: cekDikoreksi(),
+      dibagikan: true,
+      durasi_detik: hitungDurasi(),
+    });
+    try {
+      const blob = await mintaBlobGambar(hasilTerbit);
+      if (!blob) return;
+
+      let dibagikanSelesai = false;
+      if (
+        typeof navigator !== "undefined" &&
+        typeof navigator.share === "function" &&
+        typeof navigator.canShare === "function"
+      ) {
+        try {
+          const berkas = new File([blob], "lembar-janji.png", { type: "image/png" });
+          if (navigator.canShare({ files: [berkas] })) {
+            await navigator.share({ files: [berkas] });
+            dibagikanSelesai = true;
+          }
+        } catch (galatBagikan) {
+          if (galatBagikan instanceof Error && galatBagikan.name === "AbortError") {
+            dibagikanSelesai = true;
+          }
+        }
+      }
+
+      if (!dibagikanSelesai) {
+        simpanBerkasGambar(blob);
+      }
+    } finally {
+      setSedangUnduh(false);
+    }
   }
 
   const pesanGalatAwal = galatAwal ? PESAN_GALAT[galatAwal] : null;
@@ -164,7 +301,28 @@ export default function HalamanPeriksa() {
 
       <Tombol onClick={tanganiTerbitkanLembar}>{TOMBOL_LANJUT}</Tombol>
 
-      {hasilTerbit ? <LembarPratinjau isiLembar={hasilTerbit} /> : null}
+      {hasilTerbit ? (
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Tombol
+              onClick={tanganiUnduh}
+              disabled={sedangUnduh}
+              className="flex-1"
+            >
+              {TOMBOL_UNDUH}
+            </Tombol>
+            <Tombol
+              varian="sekunder"
+              onClick={tanganiBagikan}
+              disabled={sedangUnduh}
+              className="flex-1"
+            >
+              {TOMBOL_BAGIKAN}
+            </Tombol>
+          </div>
+          <LembarPratinjau isiLembar={hasilTerbit} />
+        </div>
+      ) : null}
     </main>
   );
 }

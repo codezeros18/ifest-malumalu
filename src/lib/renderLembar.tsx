@@ -15,6 +15,7 @@
  * diisi `rakitIsiLembar` (S04). Berkas ini hanya MENAMPILKANNYA.
  */
 
+import React from "react";
 import { Keadaan } from "../core/tipe";
 import type { IsiLembar } from "../core/tipe";
 import {
@@ -61,7 +62,7 @@ const LEBAR_ISI = LEBAR_LEMBAR - PADDING_HALAMAN * 2;
  * marjin aman), dan ≥24px untuk teks sekunder (nomor pasal) yang secara
  * eksplisit wajib tetap terbaca (BLUEPRINT H.9, langkah verifikasi S08-8).
  */
-const UKURAN = {
+export const UKURAN = {
   judul: 52,
   subjudul: 28,
   penandaWaktu: 24,

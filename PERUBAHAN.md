@@ -55,6 +55,29 @@ BLUEPRINT F.9 mewajibkan kedua tombol itu ada, tetapi tidak pernah menuliskan la
 Tidak ada dampak terhadap kosakata sistem (kedua kata tidak menuduh siapa pun, dan diperiksa test kosakata terlarang) maupun terhadap batas kuantitatif. Dampaknya murni redaksional dan berisiko kecil: bila PM/tim menetapkan istilah lain saat S07 membangun layar galat sungguhan, kedua label ini tinggal diganti di satu tempat (`teks.ts`). Ditandai eksplisit di `PROGRESS.md` [S04-W2] sebagai belum final, menunggu konfirmasi PM — bukan dianggap keputusan tertutup.
 
 ---
+
+## [PB-002] Keyakinan pasca-koreksi dihitung dari kehadiran teks, bukan keyakinan asli pembacaan
+
+**Jam ke-**         : ~8
+**Diputuskan oleh** : Fullstack, Window 2 (S07)
+
+**Kondisi di proposal penyisihan**
+
+BLUEPRINT bagian E.1 menuliskan urutan pemeriksaan penilaian sebagai pseudocode: `jika keyakinan_pembacaan < AMBANG → BELUM_DIJAWAB` — menyiratkan keyakinan yang dibandingkan terhadap `AMBANG_KEYAKINAN` (0,7, ditetapkan S03) adalah keyakinan dari hasil pembacaan (model/OCR) itu sendiri.
+
+**Hal yang diubah**
+
+Pada pemanggilan `nilai()` dari layar koreksi (`src/app/periksa/page.tsx`, fungsi `tanganiTerbitkanLembar`), keyakinan yang dioper BUKAN `keyakinan` asli dari `HasilBaca`, melainkan dihitung ulang saat tombol "Terbitkan Lembar" ditekan: `1` bila kolom berisi teks setelah `trim()`, `0` bila kosong. Keyakinan asli hasil pembacaan tidak pernah sampai ke `nilai()` — hanya dipakai untuk mengisi nilai awal kolom di layar koreksi.
+
+**Alasan perubahan**
+
+Layar koreksi wajib ada justru supaya manusia memverifikasi hasil bacaan sebelum dinilai (CLAUDE.md 3.3). Bila keyakinan OCR asli yang rendah tetap dipakai SETELAH manusia melihat kolom itu di layar koreksi, kolom yang isinya sebenarnya sudah benar akan tetap jatuh ke `BELUM_DIJAWAB` lewat aturan keraguan E.3 — bertentangan dengan tujuan layar koreksi. BLUEPRINT tidak menuliskan aturan eksplisit untuk kasus "sudah melewati koreksi manusia"; ini pengisian celah pada titik pertemuan dua aturan yang masing-masing eksplisit (aturan keraguan E.3, dan kewajiban layar koreksi CLAUDE.md 3.3), bukan pembalikan salah satu aturan itu. Karena menyentuh langsung mekanisme aturan keraguan yang dikunci, dicatat di sini untuk ditinjau kapten, bukan diam-diam.
+
+**Dampak terhadap masalah inti**
+
+Berpotensi menaikkan angka "sudah disebutkan" dibanding penerapan literal pseudocode E.1, khususnya pada kolom yang keyakinan OCR-nya rendah tetapi teksnya kebetulan tidak diubah pengguna. Risiko konkret: pengguna yang tidak teliti membaca ulang kolom bisa melewatkan bacaan yang sebenarnya keliru. Mitigasi yang sudah berjalan: layar koreksi tetap tidak bisa dilewati (dibuktikan `tests/alur/koreksi-wajib.test.ts`), dan pengguna tetap bebas mengedit atau menandai "tidak tahu" pada kolom mana pun — penanda "tidak tahu" itu sendiri TIDAK terpengaruh perubahan ini, tetap jalur terpisah yang selalu menghasilkan `BELUM_DIJAWAB`. Belum ada mitigasi tambahan seperti menonjolkan kolom berkeyakinan rendah untuk diperhatikan khusus; diserahkan ke peninjauan kapten atau S12.
+
+---
 ---
 
 # ⚠️ TIGA CONTOH ENTRI TELADAN

@@ -18,6 +18,10 @@ import type { HasilBacaFinal, IsiLembar, SumberTawaran } from "../../core/tipe";
 import { nilai as nilaiPenilaian } from "../../core/penilaian";
 import { rakitIsiLembar, isiTemplat } from "../../core/perakitan";
 import { KodeGalat } from "../../core/galat";
+import { cocokkanNamaP3MI } from "../../core/pencocokan";
+import type { SalinanP3MI } from "../../core/pencocokan";
+import { hitungCatatanBiaya } from "../../core/biaya";
+import type { AcuanBiaya } from "../../core/biaya";
 import {
   JUDUL_LAYAR_KOREKSI,
   KETERANGAN_KOREKSI,
@@ -31,11 +35,15 @@ import {
   LABEL_BLOK_1,
   LABEL_BLOK_3,
   LABEL_SEBAGIAN,
+  LABEL_CATATAN_HITUNGAN,
   KALIMAT_PEMBUKA_BLOK_1,
   KALIMAT_PEMBUKA_BLOK_2,
   KALIMAT_PEMBUKA_BLOK_3,
   KALIMAT_BAWAH_BLOK_2,
   PENUTUP_LEMBAR,
+  LAPIS1_DIMATIKAN,
+  LAPIS2_ANGKA_TIDAK_ADA,
+  LAPIS2_DIMATIKAN,
 } from "../../core/teks";
 
 const NAMA_BERKAS_LEMBAR = "lembar-janji.png";
@@ -77,6 +85,62 @@ function kodeGalatValid(nilai: string | undefined): KodeGalat | null {
     : null;
 }
 
+/**
+ * 🔴 S09 — Lapis 1 dan 2 boleh mati (BLUEPRINT G.5). `src/core/pencocokan.ts`
+ * dan `src/core/biaya.ts` dilarang menyentuh berkas sama sekali (batas
+ * modul `src/core`), jadi pembacaan `data/*.json` — SATU-SATUNYA tempat di
+ * seluruh app yang menyentuhnya — terjadi di sini, lewat `import()` dinamis
+ * yang di-bungkus `try/catch`. Bila berkasnya tidak ada atau rusak,
+ * fungsi ini mengembalikan `null` dengan tenang; `cocokkanNamaP3MI` dan
+ * `hitungCatatanBiaya` masing-masing menerjemahkan `null` itu menjadi
+ * keadaan "dimatikan" — bukan galat yang menghentikan alur.
+ */
+async function muatSalinanP3MI(): Promise<SalinanP3MI | null> {
+  try {
+    const modul = await import("../../../data/p3mi-snapshot.json");
+    const mentah = (modul as { default?: unknown }).default ?? modul;
+    if (typeof mentah !== "object" || mentah === null) return null;
+
+    const { tanggal_snapshot: tanggalSnapshot, perusahaan } = mentah as Record<
+      string,
+      unknown
+    >;
+    if (typeof tanggalSnapshot !== "string" || !Array.isArray(perusahaan)) {
+      return null;
+    }
+
+    const daftar = perusahaan
+      .map((entri) => {
+        if (typeof entri !== "object" || entri === null) return null;
+        const { nama, nama_lengkap: namaLengkap } = entri as Record<string, unknown>;
+        const namaTerpilih = typeof namaLengkap === "string" ? namaLengkap : nama;
+        return typeof namaTerpilih === "string" && namaTerpilih.trim().length > 0
+          ? { nama: namaTerpilih }
+          : null;
+      })
+      .filter((entri): entri is { nama: string } => entri !== null);
+
+    return { tanggalSalinan: tanggalSnapshot, daftar };
+  } catch {
+    return null;
+  }
+}
+
+async function muatAcuanBiaya(): Promise<AcuanBiaya | null> {
+  try {
+    const modul = await import("../../../data/komponen-biaya.json");
+    const mentah = (modul as { default?: unknown }).default ?? modul;
+    if (typeof mentah !== "object" || mentah === null) return null;
+
+    const { tanggalAcuan, komponen } = mentah as Record<string, unknown>;
+    if (typeof tanggalAcuan !== "string") return null;
+
+    return { tanggalAcuan, komponen: Array.isArray(komponen) ? komponen : [] } as AcuanBiaya;
+  } catch {
+    return null;
+  }
+}
+
 export default function HalamanPeriksa() {
   const [termuat, setTermuat] = useState(false);
   const [sumber, setSumber] = useState<SumberTawaran>("manual");
@@ -85,6 +149,12 @@ export default function HalamanPeriksa() {
   const [galatAwal, setGalatAwal] = useState<KodeGalat | null>(null);
   const [hasilTerbit, setHasilTerbit] = useState<IsiLembar | null>(null);
   const [urlGambarLembar, setUrlGambarLembar] = useState<string | null>(null);
+  // S09: catatan Lapis 1/2 yang TIDAK ikut ke lembar yang dibagikan (dashed
+  // box gambar hanya muncul saat aktif+cukup, BLUEPRINT H.9 butir 6) tetapi
+  // tetap wajib ditampilkan ke pengguna di layar (CLAUDE.md §3.1) — supaya
+  // pengguna tahu kenapa hasilnya tidak ada di gambar, bukan dibuat diam.
+  const [catatanLapis1, setCatatanLapis1] = useState<string | null>(null);
+  const [catatanLapis2, setCatatanLapis2] = useState<string | null>(null);
 
   // Object URL gambar lembar dibuang saat diganti atau saat halaman
   // ditinggalkan — gambar TIDAK PERNAH disimpan ke server (CLAUDE.md 3.5),
@@ -156,10 +226,35 @@ export default function HalamanPeriksa() {
 
     const { tanggal, jam } = tanggalJamSekarang();
     const penilaian = nilaiPenilaian(hasilBacaFinal, keyakinan);
+
+    // S09: Lapis 1 dan 2 dijalankan di sini — SATU-SATUNYA titik di app yang
+    // memuat data/*.json (lihat komentar muatSalinanP3MI/muatAcuanBiaya di
+    // atas). Kegagalan memuat berkas apa pun TIDAK PERNAH menghentikan
+    // penerbitan lembar (BLUEPRINT G.5) — hanya membuat hasilnya "dimatikan".
+    const [salinanP3MI, acuanBiaya] = await Promise.all([
+      muatSalinanP3MI(),
+      muatAcuanBiaya(),
+    ]);
+
+    const statusLapis1 = cocokkanNamaP3MI(nilaiFinal[1], salinanP3MI);
+    const statusLapis2 = hitungCatatanBiaya(nilaiFinal[5], nilaiFinal[9], acuanBiaya);
+
+    setCatatanLapis1(statusLapis1.status === "dimatikan" ? LAPIS1_DIMATIKAN : null);
+    setCatatanLapis2(
+      statusLapis2.status === "dimatikan"
+        ? LAPIS2_DIMATIKAN
+        : statusLapis2.status === "data-kurang"
+          ? LAPIS2_ANGKA_TIDAK_ADA
+          : null,
+    );
+
     const isiLembar = rakitIsiLembar({
       penilaian,
       nilaiAsli: nilaiFinal,
       tanggal: isiTemplat(PENANDA_WAKTU_TEMPLAT, { tanggal, jam }),
+      hasilLapis1: statusLapis1.status === "aktif" ? statusLapis1.hasil : undefined,
+      catatanHitungan:
+        statusLapis2.status === "tersedia" ? statusLapis2.catatanHitungan : undefined,
     });
 
     setHasilTerbit(isiLembar);
@@ -247,6 +342,18 @@ export default function HalamanPeriksa() {
 
       {hasilTerbit ? (
         <div className="flex flex-col gap-4">
+          {/* S09: catatan Lapis 1/2 saat dimatikan/data kurang — selalu
+              ditampilkan ke pengguna di layar, terlepas dari jalur gambar
+              atau teks di bawahnya, karena keduanya tidak memuat kalimat
+              ini (H.9 hanya menaruh kotak catatan hitungan saat aktif dan
+              cukup). Abu netral, tanpa ikon peringatan. */}
+          {catatanLapis1 ? (
+            <p className="text-base text-redup">{catatanLapis1}</p>
+          ) : null}
+          {catatanLapis2 ? (
+            <p className="text-base text-redup">{catatanLapis2}</p>
+          ) : null}
+
           {urlGambarLembar ? (
             <>
               {/* eslint-disable-next-line @next/next/no-img-element -- blob: URL sisi klien, bukan aset next/image */}
@@ -286,14 +393,25 @@ function LembarPratinjau({ isiLembar }: { isiLembar: IsiLembar }) {
         <p className="mt-2 text-base text-tinta-lembut">{KALIMAT_PEMBUKA_BLOK_1}</p>
         <ul className="mt-2 flex flex-col gap-2">
           {isiLembar.blok1.map((baris) => (
-            <li key={baris.slot} className="flex items-start justify-between gap-3">
-              <span className="text-base text-tinta-lembut">{baris.label}</span>
-              <span className="flex items-center gap-2 text-right text-base font-bold text-tinta">
-                {baris.nilai}
-                {baris.keadaan === Keadaan.DISEBUTKAN_SEBAGIAN ? (
-                  <Lencana bentuk="lingkaran-setengah" teks={LABEL_SEBAGIAN} />
-                ) : null}
-              </span>
+            <li key={baris.slot} className="flex flex-col gap-1">
+              <div className="flex items-start justify-between gap-3">
+                <span className="text-base text-tinta-lembut">{baris.label}</span>
+                <span className="flex items-center gap-2 text-right text-base font-bold text-tinta">
+                  {baris.nilai}
+                  {baris.keadaan === Keadaan.DISEBUTKAN_SEBAGIAN ? (
+                    <Lencana bentuk="lingkaran-setengah" teks={LABEL_SEBAGIAN} />
+                  ) : null}
+                </span>
+              </div>
+              {/* S09: hasil Lapis 1 melekat pada baris slot 1 (nama
+                  perusahaan) — bukan blok terpisah, karena itulah satu-satunya
+                  keterangan yang dicocokkan. Abu netral, tanpa lencana warna
+                  atau ikon peringatan (CLAUDE.md §3.6). */}
+              {baris.slot === 1 && isiLembar.hasilLapis1 ? (
+                <p className="text-right text-sm text-redup">
+                  {isiLembar.hasilLapis1.kalimat}
+                </p>
+              ) : null}
             </li>
           ))}
         </ul>
@@ -314,7 +432,9 @@ function LembarPratinjau({ isiLembar }: { isiLembar: IsiLembar }) {
                 <Lencana bentuk="lingkaran-kosong" />
                 {baris.kalimat}
               </span>
-              <span className="shrink-0 text-sm text-redup">
+              {/* S11: tinta-lembut, bukan redup — redup di atas latar-kosong
+                  hanya ±4,39:1, di bawah ambang 4,5:1 (BLUEPRINT H.7). */}
+              <span className="shrink-0 text-sm text-tinta-lembut">
                 {baris.dasarHukum.join(", ")}
               </span>
             </li>
@@ -322,6 +442,16 @@ function LembarPratinjau({ isiLembar }: { isiLembar: IsiLembar }) {
         </ul>
         <p className="mt-2 text-base italic text-redup">{KALIMAT_BAWAH_BLOK_2}</p>
       </div>
+
+      {/* 6. Catatan hitungan — BLUEPRINT H.9 butir 6: HANYA muncul bila
+          Lapis 2 aktif dan datanya cukup. Kotak bergaris putus-putus, abu
+          netral, tanpa warna merah maupun ikon peringatan. */}
+      {isiLembar.catatanHitungan ? (
+        <div className="rounded-lg border border-dashed border-garis p-4">
+          <h3 className="text-base font-bold text-tinta-lembut">{LABEL_CATATAN_HITUNGAN}</h3>
+          <p className="mt-2 text-base text-tinta-lembut">{isiLembar.catatanHitungan}</p>
+        </div>
+      ) : null}
 
       <div>
         <h2 className="rounded bg-latar-blok px-3 py-2 text-base font-bold text-tinta-lembut">

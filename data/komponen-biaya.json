@@ -1,0 +1,17 @@
+{
+  "tanggalAcuan": "18 September 2026",
+  "sumber": "Pasal 30 ayat (1) Undang-Undang Nomor 18 Tahun 2017 tentang Pelindungan Pekerja Migran Indonesia, dibaca bersama kategorisasi komponen biaya penempatan yang berlaku umum di lingkungan Kementerian Pelindungan Pekerja Migran Indonesia (P2MI/BP2MI).",
+  "catatan": "Berkas ini memuat NAMA kategori komponen biaya yang lazim dikenakan dalam proses penempatan, bukan besaran rupiah per komponen — besaran itu ditetapkan per negara tujuan lewat Keputusan Kepala BP2MI tersendiri (mis. KEPKA Nomor 131 Tahun 2023 untuk Arab Saudi) dan tidak dapat digeneralisasi lintas negara dalam batas waktu Hack Day ini. Rumus baris hitungan pada BLUEPRINT F.7 tidak memerlukan besaran per komponen — hanya total upah dan total biaya dari tawaran itu sendiri. Kehadiran berkas ini berfungsi sebagai saklar aktif Lapis 2, sejalan dengan BLUEPRINT G.5.",
+  "komponen": [
+    { "nama": "Pelatihan kerja" },
+    { "nama": "Sertifikasi kompetensi kerja" },
+    { "nama": "Pemeriksaan kesehatan dan psikologi" },
+    { "nama": "Dokumen perjalanan dan persyaratan (paspor, dan sejenisnya)" },
+    { "nama": "Visa kerja" },
+    { "nama": "Tiket keberangkatan" },
+    { "nama": "Tiket kepulangan" },
+    { "nama": "Akomodasi selama masa tunggu" },
+    { "nama": "Jasa perusahaan penempatan" },
+    { "nama": "Jaminan sosial Pekerja Migran Indonesia" }
+  ]
+}

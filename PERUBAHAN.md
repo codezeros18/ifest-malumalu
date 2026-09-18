@@ -33,6 +33,25 @@ Ditulis konkret, bukan "karena keterbatasan waktu" saja.]
 
 ---
 
+## [PB-010] Layar hasil dipisah dari layar koreksi — 3 layar, batas langkah dinaikkan 5 → 6
+
+**Jam ke-**         : ~S13 (redesign UI)
+**Diputuskan oleh** : PM/pengguna, dieksekusi Window 2
+
+**Kondisi di proposal penyisihan**
+S07/S08 mengunci arsitektur 2 layar (`/`, `/periksa`): lembar hasil muncul inline di bawah kartu koreksi pada layar yang sama setelah tombol "Terbitkan" ditekan, dibuktikan `tests/alur/jumlah-langkah.test.ts` (5 langkah, SATU tujuan `router.push`) dan dicatat status "2 dari maks 3 layar terpenuhi" di S12-6.
+
+**Hal yang diubah**
+Ditambah rute `/hasil` sebagai layar ketiga. `src/app/periksa/page.tsx` sekarang hanya menilai dan merakit lembar, lalu `router.push("/hasil")`. Data lembar (dan object URL gambar PNG dari `/api/kartu`) dioper lewat singleton di memori tab (`src/lib/hasilSementara.ts`) — bukan storage/server — dan dibuang begitu `/hasil` ditinggalkan atau tab ditutup. `/hasil` yang dimuat langsung tanpa data (refresh/akses langsung) diarahkan balik ke `/`. Ditambah juga `loading.tsx` bergaya SaaS (kartu + spinner, token warna proyek) di `/`, `/periksa`, dan `/hasil` untuk transisi rute. Sekalian me-redesign `/periksa` (Poppins via `next/font/google`, kartu form, toggle "tidak tahu") atas permintaan pengguna — desain disusun dari kebutuhan 10 keterangan proyek sendiri, bukan replikasi tata letak dari referensi luar (CLAUDE.md §2).
+
+**Alasan perubahan**
+Permintaan eksplisit pengguna: hasil pemeriksaan dirasa lebih jelas sebagai layar tujuan tersendiri, bukan bagian bawah layar koreksi yang di-scroll otomatis.
+
+**Dampak terhadap masalah inti**
+Jumlah layar tetap dalam batas §4 (3, bukan melebihi). Langkah dari buka tautan sampai lembar terbit naik dari 5 → **6** — dinaikkan eksplisit di `tests/alur/jumlah-langkah.test.ts` dengan komentar yang menyalin alasan ini, konsisten dengan aturan §4 "menaikkan batas memerlukan entri tertulis". Jumlah TINDAKAN PENGGUNA (klik) tidak bertambah — yang bertambah murni satu perpindahan rute otomatis tanpa aksi tambahan. Alur inti (baca → koreksi wajib → nilai → rakit → lembar terbit dapat diteruskan) tidak berubah maknanya; S07-8 (penilaian wajib lewat layar koreksi) tetap dijaga test yang sama.
+
+---
+
 ## [PB-001] Dua label tombol galat ditambahkan di luar teks BLUEPRINT F
 
 **Jam ke-**         : ~6

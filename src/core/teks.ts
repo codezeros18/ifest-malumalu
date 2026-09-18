@@ -154,6 +154,9 @@ export const LABEL_GANTI_BAHASA_ID = "Bahasa Indonesia";
 export const LABEL_GANTI_BAHASA_JV = "Basa Jawa";
 export const LABEL_PILIH_BAHASA = "Pilih bahasa";
 
+/** Ditampilkan sesaat saat berpindah antar-layar (S13: layar hasil terpisah). */
+export const LABEL_MEMUAT_HALAMAN = "Memuat...";
+
 /**
  * Contoh isian per slot untuk mengubah layar koreksi dari "ujian" menjadi
  * "wawancara terpandu" bagi pengguna awam berliterasi rendah.

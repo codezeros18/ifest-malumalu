@@ -47,18 +47,44 @@ export default function BarisKeterangan({
   return (
     <div
       className={[
-        "flex flex-col gap-2 border-b border-garis py-4 transition-colors",
+        "flex flex-col gap-3 rounded-2xl border p-4 transition-colors sm:p-5",
         // Sprint UI-inklusif: baris "tidak tahu" diberi latar penuh supaya
         // keadaannya terbaca SEKILAS — bukan hanya dari kolom yang memudar.
         // Abu netral, tanpa warna merah maupun ikon peringatan (3.6).
-        tidakTahu ? "-mx-3 rounded-xl bg-latar-kosong px-3" : "",
+        tidakTahu
+          ? "border-garis bg-latar-kosong"
+          : "border-garis bg-kertas focus-within:border-aksen",
       ]
         .filter(Boolean)
         .join(" ")}
     >
-      <label htmlFor={idNilai} className="text-lg font-bold text-tinta-lembut">
-        {nomor}. {label}
-      </label>
+      <div className="flex items-start justify-between gap-3">
+        <label htmlFor={idNilai} className="text-base font-semibold text-tinta-lembut sm:text-lg">
+          <span className="mr-1.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-latar-blok text-sm font-bold text-tinta-lembut">
+            {nomor}
+          </span>
+          {label}
+        </label>
+
+        {/* Saklar "tidak tahu" — abu netral, tanpa warna merah (3.6) */}
+        <label
+          htmlFor={idTidakTahu}
+          className="flex shrink-0 cursor-pointer select-none items-center gap-2 text-right text-sm font-medium text-redup"
+        >
+          <span>{labelTidakTahu}</span>
+          <span className="relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border border-garis bg-latar-blok px-1 transition-colors has-[:checked]:border-aksen has-[:checked]:bg-aksen">
+            <input
+              id={idTidakTahu}
+              type="checkbox"
+              checked={tidakTahu}
+              onChange={(peristiwa) => onUbahTidakTahu(peristiwa.target.checked)}
+              className="peer sr-only"
+            />
+            <span className="pointer-events-none h-5 w-5 rounded-full bg-kertas shadow transition-transform peer-checked:translate-x-5" />
+          </span>
+        </label>
+      </div>
+
       <textarea
         id={idNilai}
         value={nilai}
@@ -66,21 +92,8 @@ export default function BarisKeterangan({
         placeholder={placeholder}
         onChange={tanganiUbahNilai}
         rows={2}
-        className="min-h-14 rounded-xl border border-garis bg-kertas px-3 py-2 text-lg text-tinta placeholder:text-redup focus:border-aksen focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-aksen focus-visible:ring-offset-2 disabled:bg-latar-kosong disabled:text-tinta-lembut"
+        className="min-h-14 w-full rounded-xl border border-garis bg-kertas px-4 py-3 text-lg text-tinta placeholder:text-redup focus:border-aksen focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-aksen/40 disabled:bg-latar-kosong disabled:text-tinta-lembut"
       />
-      <label
-        htmlFor={idTidakTahu}
-        className="flex min-h-11 w-fit cursor-pointer select-none items-center gap-2.5 text-lg text-tinta-lembut"
-      >
-        <input
-          id={idTidakTahu}
-          type="checkbox"
-          checked={tidakTahu}
-          onChange={(peristiwa) => onUbahTidakTahu(peristiwa.target.checked)}
-          className="h-6 w-6 rounded border-garis accent-aksen focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-aksen"
-        />
-        {labelTidakTahu}
-      </label>
     </div>
   );
 }

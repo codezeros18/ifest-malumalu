@@ -133,9 +133,11 @@ const BERKAS_DIPINDAI = [
   join(process.cwd(), "src", "app", "page.tsx"),
   join(process.cwd(), "src", "app", "layout.tsx"),
   join(process.cwd(), "src", "app", "periksa", "page.tsx"),
+  join(process.cwd(), "src", "app", "hasil", "page.tsx"),
   join(process.cwd(), "src", "ui", "AreaUnggah.tsx"),
   join(process.cwd(), "src", "ui", "PesanGalat.tsx"),
   join(process.cwd(), "src", "ui", "BarisKeterangan.tsx"),
+  join(process.cwd(), "src", "ui", "LembarPratinjau.tsx"),
 ];
 
 const POLA_KATA_GANDA = /[A-Za-zÀ-ÿ]+[ \t]+[A-Za-zÀ-ÿ]+/;

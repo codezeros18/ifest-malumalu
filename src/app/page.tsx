@@ -184,17 +184,58 @@ function BagianTentang({
           </section>
         </div>
 
-        <div className="flex flex-wrap items-center gap-4 rounded-2xl border border-[#dbe4fb] bg-white p-6">
-          <button
-            type="button"
-            onClick={onKembali}
-            className="rounded-xl bg-[#0955d4] px-6 py-3 text-[15px] font-bold text-white transition-colors hover:bg-[#0a4bbb]"
-          >
-            {t.tentang.tombolKembali}
-          </button>
-          <p className="text-[15px] text-[#52586b]">
-            {t.tentang.catatanKembali}
-          </p>
+        <div className="relative overflow-hidden rounded-[30px] border border-[#dbe4fb] bg-gradient-to-r from-[#f4f8ff] via-white to-[#fff7df] p-6 shadow-[0_28px_80px_-36px_rgba(9,85,212,0.45)] sm:p-8">
+          <div className="absolute -right-10 -top-10 h-28 w-28 rounded-full bg-[#fac10b]/20 blur-2xl" />
+          <div className="absolute -bottom-12 left-8 h-28 w-28 rounded-full bg-[#0955d4]/10 blur-2xl" />
+
+          <div className="relative flex flex-col gap-2 md:flex-row md:items-center xl:justify-between">
+            <div className="max-w-[560px]">
+              <h3 className="text-[24px] font-extrabold leading-[1.1] tracking-[-0.04em] text-[#0b1220] sm:text-[30px] lg:text-[34px]">
+                Yuk, lanjutkan prosesnya dengan lebih gampang!
+              </h3>
+
+              <p className="mt-3 max-w-[460px] text-[15px] font-medium leading-relaxed text-[#52586b] sm:text-[16px]">
+                Prosesnya dibuat lebih jelas, lebih santai, dan lebih ramah buat
+                kamu yang ingin langsung lanjut tanpa ribet.
+              </p>
+
+              <button
+                type="button"
+                onClick={onKembali}
+                className="mt-5 inline-flex items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#0f63ff_0%,#0b4ecb_100%)] px-5 py-3.5 text-[15px] font-bold text-white shadow-[0_24px_40px_-20px_rgba(9,85,212,0.9)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_28px_44px_-20px_rgba(9,85,212,1)] active:translate-y-0 w-full md:w-max"
+              >
+                {t.tentang.tombolKembali}
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/15">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M5 12h14" />
+                    <path d="m12 5 7 7-7 7" />
+                  </svg>
+                </span>
+              </button>
+            </div>
+
+            <div className="relative flex items-end justify-center px-0 pb-0 pt-0 md:ml-[-10px] xl:ml-[-4px] xl:justify-end">
+              <div className="absolute -bottom-2 right-4 h-20 w-20 rounded-full bg-[#fac10b]/30 blur-2xl" />
+              <div className="relative flex items-end justify-center">
+                <img
+                  src="/assets/maskot1.png"
+                  width={250}
+                  height={250}
+                  alt="maskot 1"
+                  className="h-[250px] w-auto object-contain drop-shadow-[0_18px_28px_rgba(9,85,212,0.2)]"
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </main>

@@ -9,7 +9,11 @@ import SitusFooter from "../../ui/SitusFooter";
 import { ambilHasilSementara } from "../../lib/hasilSementara";
 import type { HasilSementara, LembarTerbit } from "../../lib/hasilSementara";
 import { isiTemplat } from "../../core/perakitan";
-import { TOMBOL_UNDUH, TOMBOL_BAGIKAN, TOMBOL_UNDUH_PDF } from "../../core/teks";
+import {
+  TOMBOL_UNDUH,
+  TOMBOL_BAGIKAN,
+  TOMBOL_UNDUH_PDF,
+} from "../../core/teks";
 import type { KamusLembar } from "../../core/teks";
 import {
   kamusLembarUntuk,
@@ -159,7 +163,8 @@ export default function HalamanHasil() {
       konteks.drawImage(gambar, 0, 0);
       const dataUrlJpeg = kanvas.toDataURL("image/jpeg", 0.9);
 
-      const tinggiMm = (gambar.naturalHeight / gambar.naturalWidth) * LEBAR_PDF_MM;
+      const tinggiMm =
+        (gambar.naturalHeight / gambar.naturalWidth) * LEBAR_PDF_MM;
       const dok = new jsPDF({
         orientation: "portrait",
         unit: "mm",

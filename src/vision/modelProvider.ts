@@ -214,8 +214,9 @@ export const modelProvider: Pembaca = {
         })
       : JSON.stringify({
           model: namaModel,
-          max_tokens: 2048,
+          max_tokens: 8192,
           temperature: 0.1,
+          reasoning: { effort: "low" },
           response_format: { type: "json_object" },
           messages: [
             {

@@ -24,16 +24,52 @@ import {
 // Perlu API Node lengkap (dipakai next/og secara internal) — bukan edge.
 export const runtime = "nodejs";
 
+/**
+ * Batas atas yang PERSIS sama dengan bentuk sah `IsiLembar` (10 keterangan,
+ * 7 pertanyaan). Tanpa ini, klien dapat mengirim `blok1` berisi ribuan baris
+ * dan `tinggiLembar` meledak → OOM. `Array.isArray` saja tidak cukup: itu
+ * hanya memeriksa jenis, bukan ukuran.
+ */
+const MAKS_BARIS = 10;
+const MAKS_PERTANYAAN = 7;
+const MAKS_PANJANG_TEKS = 2_000;
+
+function teksPendek(nilai: unknown): boolean {
+  return typeof nilai === "string" && nilai.length <= MAKS_PANJANG_TEKS;
+}
+
+/** Baris blok1 punya `label`; baris blok2 punya `kalimat`. Keduanya punya `slot`. */
+function barisValid(baris: unknown): boolean {
+  if (typeof baris !== "object" || baris === null) {
+    return false;
+  }
+  const o = baris as Record<string, unknown>;
+  if (typeof o["slot"] !== "number") {
+    return false;
+  }
+  return teksPendek(o["label"]) || teksPendek(o["kalimat"]);
+}
+
 function isiLembarValid(nilai: unknown): nilai is IsiLembar {
   if (typeof nilai !== "object" || nilai === null) {
     return false;
   }
   const objek = nilai as Record<string, unknown>;
+  const blok1 = objek["blok1"];
+  const blok2 = objek["blok2"];
+  const pertanyaan = objek["pertanyaan"];
+
   return (
-    Array.isArray(objek["blok1"]) &&
-    Array.isArray(objek["blok2"]) &&
-    Array.isArray(objek["pertanyaan"]) &&
-    typeof objek["tanggal"] === "string"
+    Array.isArray(blok1) &&
+    blok1.length <= MAKS_BARIS &&
+    blok1.every(barisValid) &&
+    Array.isArray(blok2) &&
+    blok2.length <= MAKS_BARIS &&
+    blok2.every(barisValid) &&
+    Array.isArray(pertanyaan) &&
+    pertanyaan.length <= MAKS_PERTANYAAN &&
+    pertanyaan.every(teksPendek) &&
+    teksPendek(objek["tanggal"])
   );
 }
 
@@ -57,8 +93,14 @@ export async function POST(request: Request): Promise<Response> {
     (body as { bahasa?: unknown } | null)?.bahasa === "jv" ? "jv" : "id";
   const kamus = kamusLembarUntuk(bahasa);
 
+  // Batas keras kedua setelah `isiLembarValid`: walau validasi lolos, jangan
+  // pernah meminta Satori merender kanvas absurd (jaga-jaga bila bentuk sah
+  // berubah tanpa memperbarui pagar). 20.000px jauh di atas tinggi nyata
+  // (kasus penuh ~4.000px sebelum dikali SKALA_RENDER untuk resolusi tajam).
+  const tinggiAman = Math.min(20_000, Math.max(1, tinggiLembar(isiLembar, kamus)));
+
   return new ImageResponse(elemenLembar(isiLembar, kamus), {
     width: LEBAR_LEMBAR * SKALA_RENDER,
-    height: tinggiLembar(isiLembar, kamus) * SKALA_RENDER,
+    height: tinggiAman * SKALA_RENDER,
   });
 }

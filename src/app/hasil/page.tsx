@@ -8,6 +8,11 @@ import SitusNavbar from "../../ui/SitusNavbar";
 import SitusFooter from "../../ui/SitusFooter";
 import { ambilHasilSementara } from "../../lib/hasilSementara";
 import type { HasilSementara, LembarTerbit } from "../../lib/hasilSementara";
+import {
+  ambilBahasaTersimpan,
+  atributLang,
+  simpanBahasa,
+} from "../../lib/simpananLokal";
 import { isiTemplat } from "../../core/perakitan";
 import { TOMBOL_UNDUH, TOMBOL_BAGIKAN, TOMBOL_UNDUH_PDF } from "../../core/teks";
 import type { KamusLembar } from "../../core/teks";
@@ -72,15 +77,16 @@ export default function HalamanHasil() {
   const [bahasa, setBahasa] = useState<"id" | "jv">("id");
 
   useEffect(() => {
-    const simpanan = localStorage.getItem("lembar_janji_bahasa");
-    if (simpanan === "jv" || simpanan === "id") {
+    const simpanan = ambilBahasaTersimpan();
+    if (simpanan) {
       setBahasa(simpanan);
+      document.documentElement.lang = atributLang(simpanan);
     }
   }, []);
 
   const pilihBahasa = (baru: "id" | "jv") => {
     setBahasa(baru);
-    localStorage.setItem("lembar_janji_bahasa", baru);
+    simpanBahasa(baru);
   };
 
   // Lembar yang terbit disimpan dalam KEDUA bahasa (`perBahasa`, lihat

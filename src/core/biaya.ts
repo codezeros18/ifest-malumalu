@@ -42,11 +42,12 @@ export type StatusLapis2 =
  * ditangkap, baik setelah "Rp"/"IDR" maupun pada bentuk telanjang "15 juta".
  */
 const POLA_ANGKA_RUPIAH =
-  /(?:rp|idr)\.?\s?([\d][\d.,]*)\s*(juta|ribu)?|(\d+(?:[.,]\d+)?)\s*(juta|ribu)\b/i;
+  /(?:rp|idr)\.?\s?([\d][\d.,]*)\s*(juta|jt|ribu|rb)?|(\d+(?:[.,]\d+)?)\s*(juta|jt|ribu|rb)\b/i;
 
 function pengali(kata: string | undefined): number {
-  if (kata === "juta") return 1_000_000;
-  if (kata === "ribu") return 1_000;
+  const k = kata?.toLowerCase();
+  if (k === "juta" || k === "jt") return 1_000_000;
+  if (k === "ribu" || k === "rb") return 1_000;
   return 1;
 }
 

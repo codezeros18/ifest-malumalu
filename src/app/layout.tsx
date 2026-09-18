@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
-// @ts-expect-error CSS is handled by Next.js at build time.
 import "./globals.css";
 import { JUDUL_HALAMAN_UTAMA, SUBJUDUL_HALAMAN_UTAMA } from "../core/teks";
 

@@ -116,12 +116,17 @@ export default function HalamanUtama() {
           return;
         }
 
+        const nilaiAwal = nilaiSlotKeRekaman(hasil.hasilBaca.nilai);
         simpanIsian({
           sumber: "gambar",
-          nilai: nilaiSlotKeRekaman(hasil.hasilBaca.nilai),
+          nilai: nilaiAwal,
           ditandaiTidakTahu: [],
           kodeGalatAwal:
             hasil.jenis === "fallback-manual" ? KodeGalat.E_MODEL_TIDAK_TERSEDIA : undefined,
+          // Baseline untuk metrik anonim "apakah dikoreksi?" (CLAUDE.md
+          // §3.5) — dibandingkan di /periksa terhadap nilai akhir setelah
+          // koreksi, tidak pernah dipakai untuk penilaian itu sendiri.
+          nilaiAsli: nilaiAwal,
         });
         router.push("/periksa");
       } catch {

@@ -11,6 +11,7 @@ import {
   rekamanKeNilaiSlot,
   simpanIsian,
 } from "../../lib/simpananLokal";
+import { catat } from "../../lib/catat";
 import { SLOT_IDS, slotDenganId } from "../../core/slot";
 import type { SlotId } from "../../core/slot";
 import { Keadaan } from "../../core/tipe";
@@ -86,6 +87,21 @@ function kodeGalatValid(nilai: string | undefined): KodeGalat | null {
 }
 
 /**
+ * Metrik anonim "apakah dikoreksi?" (CLAUDE.md §3.5) — murni membandingkan
+ * teks, tidak pernah dipakai untuk penilaian. Jalur manual tidak punya
+ * baseline pembacaan untuk dibandingkan, jadi selalu `false`.
+ */
+function apakahDikoreksi(
+  bacaanAsli: Readonly<Record<string, string>> | null,
+  nilaiSlotSekarang: Readonly<Record<SlotId, string>>,
+  tidakTahu: ReadonlySet<SlotId>,
+): boolean {
+  if (!bacaanAsli) return false;
+  if (tidakTahu.size > 0) return true;
+  return SLOT_IDS.some((id) => (bacaanAsli[String(id)] ?? "").trim() !== nilaiSlotSekarang[id].trim());
+}
+
+/**
  * 🔴 S09 — Lapis 1 dan 2 boleh mati (BLUEPRINT G.5). `src/core/pencocokan.ts`
  * dan `src/core/biaya.ts` dilarang menyentuh berkas sama sekali (batas
  * modul `src/core`), jadi pembacaan `data/*.json` — SATU-SATUNYA tempat di
@@ -155,6 +171,12 @@ export default function HalamanPeriksa() {
   // pengguna tahu kenapa hasilnya tidak ada di gambar, bukan dibuat diam.
   const [catatanLapis1, setCatatanLapis1] = useState<string | null>(null);
   const [catatanLapis2, setCatatanLapis2] = useState<string | null>(null);
+  // Baseline hasil pembacaan gambar SEBELUM dikoreksi, dan jam halaman ini
+  // dibuka — keduanya murni untuk metrik anonim (CLAUDE.md §3.5): "apakah
+  // dikoreksi?" dan "berapa detik sampai lembar terbit?". Tidak pernah
+  // dipakai untuk penilaian maupun ditampilkan ke pengguna.
+  const [bacaanAsli, setBacaanAsli] = useState<Readonly<Record<string, string>> | null>(null);
+  const [waktuBukaMs] = useState<number>(() => Date.now());
 
   // Object URL gambar lembar dibuang saat diganti atau saat halaman
   // ditinggalkan — gambar TIDAK PERNAH disimpan ke server (CLAUDE.md 3.5),
@@ -175,6 +197,7 @@ export default function HalamanPeriksa() {
       setNilaiSlot(rekamanKeNilaiSlot(draf.nilai, SLOT_IDS) as Record<SlotId, string>);
       setTidakTahu(tidakTahuDariRekaman(draf.ditandaiTidakTahu));
       setGalatAwal(kodeGalatValid(draf.kodeGalatAwal));
+      setBacaanAsli(draf.nilaiAsli ?? null);
     }
     setTermuat(true);
   }, []);
@@ -282,6 +305,20 @@ export default function HalamanPeriksa() {
       // Diam-diam gagal — LembarPratinjau (teks biasa) tetap tampil di
       // bawah sebagai jalan mundur. Lembar tetap "terbit" apa adanya.
     }
+
+    // S10: pencatatan metrik anonim, fire-and-forget, persis di titik
+    // lembar selesai dirender (lihat komentar desain di src/lib/catat.ts).
+    // `dibagikan` selalu `false` di sini karena tombol bagikan belum bisa
+    // ditekan pada titik ini — satu-satunya titik panggilan yang dijamin
+    // "satu baris = satu pemeriksaan" (CLAUDE.md §3.5: nol agregasi lintas
+    // pengguna, tidak ada baris kedua yang menyusul untuk sesi yang sama).
+    catat({
+      jalur_masukan: sumber,
+      jumlah_kosong: penilaian.jumlahKosong,
+      dikoreksi: apakahDikoreksi(bacaanAsli, nilaiSlot, tidakTahu),
+      dibagikan: false,
+      durasi_detik: Math.round((Date.now() - waktuBukaMs) / 1000),
+    });
   }
 
   function tanganiUnduh() {

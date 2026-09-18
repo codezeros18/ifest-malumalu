@@ -19,6 +19,13 @@ export interface IsianTersimpan {
   readonly ditandaiTidakTahu: readonly string[];
   /** Kode galat (dari src/core/galat.ts) yang terjadi sebelum halaman ini dibuka, bila ada. */
   readonly kodeGalatAwal?: string;
+  /**
+   * Nilai APA ADANYA dari hasil pembacaan gambar, SEBELUM pengguna
+   * mengoreksi apa pun — hanya diisi saat `sumber === "gambar"`. Dipakai
+   * semata untuk membandingkan "apakah hasil dikoreksi?" (metrik anonim,
+   * CLAUDE.md §3.5), tidak pernah dipakai untuk penilaian.
+   */
+  readonly nilaiAsli?: Readonly<Record<string, string>>;
 }
 
 function ambilLocalStorage(): Storage | null {

@@ -150,11 +150,24 @@ function ujiSlot8JaminanSosial(teks: string): HasilUjiKualitatif {
  */
 const POLA_ANGKA_BIAYA = /(rp\.?\s?\d[\d.,]*|idr\.?\s?\d[\d.,]*|\d+\s*juta\b)/gi;
 
+/**
+ * Angka biaya yang SAMA dua kali bukan rincian — "Total Rp15 juta, dibayar
+ * Rp15 juta" hanya menyebut satu angka. Karena itu yang dihitung adalah
+ * jumlah nilai BERBEDA, bukan jumlah kemunculan.
+ */
+function jumlahAngkaUnik(cocok: readonly string[]): number {
+  const unik = new Set(
+    cocok.map((t) => t.toLowerCase().replace(/\s+/g, "").replace(/^rp\.?|^idr\.?/, "")),
+  );
+  return unik.size;
+}
+
 function ujiSlot9BiayaDanTanggungan(teks: string): HasilUjiKualitatif {
   const cocok = teks.match(POLA_ANGKA_BIAYA) ?? [];
+  const jumlah = jumlahAngkaUnik(cocok);
 
-  if (cocok.length === 0) return "gagal";
-  if (cocok.length === 1) return "sebagian";
+  if (jumlah === 0) return "gagal";
+  if (jumlah === 1) return "sebagian";
   return "lulus";
 }
 

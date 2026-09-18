@@ -251,15 +251,12 @@ export const modelProvider: Pembaca = {
     }
 
     if (!responsMentah.ok) {
-      let rincian = "";
-      try {
-        rincian = await responsMentah.text();
-      } catch {
-        // Abaikan bila pembacaan rincian gagal
-      }
+      // Hanya status yang dilaporkan — badan galat penyedia tidak pernah
+      // diteruskan ke log, supaya tidak ada peluang ia membawa header
+      // permintaan (termasuk Authorization) ke dalam log penggelaran.
       throw new GalatModelProvider(
         "panggilan-gagal",
-        `Model mengembalikan status HTTP ${responsMentah.status}: ${rincian.slice(0, 300)}`,
+        `Model mengembalikan status HTTP ${responsMentah.status}.`,
       );
     }
 

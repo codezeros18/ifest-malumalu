@@ -67,13 +67,17 @@ function uraiBadanPencatatan(mentah: unknown): BadanPencatatan | null {
   }
 
   const durasiDetikMentah = objek["durasi_detik"];
-  const durasiDetik = typeof durasiDetikMentah === "number" ? durasiDetikMentah : null;
+  const durasiDetikMentah2 = typeof durasiDetikMentah === "number" ? durasiDetikMentah : null;
+  const durasiDetik =
+    durasiDetikMentah2 === null ? null : Math.min(86_400, Math.max(0, Math.round(durasiDetikMentah2)));
 
   // Dibentuk ulang field demi field — kunci lain apa pun pada `objek`
   // (mis. "nama_perusahaan") berhenti di sini, tidak pernah ikut terbawa.
+  // Rentangnya dijepit: metrik anonim tetap harus masuk akal walau klien
+  // mengirim angka karangan (jumlah_kosong memang selalu 0..10).
   return {
     jalur_masukan: jalurMasukan,
-    jumlah_kosong: jumlahKosong,
+    jumlah_kosong: Math.min(10, Math.max(0, jumlahKosong)),
     dikoreksi,
     dibagikan,
     durasi_detik: durasiDetik,

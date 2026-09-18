@@ -32,8 +32,23 @@ export type StatusLapis2 =
   | { readonly status: "data-kurang" }
   | { readonly status: "dimatikan" };
 
-/** Mengenali "Rp1.500.000", "IDR 1.500.000", atau "15 juta" sebagai angka. */
-const POLA_ANGKA_RUPIAH = /(?:rp|idr)\.?\s?([\d][\d.,]*)|(\d+(?:[.,]\d+)?)\s*juta\b/i;
+/**
+ * Mengenali "Rp1.500.000", "IDR 1.500.000", "Rp 15 juta", atau "15 juta"
+ * sebagai angka.
+ *
+ * 🔴 "Rp 15 juta" pernah terbaca sebagai 15 (bukan 15.000.000) karena cabang
+ * "Rp"/"IDR" berhenti di angka sebelum kata pengali — akibatnya lembar
+ * mencetak "± 0 bulan upah". Kata pengali "juta"/"ribu" sekarang ikut
+ * ditangkap, baik setelah "Rp"/"IDR" maupun pada bentuk telanjang "15 juta".
+ */
+const POLA_ANGKA_RUPIAH =
+  /(?:rp|idr)\.?\s?([\d][\d.,]*)\s*(juta|ribu)?|(\d+(?:[.,]\d+)?)\s*(juta|ribu)\b/i;
+
+function pengali(kata: string | undefined): number {
+  if (kata === "juta") return 1_000_000;
+  if (kata === "ribu") return 1_000;
+  return 1;
+}
 
 export function ekstrakAngkaRupiah(teks: string | null): number | null {
   if (!teks) return null;
@@ -41,17 +56,13 @@ export function ekstrakAngkaRupiah(teks: string | null): number | null {
   const cocok = teks.match(POLA_ANGKA_RUPIAH);
   if (!cocok) return null;
 
-  if (cocok[1]) {
-    const angka = Number(cocok[1].replace(/[.,]/g, ""));
-    return Number.isFinite(angka) && angka > 0 ? angka : null;
-  }
+  // Cabang "Rp"/"IDR": pemisah ribuan dibuang ("5.000.000" → 5000000), sama
+  // seperti sebelumnya. Cabang telanjang "15 juta": koma = desimal ("1,5").
+  const angka = cocok[1]
+    ? Number(cocok[1].replace(/[.,]/g, "")) * pengali(cocok[2])
+    : Number((cocok[3] ?? "").replace(",", ".")) * pengali(cocok[4]);
 
-  if (cocok[2]) {
-    const angka = Number(cocok[2].replace(",", ".")) * 1_000_000;
-    return Number.isFinite(angka) && angka > 0 ? angka : null;
-  }
-
-  return null;
+  return Number.isFinite(angka) && angka > 0 ? angka : null;
 }
 
 /**

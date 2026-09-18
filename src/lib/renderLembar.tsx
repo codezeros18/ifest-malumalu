@@ -15,6 +15,7 @@
  * diisi `rakitIsiLembar` (S04). Berkas ini hanya MENAMPILKANNYA.
  */
 
+import React from "react";
 import { Keadaan } from "../core/tipe";
 import type { IsiLembar } from "../core/tipe";
 import {
@@ -240,6 +241,7 @@ export function elemenLembar(isiLembar: IsiLembar) {
         display: "flex",
         flexDirection: "column",
         width: LEBAR_LEMBAR,
+        minHeight: "100%",
         backgroundColor: warna("kertas"),
         fontFamily: "sans-serif",
         borderRadius: 0,

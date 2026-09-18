@@ -23,9 +23,12 @@ import {
   KETERANGAN_KOREKSI,
   LABEL_TIDAK_TAHU,
   TOMBOL_LANJUT,
+  TOMBOL_UNDUH,
+  TOMBOL_BAGIKAN,
+  PENANDA_WAKTU_TEMPLAT,
+  LABEL_BLOK_2_TEMPLAT,
   PESAN_GALAT,
   LABEL_BLOK_1,
-  LABEL_BLOK_2_TEMPLAT,
   LABEL_BLOK_3,
   LABEL_SEBAGIAN,
   KALIMAT_PEMBUKA_BLOK_1,
@@ -34,6 +37,19 @@ import {
   KALIMAT_BAWAH_BLOK_2,
   PENUTUP_LEMBAR,
 } from "../../core/teks";
+
+const NAMA_BERKAS_LEMBAR = "lembar-janji.png";
+
+function tanggalJamSekarang(): { tanggal: string; jam: string } {
+  const sekarang = new Date();
+  const tanggal = sekarang.toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+  const jam = sekarang.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+  return { tanggal, jam };
+}
 
 function nilaiKosong(): Record<SlotId, string> {
   const hasil = {} as Record<SlotId, string>;
@@ -68,6 +84,18 @@ export default function HalamanPeriksa() {
   const [tidakTahu, setTidakTahu] = useState<Set<SlotId>>(new Set());
   const [galatAwal, setGalatAwal] = useState<KodeGalat | null>(null);
   const [hasilTerbit, setHasilTerbit] = useState<IsiLembar | null>(null);
+  const [urlGambarLembar, setUrlGambarLembar] = useState<string | null>(null);
+
+  // Object URL gambar lembar dibuang saat diganti atau saat halaman
+  // ditinggalkan — gambar TIDAK PERNAH disimpan ke server (CLAUDE.md 3.5),
+  // dan ini mencegah kebocoran memori blob di peramban.
+  useEffect(() => {
+    return () => {
+      if (urlGambarLembar) {
+        URL.revokeObjectURL(urlGambarLembar);
+      }
+    };
+  }, [urlGambarLembar]);
 
   // Muat draf tersimpan (bila ada) sekali saat halaman dibuka — S07-6.
   useEffect(() => {
@@ -111,7 +139,7 @@ export default function HalamanPeriksa() {
   // 🔴 SATU-SATUNYA tempat `nilai()` (penilaian) dipanggil di seluruh app —
   // dari sebuah handler tombol, bukan dari useEffect maupun dari keluaran
   // Pembaca secara langsung. Lihat tests/alur/koreksi-wajib.test.ts.
-  function tanganiTerbitkanLembar() {
+  async function tanganiTerbitkanLembar() {
     const nilaiFinal = {} as Record<SlotId, string | null>;
     const keyakinan = {} as Record<SlotId, number>;
 
@@ -126,14 +154,67 @@ export default function HalamanPeriksa() {
       ditandaiTidakTahu: [...tidakTahu],
     };
 
+    const { tanggal, jam } = tanggalJamSekarang();
     const penilaian = nilaiPenilaian(hasilBacaFinal, keyakinan);
     const isiLembar = rakitIsiLembar({
       penilaian,
       nilaiAsli: nilaiFinal,
-      tanggal: new Date().toLocaleString("id-ID"),
+      tanggal: isiTemplat(PENANDA_WAKTU_TEMPLAT, { tanggal, jam }),
     });
 
     setHasilTerbit(isiLembar);
+    if (urlGambarLembar) {
+      URL.revokeObjectURL(urlGambarLembar);
+    }
+    setUrlGambarLembar(null);
+
+    // S08: render gambar sungguhan sisi server (src/app/api/kartu). Bila
+    // gagal apa pun sebabnya, LembarPratinjau (teks biasa) di bawah tetap
+    // tampil sebagai jalan mundur — lembar tetap "terbit" meski gambarnya
+    // tidak berhasil dibuat.
+    try {
+      const respons = await fetch("/api/kartu", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isiLembar }),
+      });
+      if (!respons.ok) {
+        throw new Error("kartu-gagal");
+      }
+      const blob = await respons.blob();
+      setUrlGambarLembar(URL.createObjectURL(blob));
+    } catch {
+      // Diam-diam gagal — LembarPratinjau (teks biasa) tetap tampil di
+      // bawah sebagai jalan mundur. Lembar tetap "terbit" apa adanya.
+    }
+  }
+
+  function tanganiUnduh() {
+    if (!urlGambarLembar) return;
+    const tautan = document.createElement("a");
+    tautan.href = urlGambarLembar;
+    tautan.download = NAMA_BERKAS_LEMBAR;
+    tautan.click();
+  }
+
+  async function tanganiBagikan() {
+    if (!urlGambarLembar) return;
+    try {
+      const respons = await fetch(urlGambarLembar);
+      const blob = await respons.blob();
+      const berkas = new File([blob], NAMA_BERKAS_LEMBAR, { type: "image/png" });
+      if (typeof navigator.canShare === "function" && navigator.canShare({ files: [berkas] })) {
+        await navigator.share({ files: [berkas] });
+        return;
+      }
+    } catch {
+      // Jatuh ke unduh di bawah — termasuk bila pengguna membatalkan berbagi.
+    }
+    tanganiUnduh();
+  }
+
+  function teksAlternatifGambarLembar(isiLembar: IsiLembar): string {
+    return `${isiTemplat(LABEL_BLOK_2_TEMPLAT, { n: String(isiLembar.blok2.length) })}. ${PENUTUP_LEMBAR}`;
   }
 
   const pesanGalatAwal = galatAwal ? PESAN_GALAT[galatAwal] : null;
@@ -164,7 +245,28 @@ export default function HalamanPeriksa() {
 
       <Tombol onClick={tanganiTerbitkanLembar}>{TOMBOL_LANJUT}</Tombol>
 
-      {hasilTerbit ? <LembarPratinjau isiLembar={hasilTerbit} /> : null}
+      {hasilTerbit ? (
+        <div className="flex flex-col gap-4">
+          {urlGambarLembar ? (
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element -- blob: URL sisi klien, bukan aset next/image */}
+              <img
+                src={urlGambarLembar}
+                alt={teksAlternatifGambarLembar(hasilTerbit)}
+                className="w-full rounded-none border border-garis"
+              />
+              <div className="flex gap-3">
+                <Tombol onClick={tanganiUnduh}>{TOMBOL_UNDUH}</Tombol>
+                <Tombol varian="sekunder" onClick={tanganiBagikan}>
+                  {TOMBOL_BAGIKAN}
+                </Tombol>
+              </div>
+            </>
+          ) : (
+            <LembarPratinjau isiLembar={hasilTerbit} />
+          )}
+        </div>
+      ) : null}
     </main>
   );
 }

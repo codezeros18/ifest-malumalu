@@ -35,13 +35,18 @@ export interface OpsiPemilihPembaca {
    * kunci API dan `penyediaModel` apa pun. Tidak ada jalan ke model.
    */
   readonly modelDimatikan?: boolean;
+  /**
+   * S12-1 — mode demo: lapisan model dimatikan. Bila `true`, `manualProvider`
+   * SELALU dipilih — diperiksa paling awal.
+   */
+  readonly paksaManual?: boolean;
 }
 
 export function pilihPembaca(
   sumber: SumberTawaran,
   opsi: OpsiPemilihPembaca = {},
 ): Pembaca {
-  if (opsi.modelDimatikan) {
+  if (opsi.modelDimatikan || opsi.paksaManual) {
     return manualProvider;
   }
 

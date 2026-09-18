@@ -23,7 +23,7 @@ function Bulatan({ bentuk }: { bentuk: Bentuk }) {
         className="inline-block h-3 w-3 shrink-0 rounded-full border border-tinta-lembut"
         style={{
           background:
-            "linear-gradient(90deg, var(--tw-lencana-isi, #374151) 50%, transparent 50%)",
+            "linear-gradient(90deg, currentColor 50%, transparent 50%)",
         }}
       />
     );

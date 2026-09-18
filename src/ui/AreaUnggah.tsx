@@ -14,6 +14,9 @@ export interface AreaUnggahProps {
   readonly keterangan?: string;
   readonly ukuranMaksimalByte: number;
   readonly disabled?: boolean;
+  readonly sedangMemroses?: boolean;
+  readonly labelMemroses?: string;
+  readonly keteranganMemroses?: string;
   readonly onBerkasDiterima: (berkas: File) => void;
   readonly onBerkasDitolak: (alasan: AlasanBerkasDitolak) => void;
 }
@@ -36,6 +39,9 @@ export default function AreaUnggah({
   keterangan,
   ukuranMaksimalByte,
   disabled = false,
+  sedangMemroses = false,
+  labelMemroses,
+  keteranganMemroses,
   onBerkasDiterima,
   onBerkasDitolak,
 }: AreaUnggahProps) {
@@ -98,31 +104,48 @@ export default function AreaUnggah({
   return (
     <div className="flex flex-col gap-2">
       <div
-        role="button"
-        tabIndex={disabled ? -1 : 0}
-        aria-disabled={disabled}
+        role={sedangMemroses ? "status" : "button"}
+        tabIndex={disabled || sedangMemroses ? -1 : 0}
+        aria-disabled={disabled || sedangMemroses}
+        aria-busy={sedangMemroses}
+        aria-live={sedangMemroses ? "polite" : undefined}
         aria-describedby={idKeterangan}
-        onClick={bukaDialogBerkas}
-        onKeyDown={tanganiPapanTik}
-        onPaste={tanganiTempel}
+        onClick={sedangMemroses ? undefined : bukaDialogBerkas}
+        onKeyDown={sedangMemroses ? undefined : tanganiPapanTik}
+        onPaste={sedangMemroses ? undefined : tanganiTempel}
         onDragOver={(peristiwa) => {
           peristiwa.preventDefault();
-          if (!disabled) setDiseret(true);
+          if (!disabled && !sedangMemroses) setDiseret(true);
         }}
         onDragLeave={() => setDiseret(false)}
-        onDrop={tanganiJatuh}
+        onDrop={sedangMemroses ? undefined : tanganiJatuh}
         className={[
-          "flex min-h-40 flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed px-4 py-6 text-center transition-colors",
-          disabled
-            ? "cursor-not-allowed border-garis bg-latar-kosong opacity-50"
-            : "cursor-pointer bg-kertas hover:bg-latar-blok",
-          !disabled && diseret ? "border-aksen bg-latar-blok" : "",
-          !disabled && !diseret ? "border-garis" : "",
+          "flex min-h-40 flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed px-4 py-6 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-aksen focus-visible:ring-offset-2",
+          sedangMemroses
+            ? "border-aksen/50 bg-latar-kosong cursor-wait"
+            : disabled
+              ? "cursor-not-allowed border-garis bg-latar-kosong opacity-50"
+              : "cursor-pointer bg-kertas hover:bg-latar-kosong",
+          !disabled && !sedangMemroses && diseret ? "border-aksen bg-latar-kosong" : "",
+          !disabled && !sedangMemroses && !diseret ? "border-garis" : "",
         ]
           .filter(Boolean)
           .join(" ")}
       >
-        <span className="text-base font-bold text-aksen">{label}</span>
+        {sedangMemroses ? (
+          <div className="flex flex-col items-center gap-3">
+            <div
+              aria-hidden="true"
+              className="h-8 w-8 rounded-full border-2 border-garis border-t-aksen animate-spin motion-reduce:animate-pulse"
+            />
+            <span className="text-lg font-bold text-tinta">{labelMemroses ?? label}</span>
+            {keteranganMemroses ? (
+              <p className="text-sm text-redup">{keteranganMemroses}</p>
+            ) : null}
+          </div>
+        ) : (
+          <span className="text-lg font-bold text-aksen">{label}</span>
+        )}
       </div>
       <input
         ref={rujukanMasukan}

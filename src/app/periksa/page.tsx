@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import BarisKeterangan from "../../ui/BarisKeterangan";
 import PesanGalat from "../../ui/PesanGalat";
 import Tombol from "../../ui/Tombol";
@@ -28,11 +28,13 @@ import {
   KETERANGAN_KOREKSI,
   LABEL_TIDAK_TAHU,
   TOMBOL_LANJUT,
+  TOMBOL_SEDANG_MENERBITKAN,
   TOMBOL_UNDUH,
   TOMBOL_BAGIKAN,
   PENANDA_WAKTU_TEMPLAT,
   LABEL_BLOK_2_TEMPLAT,
   PESAN_GALAT,
+  CONTOH_ISIAN_PER_SLOT,
   LABEL_BLOK_1,
   LABEL_BLOK_3,
   LABEL_SEBAGIAN,
@@ -45,7 +47,21 @@ import {
   LAPIS1_DIMATIKAN,
   LAPIS2_ANGKA_TIDAK_ADA,
   LAPIS2_DIMATIKAN,
+  LABEL_GANTI_BAHASA_ID,
+  LABEL_GANTI_BAHASA_JV,
+  LABEL_PILIH_BAHASA,
 } from "../../core/teks";
+import {
+  JUDUL_LAYAR_KOREKSI_JAWA,
+  KETERANGAN_KOREKSI_JAWA,
+  LABEL_TIDAK_TAHU_JAWA,
+  TOMBOL_LANJUT_JAWA,
+  TOMBOL_SEDANG_MENERBITKAN_JAWA,
+  TOMBOL_UNDUH_JAWA,
+  TOMBOL_BAGIKAN_JAWA,
+  CONTOH_ISIAN_PER_SLOT_JAWA,
+  PESAN_GALAT_JAWA,
+} from "../../core/teksJawa";
 
 const NAMA_BERKAS_LEMBAR = "lembar-janji.png";
 
@@ -163,8 +179,12 @@ export default function HalamanPeriksa() {
   const [nilaiSlot, setNilaiSlot] = useState<Record<SlotId, string>>(nilaiKosong);
   const [tidakTahu, setTidakTahu] = useState<Set<SlotId>>(new Set());
   const [galatAwal, setGalatAwal] = useState<KodeGalat | null>(null);
+  const [galatPeriksa, setGalatPeriksa] = useState<KodeGalat | null>(null);
+  const [sedangMenerbitkan, setSedangMenerbitkan] = useState(false);
   const [hasilTerbit, setHasilTerbit] = useState<IsiLembar | null>(null);
   const [urlGambarLembar, setUrlGambarLembar] = useState<string | null>(null);
+  const [bahasa, setBahasa] = useState<"id" | "jv">("id");
+  const rujukanHasil = useRef<HTMLDivElement>(null);
   // S09: catatan Lapis 1/2 yang TIDAK ikut ke lembar yang dibagikan (dashed
   // box gambar hanya muncul saat aktif+cukup, BLUEPRINT H.9 butir 6) tetapi
   // tetap wajib ditampilkan ke pengguna di layar (CLAUDE.md §3.1) — supaya
@@ -188,6 +208,22 @@ export default function HalamanPeriksa() {
       }
     };
   }, [urlGambarLembar]);
+
+  // Muat preferensi bahasa pengguna bila tersimpan
+  useEffect(() => {
+    const simpanan = localStorage.getItem("lembar_janji_bahasa");
+    if (simpanan === "jv" || simpanan === "id") {
+      setBahasa(simpanan);
+    }
+  }, []);
+
+  const gantiBahasa = useCallback(() => {
+    setBahasa((sebelumnya) => {
+      const baru = sebelumnya === "id" ? "jv" : "id";
+      localStorage.setItem("lembar_janji_bahasa", baru);
+      return baru;
+    });
+  }, []);
 
   // Muat draf tersimpan (bila ada) sekali saat halaman dibuka — S07-6.
   useEffect(() => {
@@ -214,10 +250,12 @@ export default function HalamanPeriksa() {
   }, [termuat, sumber, nilaiSlot, tidakTahu]);
 
   function ubahNilai(id: SlotId, teks: string) {
+    if (galatPeriksa) setGalatPeriksa(null);
     setNilaiSlot((sebelumnya) => ({ ...sebelumnya, [id]: teks }));
   }
 
   function ubahTidakTahu(id: SlotId, ditandai: boolean) {
+    if (galatPeriksa) setGalatPeriksa(null);
     setTidakTahu((sebelumnya) => {
       const berikutnya = new Set(sebelumnya);
       if (ditandai) {
@@ -233,77 +271,102 @@ export default function HalamanPeriksa() {
   // dari sebuah handler tombol, bukan dari useEffect maupun dari keluaran
   // Pembaca secara langsung. Lihat tests/alur/koreksi-wajib.test.ts.
   async function tanganiTerbitkanLembar() {
-    const nilaiFinal = {} as Record<SlotId, string | null>;
-    const keyakinan = {} as Record<SlotId, number>;
+    if (sedangMenerbitkan) return;
 
-    for (const id of SLOT_IDS) {
-      const teks = nilaiSlot[id].trim();
-      nilaiFinal[id] = teks.length > 0 ? teks : null;
-      keyakinan[id] = teks.length > 0 ? 1 : 0;
+    // F.9 E_TIDAK_ADA_MASUKAN: bila belum ada satu pun keterangan yang diisi
+    // dan belum ada satu pun yang ditandai tidak tahu, tampilkan galat F.9
+    // daripada menerbitkan lembar hampa.
+    const adaMasukan =
+      SLOT_IDS.some((id) => nilaiSlot[id].trim().length > 0) || tidakTahu.size > 0;
+    if (!adaMasukan) {
+      setGalatPeriksa(KodeGalat.E_TIDAK_ADA_MASUKAN);
+      return;
     }
 
-    const hasilBacaFinal: HasilBacaFinal = {
-      nilai: nilaiFinal,
-      ditandaiTidakTahu: [...tidakTahu],
-    };
+    setGalatPeriksa(null);
+    setSedangMenerbitkan(true);
 
-    const { tanggal, jam } = tanggalJamSekarang();
-    const penilaian = nilaiPenilaian(hasilBacaFinal, keyakinan);
-
-    // S09: Lapis 1 dan 2 dijalankan di sini — SATU-SATUNYA titik di app yang
-    // memuat data/*.json (lihat komentar muatSalinanP3MI/muatAcuanBiaya di
-    // atas). Kegagalan memuat berkas apa pun TIDAK PERNAH menghentikan
-    // penerbitan lembar (BLUEPRINT G.5) — hanya membuat hasilnya "dimatikan".
-    const [salinanP3MI, acuanBiaya] = await Promise.all([
-      muatSalinanP3MI(),
-      muatAcuanBiaya(),
-    ]);
-
-    const statusLapis1 = cocokkanNamaP3MI(nilaiFinal[1], salinanP3MI);
-    const statusLapis2 = hitungCatatanBiaya(nilaiFinal[5], nilaiFinal[9], acuanBiaya);
-
-    setCatatanLapis1(statusLapis1.status === "dimatikan" ? LAPIS1_DIMATIKAN : null);
-    setCatatanLapis2(
-      statusLapis2.status === "dimatikan"
-        ? LAPIS2_DIMATIKAN
-        : statusLapis2.status === "data-kurang"
-          ? LAPIS2_ANGKA_TIDAK_ADA
-          : null,
-    );
-
-    const isiLembar = rakitIsiLembar({
-      penilaian,
-      nilaiAsli: nilaiFinal,
-      tanggal: isiTemplat(PENANDA_WAKTU_TEMPLAT, { tanggal, jam }),
-      hasilLapis1: statusLapis1.status === "aktif" ? statusLapis1.hasil : undefined,
-      catatanHitungan:
-        statusLapis2.status === "tersedia" ? statusLapis2.catatanHitungan : undefined,
-    });
-
-    setHasilTerbit(isiLembar);
-    if (urlGambarLembar) {
-      URL.revokeObjectURL(urlGambarLembar);
-    }
-    setUrlGambarLembar(null);
-
-    // S08: render gambar sungguhan sisi server (src/app/api/kartu). Bila
-    // gagal apa pun sebabnya, LembarPratinjau (teks biasa) di bawah tetap
-    // tampil sebagai jalan mundur — lembar tetap "terbit" meski gambarnya
-    // tidak berhasil dibuat.
     try {
-      const respons = await fetch("/api/kartu", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isiLembar }),
-      });
-      if (!respons.ok) {
-        throw new Error("kartu-gagal");
+      const nilaiFinal = {} as Record<SlotId, string | null>;
+      const keyakinan = {} as Record<SlotId, number>;
+
+      for (const id of SLOT_IDS) {
+        const teks = nilaiSlot[id].trim();
+        nilaiFinal[id] = teks.length > 0 ? teks : null;
+        keyakinan[id] = teks.length > 0 ? 1 : 0;
       }
-      const blob = await respons.blob();
-      setUrlGambarLembar(URL.createObjectURL(blob));
-    } catch {
-      // Diam-diam gagal — LembarPratinjau (teks biasa) tetap tampil di
-      // bawah sebagai jalan mundur. Lembar tetap "terbit" apa adanya.
+
+      const hasilBacaFinal: HasilBacaFinal = {
+        nilai: nilaiFinal,
+        ditandaiTidakTahu: [...tidakTahu],
+      };
+
+      const { tanggal, jam } = tanggalJamSekarang();
+      const penilaian = nilaiPenilaian(hasilBacaFinal, keyakinan);
+
+      // S09: Lapis 1 dan 2 dijalankan di sini — SATU-SATUNYA titik di app yang
+      // memuat data/*.json (lihat komentar muatSalinanP3MI/muatAcuanBiaya di
+      // atas). Kegagalan memuat berkas apa pun TIDAK PERNAH menghentikan
+      // penerbitan lembar (BLUEPRINT G.5) — hanya membuat hasilnya "dimatikan".
+      const [salinanP3MI, acuanBiaya] = await Promise.all([
+        muatSalinanP3MI(),
+        muatAcuanBiaya(),
+      ]);
+
+      const statusLapis1 = cocokkanNamaP3MI(nilaiFinal[1], salinanP3MI);
+      const statusLapis2 = hitungCatatanBiaya(nilaiFinal[5], nilaiFinal[9], acuanBiaya);
+
+      setCatatanLapis1(statusLapis1.status === "dimatikan" ? LAPIS1_DIMATIKAN : null);
+      setCatatanLapis2(
+        statusLapis2.status === "dimatikan"
+          ? LAPIS2_DIMATIKAN
+          : statusLapis2.status === "data-kurang"
+            ? LAPIS2_ANGKA_TIDAK_ADA
+            : null,
+      );
+
+      const isiLembar = rakitIsiLembar({
+        penilaian,
+        nilaiAsli: nilaiFinal,
+        tanggal: isiTemplat(PENANDA_WAKTU_TEMPLAT, { tanggal, jam }),
+        hasilLapis1: statusLapis1.status === "aktif" ? statusLapis1.hasil : undefined,
+        catatanHitungan:
+          statusLapis2.status === "tersedia" ? statusLapis2.catatanHitungan : undefined,
+      });
+
+      setHasilTerbit(isiLembar);
+      if (urlGambarLembar) {
+        URL.revokeObjectURL(urlGambarLembar);
+      }
+      setUrlGambarLembar(null);
+
+      // S08: render gambar sungguhan sisi server (src/app/api/kartu). Bila
+      // gagal apa pun sebabnya, LembarPratinjau (teks biasa) di bawah tetap
+      // tampil sebagai jalan mundur — lembar tetap "terbit" meski gambarnya
+      // tidak berhasil dibuat.
+      try {
+        const respons = await fetch("/api/kartu", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ isiLembar }),
+        });
+        if (!respons.ok) {
+          throw new Error("kartu-gagal");
+        }
+        const blob = await respons.blob();
+        setUrlGambarLembar(URL.createObjectURL(blob));
+      } catch {
+        // Diam-diam gagal — LembarPratinjau (teks biasa) tetap tampil di
+        // bawah sebagai jalan mundur. Lembar tetap "terbit" apa adanya.
+      }
+
+      // Gulir ramah ke hasil terbit agar pengguna langsung melihat lembar
+      setTimeout(() => {
+        rujukanHasil.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        rujukanHasil.current?.focus();
+      }, 100);
+    } finally {
+      setSedangMenerbitkan(false);
     }
 
     // S10: pencatatan metrik anonim, fire-and-forget, persis di titik
@@ -349,16 +412,42 @@ export default function HalamanPeriksa() {
     return `${isiTemplat(LABEL_BLOK_2_TEMPLAT, { n: String(isiLembar.blok2.length) })}. ${PENUTUP_LEMBAR}`;
   }
 
-  const pesanGalatAwal = galatAwal ? PESAN_GALAT[galatAwal] : null;
+  const kamusPesanGalat = bahasa === "jv" ? PESAN_GALAT_JAWA : PESAN_GALAT;
+  const pesanGalatAwal = galatAwal ? kamusPesanGalat[galatAwal] : null;
+  const pesanGalatPeriksa = galatPeriksa ? kamusPesanGalat[galatPeriksa] : null;
+  const contohIsianAktif =
+    bahasa === "jv" ? CONTOH_ISIAN_PER_SLOT_JAWA : CONTOH_ISIAN_PER_SLOT;
 
   return (
-    <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-8">
+    <main className="mx-auto flex max-w-2xl flex-col gap-6 px-5 py-8">
+      <div
+        aria-hidden="true"
+        className="fixed inset-x-0 top-0 h-1.5 bg-aksen"
+      />
+
+      {/* Saklar Bahasa Daerah untuk kenyamanan musyawarah keluarga PMI */}
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={gantiBahasa}
+          aria-label={LABEL_PILIH_BAHASA}
+          className="inline-flex min-h-11 items-center gap-2 rounded-full border border-garis bg-kertas px-4 text-base font-semibold text-tinta-lembut hover:bg-latar-kosong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-aksen active:scale-[0.98] motion-reduce:transform-none"
+        >
+          <span>🌐 {bahasa === "id" ? LABEL_GANTI_BAHASA_JV : LABEL_GANTI_BAHASA_ID}</span>
+        </button>
+      </div>
+
       <div>
-        <h1 className="text-[28px] font-bold text-tinta">{JUDUL_LAYAR_KOREKSI}</h1>
-        <p className="mt-2 text-base text-tinta-lembut">{KETERANGAN_KOREKSI}</p>
+        <h1 className="text-[32px] font-bold leading-tight text-tinta">
+          {bahasa === "jv" ? JUDUL_LAYAR_KOREKSI_JAWA : JUDUL_LAYAR_KOREKSI}
+        </h1>
+        <p className="mt-2 text-lg leading-relaxed text-tinta-lembut">
+          {bahasa === "jv" ? KETERANGAN_KOREKSI_JAWA : KETERANGAN_KOREKSI}
+        </p>
       </div>
 
       {pesanGalatAwal ? <PesanGalat pesan={pesanGalatAwal.pesan} /> : null}
+      {pesanGalatPeriksa ? <PesanGalat pesan={pesanGalatPeriksa.pesan} /> : null}
 
       <div className="flex flex-col">
         {SLOT_IDS.map((id) => (
@@ -367,18 +456,32 @@ export default function HalamanPeriksa() {
             nomor={id}
             label={slotDenganId(id).nama}
             nilai={nilaiSlot[id]}
+            placeholder={contohIsianAktif[id]}
             tidakTahu={tidakTahu.has(id)}
-            labelTidakTahu={LABEL_TIDAK_TAHU}
+            labelTidakTahu={bahasa === "jv" ? LABEL_TIDAK_TAHU_JAWA : LABEL_TIDAK_TAHU}
             onUbahNilai={(teks) => ubahNilai(id, teks)}
             onUbahTidakTahu={(ditandai) => ubahTidakTahu(id, ditandai)}
           />
         ))}
       </div>
 
-      <Tombol onClick={tanganiTerbitkanLembar}>{TOMBOL_LANJUT}</Tombol>
+      <Tombol onClick={tanganiTerbitkanLembar} disabled={sedangMenerbitkan}>
+        {sedangMenerbitkan
+          ? bahasa === "jv"
+            ? TOMBOL_SEDANG_MENERBITKAN_JAWA
+            : TOMBOL_SEDANG_MENERBITKAN
+          : bahasa === "jv"
+            ? TOMBOL_LANJUT_JAWA
+            : TOMBOL_LANJUT}
+      </Tombol>
 
       {hasilTerbit ? (
-        <div className="flex flex-col gap-4">
+        <div
+          ref={rujukanHasil}
+          tabIndex={-1}
+          aria-live="polite"
+          className="flex flex-col gap-4 focus:outline-none"
+        >
           {/* S09: catatan Lapis 1/2 saat dimatikan/data kurang — selalu
               ditampilkan ke pengguna di layar, terlepas dari jalur gambar
               atau teks di bawahnya, karena keduanya tidak memuat kalimat
@@ -400,9 +503,11 @@ export default function HalamanPeriksa() {
                 className="w-full rounded-none border border-garis"
               />
               <div className="flex gap-3">
-                <Tombol onClick={tanganiUnduh}>{TOMBOL_UNDUH}</Tombol>
+                <Tombol onClick={tanganiUnduh}>
+                  {bahasa === "jv" ? TOMBOL_UNDUH_JAWA : TOMBOL_UNDUH}
+                </Tombol>
                 <Tombol varian="sekunder" onClick={tanganiBagikan}>
-                  {TOMBOL_BAGIKAN}
+                  {bahasa === "jv" ? TOMBOL_BAGIKAN_JAWA : TOMBOL_BAGIKAN}
                 </Tombol>
               </div>
             </>
@@ -422,18 +527,18 @@ export default function HalamanPeriksa() {
  */
 function LembarPratinjau({ isiLembar }: { isiLembar: IsiLembar }) {
   return (
-    <section className="flex flex-col gap-6 rounded-lg border border-garis p-4">
+    <section className="flex flex-col gap-6 rounded-2xl border border-garis bg-kertas p-5 shadow-sm">
       <div>
-        <h2 className="rounded bg-latar-blok px-3 py-2 text-base font-bold text-tinta-lembut">
+        <h2 className="rounded-lg bg-latar-blok px-3 py-2 text-lg font-bold text-tinta-lembut">
           {LABEL_BLOK_1}
         </h2>
-        <p className="mt-2 text-base text-tinta-lembut">{KALIMAT_PEMBUKA_BLOK_1}</p>
+        <p className="mt-2 text-lg text-tinta-lembut">{KALIMAT_PEMBUKA_BLOK_1}</p>
         <ul className="mt-2 flex flex-col gap-2">
           {isiLembar.blok1.map((baris) => (
             <li key={baris.slot} className="flex flex-col gap-1">
               <div className="flex items-start justify-between gap-3">
-                <span className="text-base text-tinta-lembut">{baris.label}</span>
-                <span className="flex items-center gap-2 text-right text-base font-bold text-tinta">
+                <span className="text-lg text-tinta-lembut">{baris.label}</span>
+                <span className="flex items-center gap-2 text-right text-lg font-bold text-tinta">
                   {baris.nilai}
                   {baris.keadaan === Keadaan.DISEBUTKAN_SEBAGIAN ? (
                     <Lencana bentuk="lingkaran-setengah" teks={LABEL_SEBAGIAN} />
@@ -455,56 +560,56 @@ function LembarPratinjau({ isiLembar }: { isiLembar: IsiLembar }) {
       </div>
 
       <div>
-        <h2 className="rounded bg-tinta-lembut px-3 py-2 text-base font-bold text-kertas">
+        <h2 className="rounded-lg bg-tinta-lembut px-3 py-2 text-lg font-bold text-kertas">
           {isiTemplat(LABEL_BLOK_2_TEMPLAT, { n: String(isiLembar.blok2.length) })}
         </h2>
-        <p className="mt-2 text-base text-redup">{KALIMAT_PEMBUKA_BLOK_2}</p>
+        <p className="mt-2 text-lg text-redup">{KALIMAT_PEMBUKA_BLOK_2}</p>
         <ul className="mt-2 flex flex-col gap-2">
           {isiLembar.blok2.map((baris) => (
             <li
               key={baris.slot}
-              className="flex items-start justify-between gap-3 rounded bg-latar-kosong p-3"
+              className="flex items-start justify-between gap-3 rounded-xl bg-latar-kosong p-3"
             >
-              <span className="flex items-center gap-2 text-base text-tinta-lembut">
+              <span className="flex items-center gap-2 text-lg text-tinta-lembut">
                 <Lencana bentuk="lingkaran-kosong" />
                 {baris.kalimat}
               </span>
               {/* S11: tinta-lembut, bukan redup — redup di atas latar-kosong
                   hanya ±4,39:1, di bawah ambang 4,5:1 (BLUEPRINT H.7). */}
-              <span className="shrink-0 text-sm text-tinta-lembut">
+              <span className="shrink-0 text-base text-tinta-lembut">
                 {baris.dasarHukum.join(", ")}
               </span>
             </li>
           ))}
         </ul>
-        <p className="mt-2 text-base italic text-redup">{KALIMAT_BAWAH_BLOK_2}</p>
+        <p className="mt-2 text-lg italic text-redup">{KALIMAT_BAWAH_BLOK_2}</p>
       </div>
 
       {/* 6. Catatan hitungan — BLUEPRINT H.9 butir 6: HANYA muncul bila
           Lapis 2 aktif dan datanya cukup. Kotak bergaris putus-putus, abu
           netral, tanpa warna merah maupun ikon peringatan. */}
       {isiLembar.catatanHitungan ? (
-        <div className="rounded-lg border border-dashed border-garis p-4">
-          <h3 className="text-base font-bold text-tinta-lembut">{LABEL_CATATAN_HITUNGAN}</h3>
-          <p className="mt-2 text-base text-tinta-lembut">{isiLembar.catatanHitungan}</p>
+        <div className="rounded-xl border-2 border-dashed border-garis p-4">
+          <h3 className="text-lg font-bold text-tinta-lembut">{LABEL_CATATAN_HITUNGAN}</h3>
+          <p className="mt-2 text-lg text-tinta-lembut">{isiLembar.catatanHitungan}</p>
         </div>
       ) : null}
 
       <div>
-        <h2 className="rounded bg-latar-blok px-3 py-2 text-base font-bold text-tinta-lembut">
+        <h2 className="rounded-lg bg-latar-blok px-3 py-2 text-lg font-bold text-tinta-lembut">
           {LABEL_BLOK_3}
         </h2>
-        <p className="mt-2 text-base text-tinta-lembut">{KALIMAT_PEMBUKA_BLOK_3}</p>
+        <p className="mt-2 text-lg text-tinta-lembut">{KALIMAT_PEMBUKA_BLOK_3}</p>
         <ol className="mt-2 flex flex-col gap-2">
           {isiLembar.pertanyaan.map((pertanyaan, indeks) => (
-            <li key={indeks} className="text-base text-tinta">
+            <li key={indeks} className="text-lg text-tinta">
               {indeks + 1}. {pertanyaan}
             </li>
           ))}
         </ol>
       </div>
 
-      <p className="border-t border-garis pt-4 text-base text-tinta-lembut">
+      <p className="border-t border-garis pt-4 text-lg text-tinta-lembut">
         {PENUTUP_LEMBAR}
       </p>
     </section>

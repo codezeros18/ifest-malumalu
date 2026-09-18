@@ -51,19 +51,30 @@ const LEBAR_ISI = LEBAR_LEMBAR - PADDING_HALAMAN * 2;
 /**
  * Ukuran huruf dalam PIKSEL pada render 1080px lebar.
  *
- * 🔴 JANGAN DIPERKECIL. Lembar ini diteruskan lewat percakapan WhatsApp dan
- * dibaca di ponsel lima inci TANPA perbesaran — CLAUDE.md 3.6 menetapkan teks
- * pada lembar minimal setara 14pt, dan angka-angka di bawah adalah lantainya,
- * bukan pilihan gaya. `tests/lib/renderLembar.test.ts` (S08-7) mengunci dua
- * hal: setiap fontSize isi wajib >= 22px, dan himpunan 30px wajib tepat 20
- * elemen (3 label blok + 10 kalimat blok2 + 7 pertanyaan). Percobaan
- * mengecilkannya (judul 20, isi 15, dasar hukum 10) pada commit "fix: hasil
- * lembar janji" membuat ketiga pagar itu merah dan sudah dibatalkan — lihat
- * PERUBAHAN.md PB-014.
+ * 🔴 DUA ZONA, jangan dicampur:
+ *
+ * (1) TEKS ISI — `labelBlok` 30, `blok1Nilai` 30, `blok2Kalimat` 30,
+ *     `pertanyaan` 30, `kalimatPembuka`/`blok1Label`/`kalimatBawahBlok2`/
+ *     `penutup` 26, `dasarHukum` 24. Ini LANTAI, bukan selera: lembar
+ *     diteruskan lewat percakapan WhatsApp dan dibaca di ponsel lima inci
+ *     TANPA perbesaran, dan CLAUDE.md 3.6 menetapkan teks lembar minimal
+ *     setara 14pt. Percobaan menurunkannya (judul 20, isi 15, dasar hukum 10)
+ *     pada commit "fix: hasil lembar janji" membuat tiga pagar S08-7/H.9 merah
+ *     dan sudah dibatalkan — lihat PERUBAHAN.md PB-014.
+ *
+ * (2) KEPALA YANG BUKAN TEKS ISI — `judul` dan `subjudul` boleh lebih kompak
+ *     (34 dan 22) atas permintaan pengguna, supaya kepalanya tidak menelan
+ *     seperempat tinggi lembar. Sekalipun di sini lantainya tetap berlaku:
+ *     `tests/lib/renderLembar.test.ts` menahan SETIAP fontSize isi pada
+ *     >= 22px, dan `subjudul: 22` duduk PERSIS di ambang itu — menurunkannya
+ *     satu piksel saja langsung merah.
+ *
+ * Pagar yang mengunci: setiap fontSize isi >= 22px, dan himpunan 30px wajib
+ * tepat 20 elemen (3 label blok + 10 kalimat blok2 + 7 pertanyaan).
  */
 const UKURAN = {
-  judul: 52,
-  subjudul: 28,
+  judul: 34,
+  subjudul: 22,
   penandaWaktu: 24,
   labelBlok: 30,
   kalimatPembuka: 26,

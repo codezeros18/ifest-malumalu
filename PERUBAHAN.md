@@ -65,6 +65,10 @@ Harganya: dua render PNG per penerbitan (paralel) dan dua data URL hidup di memo
 
 Bukti di peramban sungguhan dengan dropdown bahasa asli: terbit sekali di Indonesia → `/hasil` menampilkan PNG 3981px tinggi; tukar ke Basa Jawa → gambar BERGANTI (PNG 4141px, data URL berbeda, `alt` berbahasa Jawa); tukar kembali ke Indonesia → persis gambar pertama lagi.
 
+**Tambahan kedua (jam ~15,5) — kepala lembar lebih kompak, teks isi TIDAK disentuh**
+
+Menyusul keputusan pengguna atas pilihan "kompak tapi tetap ≥14pt": yang dikecilkan hanya bagian kepala yang BUKAN teks isi — `judul` 52 → **34** dan `subjudul` 28 → **22** — sementara seluruh teks isi (label blok 30, nilai 30, kalimat blok 2 30, ketujuh pertanyaan 30, kalimat pembuka/label baris/kalimat bawah blok 2/penutup 26, dasar hukum 24) tetap apa adanya. Lantai 14pt §3.6 tetap dipegang dan sekarang ditulis eksplisit sebagai dua zona di komentar `UKURAN`: `subjudul: 22` duduk PERSIS di ambang pagar S08-7 (setiap fontSize isi ≥ 22px), jadi menurunkannya satu piksel saja langsung merah. Efeknya terukur pada IsiLembar yang sama: tinggi render 1929 → **1896px** (Indonesia) dan 1965 → **1932px** (Jawa); `npm run verify` tetap 372 test hijau tanpa satu pun pagar diubah.
+
 ---
 
 ## [PB-014] Ukuran huruf lembar dikembalikan ke lantai 14pt, kepala lembar kembali berlatar tinta

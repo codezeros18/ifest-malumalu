@@ -116,14 +116,23 @@ function ambilTeksDariResponsModel(json: unknown): string | null {
   return null;
 }
 
-/** Membuang pagar blok kode markdown ```json ... ``` bila model tetap menambahkannya. */
+/** Membuang pagar blok kode markdown ```json ... ``` atau teks pengantar/penutup bila model menambahkannya. */
 function uraiJsonKeluaranModel(teksMentah: string): unknown {
-  const bersih = teksMentah
-    .trim()
-    .replace(/^```(?:json)?/i, "")
-    .replace(/```$/i, "")
-    .trim();
-  return JSON.parse(bersih);
+  const bersih = teksMentah.trim();
+  try {
+    return JSON.parse(bersih);
+  } catch {
+    // Abaikan dan coba ekstrak dari kurung kurawal terluar
+  }
+
+  const awal = bersih.indexOf("{");
+  const akhir = bersih.lastIndexOf("}");
+  if (awal !== -1 && akhir !== -1 && akhir > awal) {
+    const irisan = bersih.slice(awal, akhir + 1);
+    return JSON.parse(irisan);
+  }
+
+  throw new Error("Keluaran model bukan JSON yang dapat diuraikan.");
 }
 
 function tentukanEndpoint(rawBaseUrl?: string): string {
@@ -241,9 +250,15 @@ export const modelProvider: Pembaca = {
     }
 
     if (!responsMentah.ok) {
+      let rincian = "";
+      try {
+        rincian = await responsMentah.text();
+      } catch {
+        // Abaikan bila pembacaan rincian gagal
+      }
       throw new GalatModelProvider(
         "panggilan-gagal",
-        `Model mengembalikan status HTTP ${responsMentah.status}.`,
+        `Model mengembalikan status HTTP ${responsMentah.status}: ${rincian.slice(0, 300)}`,
       );
     }
 

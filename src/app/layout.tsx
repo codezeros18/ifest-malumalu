@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { JUDUL_HALAMAN_UTAMA, SUBJUDUL_HALAMAN_UTAMA } from "../core/teks";
 
 export const metadata: Metadata = {
-  title: "Lembar Janji",
-  description:
-    "Memeriksa apa yang sudah disebutkan dan apa yang belum dijawab pada tawaran kerja ke luar negeri.",
+  title: JUDUL_HALAMAN_UTAMA,
+  description: SUBJUDUL_HALAMAN_UTAMA,
 };
 
 export default function RootLayout({

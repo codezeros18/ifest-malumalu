@@ -267,7 +267,7 @@ export function elemenLembar(
         borderRadius: 0,
       }}
     >
-      {/* 1. Kepala — latar tinta, teks kertas/garis (BLUEPRINT H.9).
+      {/* 1. Kepala — latar `kepala` (biru), teks kertas/garis (BLUEPRINT H.9).
           Warna WAJIB lewat token `warna(...)`: berkas ini tidak boleh memuat
           hex mentah sama sekali — pagar kontras (`tests/ui/kontras.test.ts`)
           membaca TOKEN, jadi hex mentah di sini lolos dari semua pagar. */}
@@ -276,7 +276,7 @@ export function elemenLembar(
           display: "flex",
           flexDirection: "column",
           width: "100%",
-          backgroundColor: warna("tinta"),
+          backgroundColor: warna("kepala"),
           padding: `32px ${PADDING_HALAMAN}px`,
           gap: 8,
         }}

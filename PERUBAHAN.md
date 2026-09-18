@@ -33,6 +33,25 @@ Ditulis konkret, bukan "karena keterbatasan waktu" saja.]
 
 ---
 
+## [PB-018] Kepala lembar jadi biru — kali ini lewat token baru, bukan menambal fungsi token
+
+**Jam ke-**         : ~15 (18 September 2026, 23.00 WIB)
+**Diputuskan oleh** : Pemilik produk (dikonfirmasi langsung: memang ingin kepala biru), dieksekusi Window 1
+
+**Kondisi di proposal penyisihan**
+BLUEPRINT H.9: kepala lembar berlatar `tinta` (gelap), seluruh warna lewat token, nol hex mentah.
+
+**Hal yang diubah**
+Token warna baru `kepala: "#0955D4"` di `tailwind.config.ts`. `src/lib/renderLembar.tsx` memakai `warna("kepala")` untuk latar kepala (baris ~279) — satu baris, tidak ada perubahan lain. Teks isi dan pertanyaan TETAP `warna("tinta")`. Dua pasangan kontras baru dikunci di `tests/ui/kontras.test.ts` (`kertas` di atas `kepala` = 6,12:1; `garis` di atas `kepala` = 4,92:1 — keduanya lolos 4,5:1). Test H.9 diperbarui: yang dituntut sekarang latar `kepala`, bukan `tinta`.
+
+**Alasan perubahan**
+Permintaan eksplisit pemilik produk setelah dua kali percobaan sebelumnya (`83c2c21` dan `ae8b3b5`) gagal karena menambal `warna("tinta")` — yang membuat SELURUH teks lembar biru dan menaruh hex mentah di luar jangkauan pagar kontras. Cara yang benar adalah token tersendiri, sehingga perubahan hanya menyentuh satu permukaan dan tetap terperiksa pagar.
+
+**Dampak terhadap masalah inti**
+Nol. Lembar tetap terbaca (kontras lolos 4,5:1), dan tampilan sesuai keinginan pemilik produk. `npm run verify` hijau (380 test).
+
+---
+
 ## [PB-017] Revert kedua commit yang menaruh warna mentah di lembar & membajak fungsi token
 
 **Jam ke-**         : ~14 (18 September 2026, 22.55 WIB)

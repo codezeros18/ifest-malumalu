@@ -264,11 +264,13 @@ describe("Spesifikasi visual BLUEPRINT H.9", () => {
     }
   });
 
-  it("judul lembar tercetak di kepala, latar tinta", () => {
+  it("judul lembar tercetak di kepala, latar biru token `kepala`", () => {
     const { simpul, teks } = bongkarLembar(LEMBAR_KOSONG);
     expect(teks).toContain("LEMBAR JANJI");
-    const adaLatarTinta = simpul.some((s) => s.style?.["backgroundColor"] === WARNA.tinta);
-    expect(adaLatarTinta).toBe(true);
+    const adaLatarKepala = simpul.some(
+      (s) => s.style?.["backgroundColor"] === WARNA.kepala,
+    );
+    expect(adaLatarKepala).toBe(true);
   });
 
   it("penanda waktu tercantum di kepala lembar", () => {

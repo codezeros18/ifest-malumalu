@@ -29,6 +29,34 @@ Ditulis konkret, bukan "karena keterbatasan waktu" saja.]
 ---
 ---
 
+# ENTRI SUNGGUHAN
+
+---
+
+## [PB-001] Dua label tombol galat ditambahkan di luar teks BLUEPRINT F
+
+**Jam ke-**         : ~6
+**Diputuskan oleh** : Fullstack, Window 2 (S04)
+
+**Kondisi di proposal penyisihan**
+
+BLUEPRINT bagian F menyatakan seluruh kalimat yang dilihat pengguna sudah final dan disalin persis dari bagian F.1–F.10 ke `src/core/teks.ts`; tidak ada teks antarmuka yang ditulis di luar itu. Tabel pesan galat (F.9) mencantumkan kolom "Tindakan yang ditawarkan" untuk tujuh kode galat, termasuk "Tombol coba lagi" (untuk `E_JARINGAN`) dan "Tombol ulangi" (untuk `E_PEMBACAAN_KOSONG`).
+
+**Hal yang diubah**
+
+Ditambahkan dua konstanta teks baru di `src/core/teks.ts` yang tidak berasal dari kutipan F.1–F.10 mana pun: `TOMBOL_COBA_LAGI = "Coba lagi"` dan `TOMBOL_ULANGI = "Ulangi"`, dipakai sebagai nilai `tindakan` pada `PESAN_GALAT` untuk dua kode galat tersebut.
+
+**Alasan perubahan**
+
+BLUEPRINT F.9 mewajibkan kedua tombol itu ada, tetapi tidak pernah menuliskan label persisnya di bagian F mana pun — sebuah celah redaksional pada dokumen final, bukan keputusan produk yang berubah. Instruksi sprint S04 secara eksplisit mengizinkan pola ini: "bila sebuah teks belum ada di sini, tulis teksnya di sini lebih dahulu, lalu catat penambahannya." Membiarkan kolom itu tanpa label akan membuat tabel F.9 tidak dapat diimplementasikan sepenuhnya di S07.
+
+**Dampak terhadap masalah inti**
+
+Tidak ada dampak terhadap kosakata sistem (kedua kata tidak menuduh siapa pun, dan diperiksa test kosakata terlarang) maupun terhadap batas kuantitatif. Dampaknya murni redaksional dan berisiko kecil: bila PM/tim menetapkan istilah lain saat S07 membangun layar galat sungguhan, kedua label ini tinggal diganti di satu tempat (`teks.ts`). Ditandai eksplisit di `PROGRESS.md` [S04-W2] sebagai belum final, menunggu konfirmasi PM — bukan dianggap keputusan tertutup.
+
+---
+---
+
 # ⚠️ TIGA CONTOH ENTRI TELADAN
 
 > **Ketiga entri di bawah adalah CONTOH**, disiapkan sebelum Hack Day sebagai teladan mutu penulisan. Ketiganya menggambarkan perubahan yang paling mungkin benar-benar terjadi.

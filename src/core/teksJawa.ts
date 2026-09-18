@@ -82,7 +82,7 @@ export const NAMA_SLOT_JAWA: Readonly<Record<SlotId, string>> = {
   6: "Jam damel, prei, lan wekdal ngaso",
   7: "Laminipun prajanjian",
   8: "Jaminan sosial lan kaslametan",
-  9: "Wragad: ingkang dipun-suwesti lan sinten ingkang nanggung",
+  9: "Wragad: ingkang dipunsuwun lan sinten ingkang nanggung",
   10: "Dokumen ingkang badhe panjenengan genggem",
 };
 
@@ -283,7 +283,7 @@ export const KAMUS_LEMBAR_JAWA: KamusLembar = {
   lapis1Dimatikan:
     "Pamriksan dhateng daftar perusahaan berizin saweg mboten sumadya. Isinipun lembar punika tetep saged dipun-ginakaken. Kagem mriksa nama perusahaanipun, sowan dhateng kantor Layanan Terpadu Satu Atap utawi Badan Pelindungan Pekerja Migran Indonesia ing provinsi panjenengan.",
   barisHitunganLapis2Templat:
-    "Wragad ingkang dipun-suwesti sami kaliyan ± {n} wulan bayaran ingkang dipun-janjekaken.",
+    "Wragad ingkang dipunsuwun sami kaliyan ± {n} wulan bayaran ingkang dipun-janjekaken.",
   lapis2AngkaTidakAda:
     "Etangan punika betahaken agengipun bayaran lan agengipun wragad. Salah setunggalipun dereng kaserat wonten tawaran punika.",
   lapis2Dimatikan: "Pandhingan komponen wragad saweg mboten sumadya.",

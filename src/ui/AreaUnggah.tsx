@@ -112,17 +112,17 @@ export default function AreaUnggah({
         onDragLeave={() => setDiseret(false)}
         onDrop={tanganiJatuh}
         className={[
-          "flex min-h-40 flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed px-4 py-6 text-center transition-colors",
+          "flex min-h-40 flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed px-4 py-6 text-center transition-colors",
           disabled
             ? "cursor-not-allowed border-garis bg-latar-kosong opacity-50"
-            : "cursor-pointer bg-kertas hover:bg-latar-blok",
-          !disabled && diseret ? "border-aksen bg-latar-blok" : "",
+            : "cursor-pointer bg-kertas hover:bg-latar-kosong",
+          !disabled && diseret ? "border-aksen bg-latar-kosong" : "",
           !disabled && !diseret ? "border-garis" : "",
         ]
           .filter(Boolean)
           .join(" ")}
       >
-        <span className="text-base font-bold text-aksen">{label}</span>
+        <span className="text-lg font-bold text-aksen">{label}</span>
       </div>
       <input
         ref={rujukanMasukan}

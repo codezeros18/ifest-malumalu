@@ -163,6 +163,10 @@ export const TOMBOL_ULANGI = "Ulangi";
  * `E_MODEL_TIDAK_TERSEDIA` yang sudah ada — bukan kalimat baru.
  */
 export const TOMBOL_MATIKAN_PEMBACAAN_GAMBAR = "Matikan pembacaan gambar";
+export const TOMBOL_MATIKAN_MODEL = "Matikan model (mode demo)";
+export const TOMBOL_NYALAKAN_MODEL = "Nyalakan model lagi";
+export const KETERANGAN_MODEL_DIMATIKAN =
+  "Mode demo: lapisan model dimatikan. Gambar yang Anda kirim tidak dibaca mesin sama sekali — isiannya Anda ketik sendiri, dan alurnya tetap berjalan sampai lembar terbit.";
 
 // ---------------------------------------------------------------------------
 // F.9 — Pesan galat

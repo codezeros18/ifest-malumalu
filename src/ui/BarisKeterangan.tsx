@@ -43,8 +43,18 @@ export default function BarisKeterangan({
   }
 
   return (
-    <div className="flex flex-col gap-2 border-b border-garis py-4">
-      <label htmlFor={idNilai} className="text-base font-bold text-tinta-lembut">
+    <div
+      className={[
+        "flex flex-col gap-2 border-b border-garis py-4 transition-colors",
+        // Sprint UI-inklusif: baris "tidak tahu" diberi latar penuh supaya
+        // keadaannya terbaca SEKILAS — bukan hanya dari kolom yang memudar.
+        // Abu netral, tanpa warna merah maupun ikon peringatan (3.6).
+        tidakTahu ? "-mx-3 rounded-xl bg-latar-kosong px-3" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      <label htmlFor={idNilai} className="text-lg font-bold text-tinta-lembut">
         {nomor}. {label}
       </label>
       <textarea
@@ -53,18 +63,18 @@ export default function BarisKeterangan({
         disabled={tidakTahu}
         onChange={tanganiUbahNilai}
         rows={2}
-        className="min-h-11 rounded-lg border border-garis bg-kertas px-3 py-2 text-base text-tinta disabled:bg-latar-kosong disabled:text-tinta-lembut"
+        className="min-h-14 rounded-xl border border-garis bg-kertas px-3 py-2 text-lg text-tinta focus:border-aksen disabled:bg-latar-kosong disabled:text-tinta-lembut"
       />
       <label
         htmlFor={idTidakTahu}
-        className="flex w-fit items-center gap-2 text-base text-tinta-lembut"
+        className="flex min-h-11 w-fit items-center gap-2 text-lg text-tinta-lembut"
       >
         <input
           id={idTidakTahu}
           type="checkbox"
           checked={tidakTahu}
           onChange={(peristiwa) => onUbahTidakTahu(peristiwa.target.checked)}
-          className="h-5 w-5 rounded border-garis"
+          className="h-6 w-6 rounded border-garis accent-aksen"
         />
         {labelTidakTahu}
       </label>

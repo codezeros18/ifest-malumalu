@@ -315,10 +315,14 @@ export default function HalamanPeriksa() {
   const pesanGalatAwal = galatAwal ? PESAN_GALAT[galatAwal] : null;
 
   return (
-    <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-8">
+    <main className="mx-auto flex max-w-2xl flex-col gap-6 px-5 py-8">
+      <div
+        aria-hidden="true"
+        className="fixed inset-x-0 top-0 h-1.5 bg-aksen"
+      />
       <div>
-        <h1 className="text-[28px] font-bold text-tinta">{JUDUL_LAYAR_KOREKSI}</h1>
-        <p className="mt-2 text-base text-tinta-lembut">{KETERANGAN_KOREKSI}</p>
+        <h1 className="text-[32px] font-bold leading-tight text-tinta">{JUDUL_LAYAR_KOREKSI}</h1>
+        <p className="mt-2 text-lg leading-relaxed text-tinta-lembut">{KETERANGAN_KOREKSI}</p>
       </div>
 
       {pesanGalatAwal ? <PesanGalat pesan={pesanGalatAwal.pesan} /> : null}
@@ -385,18 +389,18 @@ export default function HalamanPeriksa() {
  */
 function LembarPratinjau({ isiLembar }: { isiLembar: IsiLembar }) {
   return (
-    <section className="flex flex-col gap-6 rounded-lg border border-garis p-4">
+    <section className="flex flex-col gap-6 rounded-2xl border border-garis bg-kertas p-5 shadow-sm">
       <div>
-        <h2 className="rounded bg-latar-blok px-3 py-2 text-base font-bold text-tinta-lembut">
+        <h2 className="rounded-lg bg-latar-blok px-3 py-2 text-lg font-bold text-tinta-lembut">
           {LABEL_BLOK_1}
         </h2>
-        <p className="mt-2 text-base text-tinta-lembut">{KALIMAT_PEMBUKA_BLOK_1}</p>
+        <p className="mt-2 text-lg text-tinta-lembut">{KALIMAT_PEMBUKA_BLOK_1}</p>
         <ul className="mt-2 flex flex-col gap-2">
           {isiLembar.blok1.map((baris) => (
             <li key={baris.slot} className="flex flex-col gap-1">
               <div className="flex items-start justify-between gap-3">
-                <span className="text-base text-tinta-lembut">{baris.label}</span>
-                <span className="flex items-center gap-2 text-right text-base font-bold text-tinta">
+                <span className="text-lg text-tinta-lembut">{baris.label}</span>
+                <span className="flex items-center gap-2 text-right text-lg font-bold text-tinta">
                   {baris.nilai}
                   {baris.keadaan === Keadaan.DISEBUTKAN_SEBAGIAN ? (
                     <Lencana bentuk="lingkaran-setengah" teks={LABEL_SEBAGIAN} />
@@ -418,56 +422,56 @@ function LembarPratinjau({ isiLembar }: { isiLembar: IsiLembar }) {
       </div>
 
       <div>
-        <h2 className="rounded bg-tinta-lembut px-3 py-2 text-base font-bold text-kertas">
+        <h2 className="rounded-lg bg-tinta-lembut px-3 py-2 text-lg font-bold text-kertas">
           {isiTemplat(LABEL_BLOK_2_TEMPLAT, { n: String(isiLembar.blok2.length) })}
         </h2>
-        <p className="mt-2 text-base text-redup">{KALIMAT_PEMBUKA_BLOK_2}</p>
+        <p className="mt-2 text-lg text-redup">{KALIMAT_PEMBUKA_BLOK_2}</p>
         <ul className="mt-2 flex flex-col gap-2">
           {isiLembar.blok2.map((baris) => (
             <li
               key={baris.slot}
-              className="flex items-start justify-between gap-3 rounded bg-latar-kosong p-3"
+              className="flex items-start justify-between gap-3 rounded-xl bg-latar-kosong p-3"
             >
-              <span className="flex items-center gap-2 text-base text-tinta-lembut">
+              <span className="flex items-center gap-2 text-lg text-tinta-lembut">
                 <Lencana bentuk="lingkaran-kosong" />
                 {baris.kalimat}
               </span>
               {/* S11: tinta-lembut, bukan redup — redup di atas latar-kosong
                   hanya ±4,39:1, di bawah ambang 4,5:1 (BLUEPRINT H.7). */}
-              <span className="shrink-0 text-sm text-tinta-lembut">
+              <span className="shrink-0 text-base text-tinta-lembut">
                 {baris.dasarHukum.join(", ")}
               </span>
             </li>
           ))}
         </ul>
-        <p className="mt-2 text-base italic text-redup">{KALIMAT_BAWAH_BLOK_2}</p>
+        <p className="mt-2 text-lg italic text-redup">{KALIMAT_BAWAH_BLOK_2}</p>
       </div>
 
       {/* 6. Catatan hitungan — BLUEPRINT H.9 butir 6: HANYA muncul bila
           Lapis 2 aktif dan datanya cukup. Kotak bergaris putus-putus, abu
           netral, tanpa warna merah maupun ikon peringatan. */}
       {isiLembar.catatanHitungan ? (
-        <div className="rounded-lg border border-dashed border-garis p-4">
-          <h3 className="text-base font-bold text-tinta-lembut">{LABEL_CATATAN_HITUNGAN}</h3>
-          <p className="mt-2 text-base text-tinta-lembut">{isiLembar.catatanHitungan}</p>
+        <div className="rounded-xl border-2 border-dashed border-garis p-4">
+          <h3 className="text-lg font-bold text-tinta-lembut">{LABEL_CATATAN_HITUNGAN}</h3>
+          <p className="mt-2 text-lg text-tinta-lembut">{isiLembar.catatanHitungan}</p>
         </div>
       ) : null}
 
       <div>
-        <h2 className="rounded bg-latar-blok px-3 py-2 text-base font-bold text-tinta-lembut">
+        <h2 className="rounded-lg bg-latar-blok px-3 py-2 text-lg font-bold text-tinta-lembut">
           {LABEL_BLOK_3}
         </h2>
-        <p className="mt-2 text-base text-tinta-lembut">{KALIMAT_PEMBUKA_BLOK_3}</p>
+        <p className="mt-2 text-lg text-tinta-lembut">{KALIMAT_PEMBUKA_BLOK_3}</p>
         <ol className="mt-2 flex flex-col gap-2">
           {isiLembar.pertanyaan.map((pertanyaan, indeks) => (
-            <li key={indeks} className="text-base text-tinta">
+            <li key={indeks} className="text-lg text-tinta">
               {indeks + 1}. {pertanyaan}
             </li>
           ))}
         </ol>
       </div>
 
-      <p className="border-t border-garis pt-4 text-base text-tinta-lembut">
+      <p className="border-t border-garis pt-4 text-lg text-tinta-lembut">
         {PENUTUP_LEMBAR}
       </p>
     </section>

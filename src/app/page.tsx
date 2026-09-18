@@ -16,8 +16,11 @@ import {
   SUBJUDUL_HALAMAN_UTAMA,
   TOMBOL_JALUR_GAMBAR,
   TOMBOL_JALUR_MANUAL,
-  TOMBOL_MATIKAN_PEMBACAAN_GAMBAR,
+  TOMBOL_MATIKAN_MODEL,
+  TOMBOL_NYALAKAN_MODEL,
   KETERANGAN_KESETARAAN,
+  KETERANGAN_MODEL_DIMATIKAN,
+  CATATAN_PRIVASI,
   PESAN_GALAT,
 } from "../core/teks";
 
@@ -61,7 +64,7 @@ async function bacaGambarSementara(
   // `pilihPembaca`), jadi satu-satunya cara menjamin model tidak tersentuh
   // adalah tidak mengirim permintaannya.
   if (modelDimatikan) {
-    const pembaca = pilihPembaca("gambar", { modelDimatikan: true });
+    const pembaca = pilihPembaca("gambar", { modelDimatikan: true, paksaManual: true });
     const hasilBaca = await pembaca.baca({ sumber: "gambar", berkas });
     return { jenis: "fallback-manual", hasilBaca };
   }
@@ -137,10 +140,18 @@ export default function HalamanUtama() {
   const pesanModelDimatikan = PESAN_GALAT[KodeGalat.E_MODEL_TIDAK_TERSEDIA];
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-8 px-4 py-10">
-      <div className="flex flex-col gap-2 text-center">
-        <h1 className="text-[28px] font-bold text-tinta">{JUDUL_HALAMAN_UTAMA}</h1>
-        <p className="text-base text-tinta-lembut">{SUBJUDUL_HALAMAN_UTAMA}</p>
+    <main className="mx-auto flex min-h-[100dvh] max-w-3xl flex-col gap-8 px-5 py-10">
+      {/* Sprint UI-inklusif: pita aksen tipis di atas memberi identitas
+          visual tanpa menambah kata — pengguna awam mengenali "ini halaman
+          resmi" dari konsistensi bentuknya, bukan dari logo yang harus
+          mereka baca. */}
+      <div
+        aria-hidden="true"
+        className="fixed inset-x-0 top-0 h-1.5 bg-aksen"
+      />
+      <div className="flex flex-col gap-3 text-center">
+        <h1 className="text-[32px] font-bold leading-tight text-tinta">{JUDUL_HALAMAN_UTAMA}</h1>
+        <p className="text-lg leading-relaxed text-tinta-lembut">{SUBJUDUL_HALAMAN_UTAMA}</p>
       </div>
 
       {/* S12-1: saat tombol peragaan aktif, layar menyatakannya apa adanya
@@ -173,26 +184,35 @@ export default function HalamanUtama() {
           varian="sekunder"
           onClick={tanganiJalurManual}
           disabled={sedangMemroses}
-          className="min-h-40"
+          className="min-h-40 rounded-2xl"
         >
           {TOMBOL_JALUR_MANUAL}
         </Tombol>
       </div>
 
-      <p className="text-center text-base text-redup">{KETERANGAN_KESETARAAN}</p>
+      <div className="flex flex-col gap-2 text-center">
+        <p className="text-base text-redup">{KETERANGAN_KESETARAAN}</p>
+        {/* CATATAN_PRIVASI sudah ada di teks.ts tetapi belum pernah
+            ditampilkan — untuk pengguna awam yang dimintai foto dokumen,
+            kalimat ini adalah penenang yang paling penting. */}
+        <p className="text-base text-redup">{CATATAN_PRIVASI}</p>
+      </div>
 
-      {/* S12-1: tombol peragaan. `aria-pressed` membawa keadaannya, labelnya
-          tetap (pola tombol-toggle WAI-ARIA), keadaan juga terlihat lewat
-          pesan di atas — tidak lewat warna saja (CLAUDE.md §3.6). */}
-      <div className="flex justify-center">
+      {/* S12-1: tombol peragaan. `aria-pressed` dan `aria-checked` membawa keadaannya,
+          keadaan juga terlihat lewat teks pesan — tidak lewat warna saja (CLAUDE.md §3.6). */}
+      <div className="flex flex-col items-center gap-2">
         <Tombol
-          varian="sekunder"
-          aria-pressed={modelDimatikan}
+          varian={modelDimatikan ? "utama" : "sekunder"}
+          role="switch"
+          aria-checked={modelDimatikan}
           onClick={() => setModelDimatikan((sebelumnya) => !sebelumnya)}
           disabled={sedangMemroses}
         >
-          {TOMBOL_MATIKAN_PEMBACAAN_GAMBAR}
+          {modelDimatikan ? TOMBOL_NYALAKAN_MODEL : TOMBOL_MATIKAN_MODEL}
         </Tombol>
+        {modelDimatikan ? (
+          <p className="text-center text-base text-redup">{KETERANGAN_MODEL_DIMATIKAN}</p>
+        ) : null}
       </div>
     </main>
   );

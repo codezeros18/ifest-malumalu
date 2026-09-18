@@ -27,7 +27,10 @@ export interface SitusNavbarProps {
  * (biru `#0955d4` / kuning `#fac10b`), bukan token `aksen` hijau —
  * penyesuaian sadar mengikuti redesign home, dicatat di PROGRESS.md.
  */
-export default function SitusNavbar({ bahasa, onGantiBahasa }: SitusNavbarProps) {
+export default function SitusNavbar({
+  bahasa,
+  onGantiBahasa,
+}: SitusNavbarProps) {
   const router = useRouter();
   const [menuTerbuka, setMenuTerbuka] = useState(false);
   const t = bahasa === "jv" ? TEKS_HALAMAN_UI_JAWA : TEKS_HALAMAN_UI;
@@ -44,7 +47,7 @@ export default function SitusNavbar({ bahasa, onGantiBahasa }: SitusNavbarProps)
 
   return (
     <>
-      <header className="relative z-20 flex items-center justify-between px-4 py-4 sm:px-6 sm:py-5 lg:px-14">
+      <header className="relative z-20 flex items-center justify-between px-4 py-4 sm:px-6 sm:py-5 lg:px-44">
         <button
           type="button"
           onClick={keBeranda}
@@ -90,7 +93,16 @@ export default function SitusNavbar({ bahasa, onGantiBahasa }: SitusNavbarProps)
           aria-controls="menu-navbar-mobile-sub"
           className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#dbe4fb] bg-white/70 text-[#3f4657] backdrop-blur md:hidden"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             {menuTerbuka ? (
               <>
                 <path d="M18 6 6 18" />

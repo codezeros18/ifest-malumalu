@@ -53,13 +53,14 @@ export interface BarisBlok2 {
   readonly dasarHukum: readonly string[];
 }
 
-export type KeluaranPencocokan = "ditemukan" | "mirip" | "tidak-ditemukan";
+export type KeluaranPencocokan = "ditemukan" | "mirip" | "tidak-ditemukan" | "dimatikan";
 
 /** Lapis 1. Boleh mati — karena itu opsional di IsiLembar. */
 export interface HasilLapis1 {
   readonly keluaran: KeluaranPencocokan;
   readonly kalimat: string;
   readonly tanggalSalinan: string;
+  readonly namaTarget?: string;
 }
 
 export interface IsiLembar {

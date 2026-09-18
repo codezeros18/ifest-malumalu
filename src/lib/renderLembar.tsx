@@ -29,6 +29,7 @@ import {
   KALIMAT_PEMBUKA_BLOK_2,
   KALIMAT_PEMBUKA_BLOK_3,
   KALIMAT_BAWAH_BLOK_2,
+  LABEL_CATATAN_HITUNGAN,
   PENUTUP_LEMBAR,
 } from "../core/teks";
 import { isiTemplat } from "../core/perakitan";
@@ -295,6 +296,27 @@ export function elemenLembar(isiLembar: IsiLembar) {
               {KALIMAT_PEMBUKA_BLOK_1}
             </span>
             {isiLembar.blok1.map((baris) => barisBlok1(baris))}
+            {isiLembar.hasilLapis1 ? (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  backgroundColor: warna("latar-kosong"),
+                  padding: "16px 20px",
+                  marginTop: 16,
+                }}
+              >
+                <span
+                  style={{
+                    display: "flex",
+                    fontSize: UKURAN.blok2Kalimat,
+                    color: warna("tinta-lembut"),
+                  }}
+                >
+                  {isiLembar.hasilLapis1.kalimat}
+                </span>
+              </div>
+            ) : null}
           </div>
         ),
       })}
@@ -336,6 +358,41 @@ export function elemenLembar(isiLembar: IsiLembar) {
           </div>
         ),
       })}
+
+      {/* 6. Catatan hitungan — kotak bergaris putus-putus (BLUEPRINT H.9) */}
+      {isiLembar.catatanHitungan ? (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            margin: `0 ${PADDING_HALAMAN}px 24px ${PADDING_HALAMAN}px`,
+            padding: "20px 24px",
+            border: `2px dashed ${warna("garis")}`,
+            backgroundColor: warna("latar-kosong"),
+          }}
+        >
+          <span
+            style={{
+              display: "flex",
+              fontSize: UKURAN.labelBlok,
+              fontWeight: 700,
+              color: warna("tinta-lembut"),
+              marginBottom: 8,
+            }}
+          >
+            {LABEL_CATATAN_HITUNGAN}
+          </span>
+          <span
+            style={{
+              display: "flex",
+              fontSize: UKURAN.blok2Kalimat,
+              color: warna("tinta"),
+            }}
+          >
+            {isiLembar.catatanHitungan}
+          </span>
+        </div>
+      ) : null}
 
       {/* 7. Blok 3 — pertanyaan */}
       {blokLembar({
@@ -483,6 +540,9 @@ export function tinggiLembar(isiLembar: IsiLembar): number {
   for (const baris of isiLembar.blok1) {
     tinggi += tinggiBarisBlok1(baris);
   }
+  if (isiLembar.hasilLapis1) {
+    tinggi += tinggiTeks(isiLembar.hasilLapis1.kalimat, UKURAN.blok2Kalimat, LEBAR_ISI_BLOK - 40) + 32 + 16;
+  }
 
   // Garis pemisah
   tinggi += 1;
@@ -495,6 +555,11 @@ export function tinggiLembar(isiLembar: IsiLembar): number {
     tinggi += tinggiBarisBlok2(baris);
   }
   tinggi += tinggiTeks(KALIMAT_BAWAH_BLOK_2, UKURAN.kalimatBawahBlok2, LEBAR_ISI_BLOK) + 8;
+
+  // Catatan Hitungan (Lapis 2)
+  if (isiLembar.catatanHitungan) {
+    tinggi += UKURAN.labelBlok * TINGGI_BARIS + 8 + tinggiTeks(isiLembar.catatanHitungan, UKURAN.blok2Kalimat, LEBAR_ISI_BLOK - 48) + 40 + 24;
+  }
 
   // Blok 3
   tinggi += PADDING_LABEL_BLOK_VERTIKAL * 2 + UKURAN.labelBlok * TINGGI_BARIS;

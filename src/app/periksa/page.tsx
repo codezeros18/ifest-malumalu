@@ -17,6 +17,8 @@ import { Keadaan } from "../../core/tipe";
 import type { HasilBacaFinal, IsiLembar, SumberTawaran } from "../../core/tipe";
 import { nilai as nilaiPenilaian } from "../../core/penilaian";
 import { rakitIsiLembar, isiTemplat } from "../../core/perakitan";
+import { cocokanNamaPerusahaan } from "../../core/pencocokan";
+import { hitungCatatanBiaya } from "../../core/biaya";
 import { KodeGalat } from "../../core/galat";
 import {
   JUDUL_LAYAR_KOREKSI,
@@ -30,6 +32,7 @@ import {
   LABEL_BLOK_1,
   LABEL_BLOK_2_TEMPLAT,
   LABEL_BLOK_3,
+  LABEL_CATATAN_HITUNGAN,
   LABEL_SEBAGIAN,
   KALIMAT_PEMBUKA_BLOK_1,
   KALIMAT_PEMBUKA_BLOK_2,
@@ -194,11 +197,22 @@ export default function HalamanPeriksa() {
       jam: formatJam,
     });
 
+    const upah = nilaiFinal[5];
+    const biaya = nilaiFinal[9];
+    const catatanHitungan = hitungCatatanBiaya(upah, biaya);
+
+    const namaPerusahaan = nilaiFinal[1];
+    const hasilLapis1 = namaPerusahaan?.trim()
+      ? cocokanNamaPerusahaan(namaPerusahaan)
+      : undefined;
+
     const penilaian = nilaiPenilaian(hasilBacaFinal, keyakinan);
     const isiLembar = rakitIsiLembar({
       penilaian,
       nilaiAsli: nilaiFinal,
       tanggal: teksWaktu,
+      hasilLapis1,
+      catatanHitungan,
     });
 
     setHasilTerbit(isiLembar);
@@ -353,6 +367,11 @@ function LembarPratinjau({ isiLembar }: { isiLembar: IsiLembar }) {
             </li>
           ))}
         </ul>
+        {isiLembar.hasilLapis1 ? (
+          <div className="mt-3 rounded bg-latar-kosong p-3 text-base text-tinta-lembut">
+            {isiLembar.hasilLapis1.kalimat}
+          </div>
+        ) : null}
       </div>
 
       <div>
@@ -378,6 +397,15 @@ function LembarPratinjau({ isiLembar }: { isiLembar: IsiLembar }) {
         </ul>
         <p className="mt-2 text-base italic text-redup">{KALIMAT_BAWAH_BLOK_2}</p>
       </div>
+
+      {isiLembar.catatanHitungan ? (
+        <div className="rounded border-2 border-dashed border-garis bg-latar-kosong p-4">
+          <div className="mb-2 text-base font-bold text-tinta-lembut">
+            {LABEL_CATATAN_HITUNGAN}
+          </div>
+          <p className="text-base text-tinta">{isiLembar.catatanHitungan}</p>
+        </div>
+      ) : null}
 
       <div>
         <h2 className="rounded bg-latar-blok px-3 py-2 text-base font-bold text-tinta-lembut">

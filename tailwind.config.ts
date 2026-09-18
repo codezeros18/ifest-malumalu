@@ -4,6 +4,9 @@ const config: Config = {
   content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ["var(--font-poppins)", "Plus Jakarta Sans", "sans-serif"],
+      },
       colors: {
         // Sprint UI-inklusif: palet warm-monochrome (kertas hangat, tinta
         // hangat) dengan aksen hijau-laut dalam. Warm-neutral dipakai

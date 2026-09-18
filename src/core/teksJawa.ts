@@ -14,6 +14,7 @@
 
 import type { SlotId } from "./slot";
 import { KodeGalat } from "./galat";
+import { TEKS_HALAMAN_UI } from "./teks";
 
 export const JUDUL_HALAMAN_UTAMA_JAWA = "Priksa tawaran nyambut damel ing luar negeri";
 export const SUBJUDUL_HALAMAN_UTAMA_JAWA =
@@ -96,6 +97,94 @@ export const PESAN_GALAT_JAWA: Readonly<Record<KodeGalat, { pesan: string; tinda
   [KodeGalat.E_TIDAK_ADA_MASUKAN]: {
     pesan:
       "Dereng wonten ingkang saged dipun-priksa. Kintun gambar tawaripun, utawi serat piyambak isinipun.",
+  },
+};
+
+/**
+ * Basa Jawa kagem halaman desain (`src/app/ui/page.tsx`). Jinisipun
+ * dipun-cundhuk dhateng `TEKS_HALAMAN_UI` (teks.ts): kunci ingkang lali
+ * dipun-jarwakaken dados galat `tsc`, sanes teks Indonesia ingkang kantun.
+ */
+export const TEKS_HALAMAN_UI_JAWA: typeof TEKS_HALAMAN_UI = {
+  nav: {
+    beranda: "Kaca Utami",
+    tentang: "Bab Kula",
+  },
+  heroLencana: "Priksa saderengipun bidhal",
+  heroJudulAwal: "Mesthekaken tawaran nyambut damel punika",
+  heroJudulSorot: "netepi janjinipun.",
+  heroSubjudul:
+    "Kintun poster tawaripun. Kula owahi dados daftar priksa ingkang cetha: punapa ingkang sampun dipun-janjekaken, punapa ingkang dereng dipun-wangsuli, lan punapa ingkang wajib panjenengan tangletaken saderengipun nandhatangani.",
+  tabUnggah: "Unggah utawi tempel gambar",
+  seretBerkas: "Seret poster mriki utawi klik kagem milih",
+  keteranganFormat: "Format JPG utawi PNG · maks. 8 MB",
+  tombolMulai: "Miwiti priksa tawaran",
+  panel: {
+    judul: "Lembar Priksa",
+    loker: "Tawaran: Perawat, Taiwan",
+    baris: [
+      { label: "Bayaran & mata yatra", note: "Rp 4.500.000 / saben wulan" },
+      { label: "Nama & alamat juragan", note: "Kaserat jangkep" },
+      { label: "Wragad penempatan", note: "Dereng kaserat" },
+      { label: "Agen berizin (P3MI)", note: "Perlu dipun-tangletaken" },
+      { label: "Laminipun & isi prajanjian", note: "2 taun — priksa rincian" },
+    ],
+    catatanSorot: "2 bab perlu dipun-tangletaken",
+    catatanSisa: "saderengipun panjenengan nyarujuki tawaran punika.",
+  },
+  modalMengerti: "Mangertos",
+  ariaTutup: "Nutup",
+  footerKiri: "© 2026 Lembar Janji",
+  footerKanan: "Dipun-damel kagem ngayomi para Pekerja Migran Indonesia",
+  tentang: {
+    lencana: "Bab kula",
+    judul: "Setunggal lembar saderengipun nandhatangani.",
+    paragraf:
+      "Lembar Janji nampi gambar tawaran nyambut damel ing luar negeri — poster, tangkapan layar, utawi foto brosur — lajeng medalaken setunggal lembar ingkang ngemot punapa ingkang sampun kaserat wonten tawaran punika, punapa ingkang dereng dipun-wangsuli miturut Undang-Undang Nomer 18 Taun 2017, lan pitakenan ingkang saged panjenengan aturaken. Lembaripun awujud gambar, supados saged dipun-kintun malih dhateng percakapan panggenan tawaran punika sumebar.",
+    judulKeputusan: "Saben katrangan namung gadhah tigang kamungkinan",
+    keputusan: [
+      {
+        label: "sampun kaserat",
+        ket: "Tawaranipun nyerat kanthi jangkep: angka, nama, utawi rincian ingkang cetha.",
+      },
+      {
+        label: "kaserat saperangan",
+        ket: "Sampun kaserat, nanging taksih kirang cetha kagem dipun-ginakaken — tuladhanipun nominal tanpa mata yatra.",
+      },
+      {
+        label: "dereng dipunwangsuli",
+        ket: "Dereng kaserat wonten tawaran, utawi pamaosanipun kirang yakni. Menawi kirang yakni, mesthi kagolong ing kene.",
+      },
+    ],
+    judulCaraKerja: "Caranipun makarya",
+    langkah: [
+      {
+        judul: "Kintun gambarnipun",
+        ket: "Seret, tempel, utawi pilih poster saking galeri ponsel.",
+      },
+      {
+        judul: "Priksa asil waosanipun",
+        ket: "Mesin saged lepat maos. Asilipun dipun-tampilaken malih supados panjenengan leresaken.",
+      },
+      {
+        judul: "Wedalaken lembaripun",
+        ket: "Simpen gambarnipun, lajeng kintun malih dhateng percakapan panggenan tawaran punika sumebar.",
+      },
+    ],
+    judulDisimpan: "Ingkang mboten kula simpen",
+    tidakDisimpan: [
+      "Mboten wonten akun, mboten wonten pendhaftaran, lan mboten wonten sesi pangangge.",
+      "Gambar ingkang panjenengan kintun dipun-waos wonten memori lajeng dipun-bucal, mboten dipun-serat wonten pundi kemawon.",
+      "Mboten wonten riwayat pameriksan ingkang saged dipun-padosi, lan mboten wonten etangan ingkang nyawijiaken data antawisipun pangangge.",
+    ],
+    judulBatas: "Wates kula",
+    batas: [
+      "Ingkang dipun-waos inggih punika dokumen tawaran ingkang panjenengan kintun, sanes tiyang ingkang nawaraken.",
+      "Mboten wonten skor, peringkat, utawi persentase kajangkepan. Ingkang wonten namung etangan n saking 10 dereng dipun-wangsuli.",
+      "Menawi panyocokan dhateng daftar perusahaan penempatan berizin mboten manggihaken punapa kemawon, lembaripun tetep nyerat tanggal salinan datanipun, cara mesthekaken piyambak, lan bilih bab punika sanes ateges perusahaanipun mboten berizin.",
+    ],
+    tombolKembali: "Miwiti priksa tawaran",
+    catatanKembali: "Mboten perlu ndhaftar, lan mboten wonten ingkang perlu dipun-pasang.",
   },
 };
 

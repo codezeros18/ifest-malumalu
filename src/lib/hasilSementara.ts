@@ -7,7 +7,8 @@ import type { IsiLembar } from "../core/tipe";
  * `src/app/hasil/page.tsx`), konsisten dengan CLAUDE.md §3.5: nol gambar
  * dan nol hasil pemeriksaan disimpan melewati sesi peramban saat ini.
  *
- * `urlGambarLembar` adalah object URL (`blob:`) yang tetap valid karena
+ * `urlGambarLembar` adalah data URL (`data:image/png;base64,...`) yang
+ * aman dari masalah lifecycle blob/unmount dan tetap valid karena
  * navigasi Next.js App Router antar-rute bersifat client-side (tidak
  * memuat ulang dokumen) — lihat BLUEPRINT arah alur satu jalur.
  */

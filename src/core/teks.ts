@@ -259,3 +259,101 @@ export const SELURUH_KOSONG =
 
 export const SELURUH_TERISI =
   "Tawaran ini menyebutkan kesepuluh hal yang diwajibkan. Anda tetap berhak meminta salinan perjanjiannya sebelum membayar.";
+
+// ---------------------------------------------------------------------------
+// F.11 — Teks halaman desain (/ui)
+// ---------------------------------------------------------------------------
+
+/**
+ * Seluruh teks yang dilihat pengguna di `src/app/ui/page.tsx`.
+ *
+ * Dikumpulkan di sini, bukan ditulis di berkas halaman, supaya versi Basa
+ * Jawa-nya (`TEKS_HALAMAN_UI_JAWA` di `teksJawa.ts`) bisa diwajibkan punya
+ * kunci yang sama persis oleh TypeScript — kunci yang lupa diterjemahkan
+ * jadi galat `tsc`, bukan teks Indonesia yang tertinggal di layar.
+ *
+ * Kelas Tailwind warna per baris/tombol tetap di berkas halaman: ini data
+ * teks, bukan data tampilan.
+ */
+export const TEKS_HALAMAN_UI = {
+  nav: {
+    beranda: "Beranda",
+    tentang: "Tentang Kami",
+  },
+  heroLencana: "Periksa sebelum berangkat",
+  heroJudulAwal: "Pastikan tawaran kerja itu",
+  heroJudulSorot: "menepati janji.",
+  heroSubjudul:
+    "Kirim poster lowongannya. Kami ubah menjadi daftar periksa yang jelas, apa yang sudah dijanjikan, apa yang belum dijawab, dan apa yang wajib Anda tanyakan sebelum menandatangani.",
+  tabUnggah: "Unggah / tempel gambar",
+  seretBerkas: "Seret poster ke sini atau klik untuk pilih",
+  keteranganFormat: "Format JPG atau PNG · maks. 8 MB",
+  tombolMulai: "Mulai periksa tawaran",
+  panel: {
+    judul: "Lembar Periksa",
+    loker: "Loker: Perawat, Taiwan",
+    baris: [
+      { label: "Gaji & mata uang", note: "Rp 4.500.000 / bulan" },
+      { label: "Nama & alamat majikan", note: "Tercantum lengkap" },
+      { label: "Biaya penempatan", note: "Belum disebutkan" },
+      { label: "Agen berizin (P3MI)", note: "Perlu ditanyakan" },
+      { label: "Masa & isi kontrak", note: "2 tahun — cek detail" },
+    ],
+    catatanSorot: "2 hal perlu ditanyakan",
+    catatanSisa: "sebelum Anda menyetujui tawaran ini.",
+  },
+  modalMengerti: "Mengerti",
+  ariaTutup: "Tutup",
+  footerKiri: "© 2026 Lembar Janji",
+  footerKanan: "Dibuat untuk melindungi pekerja migran Indonesia",
+  tentang: {
+    lencana: "Tentang kami",
+    judul: "Satu lembar sebelum tanda tangan.",
+    paragraf:
+      "Lembar Janji menerima gambar tawaran kerja ke luar negeri — poster, tangkapan layar percakapan, atau foto brosur — lalu menerbitkan satu lembar berisi apa yang sudah disebutkan tawaran itu, apa yang belum dijawab menurut Undang-Undang Nomor 18 Tahun 2017, dan pertanyaan yang bisa Anda ajukan. Lembarnya berbentuk gambar, agar bisa diteruskan kembali ke percakapan tempat tawaran itu beredar.",
+    judulKeputusan: "Tiap keterangan hanya punya tiga kemungkinan",
+    keputusan: [
+      {
+        label: "sudah disebutkan",
+        ket: "Tawaran menyebutkannya lengkap: angka, nama, atau rincian yang jelas.",
+      },
+      {
+        label: "disebutkan sebagian",
+        ket: "Sudah disebut, tetapi masih terlalu kabur untuk dipakai — misalnya nominal tanpa mata uang.",
+      },
+      {
+        label: "belum dijawab",
+        ket: "Belum disebut dalam tawaran, atau pembacaannya diragukan. Ragu selalu jatuh ke sini.",
+      },
+    ],
+    judulCaraKerja: "Cara kerjanya",
+    langkah: [
+      {
+        judul: "Kirim gambarnya",
+        ket: "Seret, tempel, atau pilih poster dari galeri ponsel.",
+      },
+      {
+        judul: "Periksa hasil bacaannya",
+        ket: "Mesin bisa salah baca. Hasilnya ditampilkan kembali untuk Anda betulkan.",
+      },
+      {
+        judul: "Terbitkan lembarnya",
+        ket: "Simpan gambarnya, lalu teruskan ke percakapan tempat tawaran itu beredar.",
+      },
+    ],
+    judulDisimpan: "Yang tidak kami simpan",
+    tidakDisimpan: [
+      "Tidak ada akun, tidak ada pendaftaran, dan tidak ada sesi pengguna.",
+      "Gambar yang Anda kirim dibaca di memori lalu dibuang, tidak ditulis ke mana pun.",
+      "Tidak ada riwayat pemeriksaan yang bisa dicari, dan tidak ada penghitungan yang menggabungkan data antar pengguna.",
+    ],
+    judulBatas: "Batas kami",
+    batas: [
+      "Yang dibaca adalah dokumen tawaran yang Anda kirim, bukan pihak yang menawarkannya.",
+      "Tidak ada skor, peringkat, atau persentase kelengkapan. Yang ada hanya hitungan n dari 10 belum dijawab.",
+      "Bila pencocokan ke daftar perusahaan penempatan berizin tidak menemukan apa pun, lembar tetap menyebutkan tanggal salinan datanya, cara memastikannya sendiri, dan bahwa hal itu bukan berarti perusahaannya tidak berizin.",
+    ],
+    tombolKembali: "Mulai periksa tawaran",
+    catatanKembali: "Tidak perlu mendaftar, dan tidak ada yang perlu dipasang.",
+  },
+};

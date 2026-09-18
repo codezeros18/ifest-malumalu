@@ -6,7 +6,7 @@ import LembarPratinjau from "../../ui/LembarPratinjau";
 import SitusNavbar from "../../ui/SitusNavbar";
 import SitusFooter from "../../ui/SitusFooter";
 import { ambilHasilSementara } from "../../lib/hasilSementara";
-import type { HasilSementara } from "../../lib/hasilSementara";
+import type { HasilSementara, LembarTerbit } from "../../lib/hasilSementara";
 import { isiTemplat } from "../../core/perakitan";
 import { TOMBOL_UNDUH, TOMBOL_BAGIKAN } from "../../core/teks";
 import type { KamusLembar } from "../../core/teks";
@@ -23,10 +23,10 @@ const NAMA_BERKAS_LEMBAR = "lembar-janji.png";
  * sama dengan gambar dan pratinjaunya supaya tidak pernah berbeda bahasa.
  */
 function teksAlternatifGambarLembar(
-  hasil: HasilSementara,
+  lembar: LembarTerbit,
   kamus: KamusLembar,
 ): string {
-  return `${isiTemplat(kamus.labelBlok2Templat, { n: String(hasil.isiLembar.blok2.length) })}. ${kamus.penutup}`;
+  return `${isiTemplat(kamus.labelBlok2Templat, { n: String(lembar.isiLembar.blok2.length) })}. ${kamus.penutup}`;
 }
 
 function urlKeBlob(url: string): Promise<Blob> {
@@ -73,10 +73,11 @@ export default function HalamanHasil() {
     localStorage.setItem("lembar_janji_bahasa", baru);
   };
 
-  // Lembar yang SUDAH terbit dirakit dengan bahasa saat diterbitkan
-  // (`periksa/page.tsx`); kamus di sini hanya untuk teks sistem di layar ini
-  // — pratinjau dan teks alternatif gambar.
+  // Lembar yang terbit disimpan dalam KEDUA bahasa (`perBahasa`, lihat
+  // `src/lib/hasilSementara.ts`) — jadi berpindah bahasa di layar ini hanya
+  // menukar gambar/pratinjau yang sudah siap, bukan merender ulang.
   const kamusLembar = kamusLembarUntuk(bahasa);
+  const lembar = hasil === null ? null : hasil.perBahasa[bahasa];
 
   useEffect(() => {
     const tersimpan = ambilHasilSementara();
@@ -88,17 +89,17 @@ export default function HalamanHasil() {
   }, [router]);
 
   function tanganiUnduh() {
-    if (!hasil?.urlGambarLembar) return;
+    if (!lembar?.urlGambarLembar) return;
     const tautan = document.createElement("a");
-    tautan.href = hasil.urlGambarLembar;
+    tautan.href = lembar.urlGambarLembar;
     tautan.download = NAMA_BERKAS_LEMBAR;
     tautan.click();
   }
 
   async function tanganiBagikan() {
-    if (!hasil?.urlGambarLembar) return;
+    if (!lembar?.urlGambarLembar) return;
     try {
-      const blob = await urlKeBlob(hasil.urlGambarLembar);
+      const blob = await urlKeBlob(lembar.urlGambarLembar);
       const berkas = new File([blob], NAMA_BERKAS_LEMBAR, {
         type: "image/png",
       });
@@ -115,7 +116,7 @@ export default function HalamanHasil() {
     tanganiUnduh();
   }
 
-  if (!hasil) {
+  if (!hasil || !lembar) {
     return null;
   }
 
@@ -148,20 +149,20 @@ export default function HalamanHasil() {
             atau teks di bawahnya, karena keduanya tidak memuat kalimat
             ini (H.9 hanya menaruh kotak catatan hitungan saat aktif dan
             cukup). Abu netral, tanpa ikon peringatan. */}
-        {hasil.catatanLapis1 ? (
-          <p className="text-base text-[#52586b]">{hasil.catatanLapis1}</p>
+        {lembar.catatanLapis1 ? (
+          <p className="text-base text-[#52586b]">{lembar.catatanLapis1}</p>
         ) : null}
-        {hasil.catatanLapis2 ? (
-          <p className="text-base text-[#52586b]">{hasil.catatanLapis2}</p>
+        {lembar.catatanLapis2 ? (
+          <p className="text-base text-[#52586b]">{lembar.catatanLapis2}</p>
         ) : null}
 
         <div className="rounded-3xl border border-[#dbe4fb] bg-white p-5 shadow-[0_24px_60px_-30px_rgba(9,85,212,0.45)] sm:p-8">
-          {hasil.urlGambarLembar ? (
+          {lembar.urlGambarLembar ? (
             <div className="flex flex-col gap-5">
               {/* eslint-disable-next-line @next/next/no-img-element -- blob/data URL sisi klien, bukan aset next/image */}
               <img
-                src={hasil.urlGambarLembar}
-                alt={teksAlternatifGambarLembar(hasil, kamusLembar)}
+                src={lembar.urlGambarLembar}
+                alt={teksAlternatifGambarLembar(lembar, kamusLembar)}
                 className="w-full rounded-2xl border border-[#dbe4fb] shadow-lg"
               />
               <div className="flex flex-col gap-3 sm:flex-row">
@@ -182,7 +183,7 @@ export default function HalamanHasil() {
               </div>
             </div>
           ) : (
-            <LembarPratinjau isiLembar={hasil.isiLembar} kamus={kamusLembar} />
+            <LembarPratinjau isiLembar={lembar.isiLembar} kamus={kamusLembar} />
           )}
         </div>
       </main>

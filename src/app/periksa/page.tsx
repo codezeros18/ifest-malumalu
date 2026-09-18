@@ -14,9 +14,10 @@ import {
 } from "../../lib/simpananLokal";
 import { catat } from "../../lib/catat";
 import { simpanHasilSementara } from "../../lib/hasilSementara";
+import type { BahasaLembar, LembarTerbit } from "../../lib/hasilSementara";
 import { SLOT_IDS, slotDenganId } from "../../core/slot";
 import type { SlotId } from "../../core/slot";
-import type { HasilBacaFinal, SumberTawaran } from "../../core/tipe";
+import type { HasilBacaFinal, IsiLembar, SumberTawaran } from "../../core/tipe";
 import { nilai as nilaiPenilaian } from "../../core/penilaian";
 import { rakitIsiLembar, isiTemplat } from "../../core/perakitan";
 import { KodeGalat } from "../../core/galat";
@@ -49,6 +50,45 @@ import {
   SATUAN_KATA_JAWA,
   PESAN_GALAT_JAWA,
 } from "../../core/teksJawa";
+
+/**
+ * Render lembar menjadi gambar sisi server (`/api/kartu`, S08) dan ubah jadi
+ * data URL yang aman lintas navigasi. Bila gagal apa pun sebabnya, `/hasil`
+ * jatuh ke `LembarPratinjau` (teks biasa) sebagai jalan mundur — lembar tetap
+ * "terbit" meski gambarnya tidak berhasil dibuat (BLUEPRINT G.5). Kamus
+ * bahasanya dibawa di badan permintaan supaya gambar dirender dalam bahasa
+ * yang sama dengan IsiLembar yang dikirim.
+ */
+async function renderGambarLembar(
+  isiLembar: IsiLembar,
+  bahasa: BahasaLembar,
+): Promise<string | null> {
+  try {
+    const respons = await fetch("/api/kartu", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ isiLembar, bahasa }),
+    });
+    if (!respons.ok) {
+      throw new Error("kartu-gagal");
+    }
+    const blob = await respons.blob();
+    return await new Promise<string>((resolve, reject) => {
+      const pembaca = new FileReader();
+      pembaca.onloadend = () => {
+        if (typeof pembaca.result === "string") {
+          resolve(pembaca.result);
+        } else {
+          reject(new Error("pembaca-gagal"));
+        }
+      };
+      pembaca.onerror = reject;
+      pembaca.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
 
 function tanggalJamSekarang(): { tanggal: string; jam: string } {
   const sekarang = new Date();
@@ -313,11 +353,6 @@ export default function HalamanPeriksa() {
       const { tanggal, jam } = tanggalJamSekarang();
       const penilaian = nilaiPenilaian(hasilBacaFinal, keyakinan);
 
-      // Bahasa lembar mengikuti bahasa antarmuka SAAT MENERBITKAN: seluruh
-      // kalimat sistem dirakit dan dirender dari kamus ini, jadi tak ada satu
-      // bagian pun yang tertinggal berbahasa lain (bawaan: Indonesia).
-      const kamus = kamusLembarUntuk(bahasa);
-
       // S09: Lapis 1 dan 2 dijalankan di sini — SATU-SATUNYA titik di app yang
       // memuat data/*.json (lihat komentar muatSalinanP3MI/muatAcuanBiaya di
       // atas). Kegagalan memuat berkas apa pun TIDAK PERNAH menghentikan
@@ -327,76 +362,60 @@ export default function HalamanPeriksa() {
         muatAcuanBiaya(),
       ]);
 
-      const statusLapis1 = cocokkanNamaP3MI(nilaiFinal[1], salinanP3MI, kamus);
-      const statusLapis2 = hitungCatatanBiaya(
-        nilaiFinal[5],
-        nilaiFinal[9],
-        acuanBiaya,
-        kamus,
-      );
+      // Lembar diterbitkan dalam KEDUA bahasa sekaligus, bukan hanya bahasa
+      // yang aktif sekarang. Alasannya perilaku, bukan kelengkapan: pengguna
+      // yang berpindah bahasa di `/hasil` harus melihat GAMBAR yang benar-benar
+      // berganti, dan perpindahan itu tidak boleh menunggu render ulang.
+      // Karena itu teks lembar dirakit PER BAHASA (bukan diterjemahkan saat
+      // ditampilkan) — tidak akan pernah ada lembar campuran. Dua render
+      // dijalankan paralel, jadi dinding waktunya ± satu render.
+      const perBahasa = {} as Record<BahasaLembar, LembarTerbit>;
+      await Promise.all(
+        (["id", "jv"] as const).map(async (kode) => {
+          const kamus = kamusLembarUntuk(kode);
+          const statusLapis1 = cocokkanNamaP3MI(
+            nilaiFinal[1],
+            salinanP3MI,
+            kamus,
+          );
+          const statusLapis2 = hitungCatatanBiaya(
+            nilaiFinal[5],
+            nilaiFinal[9],
+            acuanBiaya,
+            kamus,
+          );
 
-      const catatanLapis1 =
-        statusLapis1.status === "dimatikan" ? kamus.lapis1Dimatikan : null;
-      const catatanLapis2 =
-        statusLapis2.status === "dimatikan"
-          ? kamus.lapis2Dimatikan
-          : statusLapis2.status === "data-kurang"
-            ? kamus.lapis2AngkaTidakAda
-            : null;
+          const isiLembar = rakitIsiLembar({
+            penilaian,
+            nilaiAsli: nilaiFinal,
+            tanggal: isiTemplat(PENANDA_WAKTU_TEMPLAT, { tanggal, jam }),
+            kamus,
+            hasilLapis1:
+              statusLapis1.status === "aktif" ? statusLapis1.hasil : undefined,
+            catatanHitungan:
+              statusLapis2.status === "tersedia"
+                ? statusLapis2.catatanHitungan
+                : undefined,
+          });
 
-      const isiLembar = rakitIsiLembar({
-        penilaian,
-        nilaiAsli: nilaiFinal,
-        tanggal: isiTemplat(PENANDA_WAKTU_TEMPLAT, { tanggal, jam }),
-        kamus,
-        hasilLapis1:
-          statusLapis1.status === "aktif" ? statusLapis1.hasil : undefined,
-        catatanHitungan:
-          statusLapis2.status === "tersedia"
-            ? statusLapis2.catatanHitungan
-            : undefined,
-      });
-
-      // S08: render gambar sungguhan sisi server (src/app/api/kartu). Bila
-      // gagal apa pun sebabnya, `/hasil` jatuh ke LembarPratinjau (teks
-      // biasa) sebagai jalan mundur — lembar tetap "terbit" meski gambarnya
-      // tidak berhasil dibuat.
-      let urlGambarLembar: string | null = null;
-      try {
-        const respons = await fetch("/api/kartu", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ isiLembar, bahasa }),
-        });
-        if (!respons.ok) {
-          throw new Error("kartu-gagal");
-        }
-        const blob = await respons.blob();
-        urlGambarLembar = await new Promise<string>((resolve, reject) => {
-          const pembaca = new FileReader();
-          pembaca.onloadend = () => {
-            if (typeof pembaca.result === "string") {
-              resolve(pembaca.result);
-            } else {
-              reject(new Error("pembaca-gagal"));
-            }
+          perBahasa[kode] = {
+            isiLembar,
+            urlGambarLembar: await renderGambarLembar(isiLembar, kode),
+            catatanLapis1:
+              statusLapis1.status === "dimatikan" ? kamus.lapis1Dimatikan : null,
+            catatanLapis2:
+              statusLapis2.status === "dimatikan"
+                ? kamus.lapis2Dimatikan
+                : statusLapis2.status === "data-kurang"
+                  ? kamus.lapis2AngkaTidakAda
+                  : null,
           };
-          pembaca.onerror = reject;
-          pembaca.readAsDataURL(blob);
-        });
-      } catch {
-        // Diam-diam gagal — LembarPratinjau di /hasil tetap tampil sebagai
-        // jalan mundur. Lembar tetap "terbit" apa adanya.
-      }
+        }),
+      );
 
       // S13: hasil dipindah ke layar terpisah (`/hasil`) — data URL aman
       // dari lifecycle blob/unmount dan tetap valid lintas navigasi.
-      simpanHasilSementara({
-        isiLembar,
-        urlGambarLembar,
-        catatanLapis1,
-        catatanLapis2,
-      });
+      simpanHasilSementara({ perBahasa });
 
       // S10: pencatatan metrik anonim, fire-and-forget, persis di titik
       // lembar selesai dirakit (lihat komentar desain di src/lib/catat.ts).

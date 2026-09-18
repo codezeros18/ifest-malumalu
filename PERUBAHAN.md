@@ -55,6 +55,16 @@ Permintaan eksplisit pengguna. Menyebut satu keterangan berbahasa Jawa di antarm
 **Dampak terhadap masalah inti**
 Alur inti tidak berubah dan bawaan tidak bergeser: permintaan `/api/kartu` tanpa `bahasa` menghasilkan gambar yang identik dengan sebelumnya (dibuktikan: `bahasa` absen = `bahasa:"id"`), dan seluruh pagar lama tetap hijau. Bukti lintas-lapis: permintaan id menghasilkan PNG **1080×1929** sementara jv **1080×1965** (tinggi berbeda karena teks Jawa lebih panjang — artinya kamus sampai ke perender tinggi, bukan hanya ke teks), dan alur Jawa di peramban sampai `/hasil` menghasilkan PNG **1080×4141** dengan `alt` berbahasa Jawa. Batas kata §4 tidak dinaikkan: teks sistem terberat diukur 436 kata (Indonesia) dan 437 kata (Jawa) pada kasus tanpa Lapis 1/2, dan kedua sapuan penuh tetap di bawah 480. Catatan produk yang tetap berlaku: lembar Jawa yang diteruskan kembali ke percakapan mungkin tidak terbaca oleh penerimanya di ujung sana — itu pilihan bahasa pengirim, bukan sesuatu yang bisa diputuskan produk.
 
+**Tambahan (jam ~15) — lembar diterbitkan dalam DUA bahasa, dan gambar di `/hasil` berganti saat bahasa ditukar**
+
+Versi pertama entri ini merender gambar mengikuti bahasa yang aktif SAAT MENERBITKAN. Diuji pengguna, hasilnya dilaporkan sebagai bug: "pas gua ganti bahasa jawa itu ga keganti sama sekali imagenya" — dan itu memang perilaku yang dibangun, bukan salah lapor. Tombol bahasa di `/hasil` hanya menukar tombol dan pratinjau, sedangkan gambarnya sudah terlanjur jadi.
+
+Yang diubah: `periksa/page.tsx` kini mengulang perakitan + render untuk KEDUA bahasa dalam satu kali penerbitan (`Promise.all`, jadi dinding waktunya ± satu render), dan menyimpan keduanya lewat `hasilSementara.ts` sebagai `perBahasa: { id, jv }` — satu `LembarTerbit` per bahasa (IsiLembar, data URL gambar, catatan Lapis 1/2). `/hasil` tinggal memilih milik bahasa yang aktif: perpindahan bahasa jadi penukaran tampilan yang instan, tanpa render ulang, tanpa mengulang penerbitan, dan tanpa pernah menampilkan lembar campuran bahasa. Teks lembar tetap dirakit PER BAHASA, bukan diterjemahkan saat ditampilkan.
+
+Harganya: dua render PNG per penerbitan (paralel) dan dua data URL hidup di memori tab sampai tab ditutup — diukur pada lembar kasus terberat: 647 KB + 731 KB (base64) untuk lembar setinggi ±4000px. Itu tetap nol penyimpanan (CLAUDE.md §3.5): tidak ada yang ditulis ke disk, localStorage, atau server.
+
+Bukti di peramban sungguhan dengan dropdown bahasa asli: terbit sekali di Indonesia → `/hasil` menampilkan PNG 3981px tinggi; tukar ke Basa Jawa → gambar BERGANTI (PNG 4141px, data URL berbeda, `alt` berbahasa Jawa); tukar kembali ke Indonesia → persis gambar pertama lagi.
+
 ---
 
 ## [PB-014] Ukuran huruf lembar dikembalikan ke lantai 14pt, kepala lembar kembali berlatar tinta

@@ -100,7 +100,7 @@ export default function BarisKeterangan({
         {/* Saklar "tidak tahu" — abu netral, tanpa warna merah (3.6) */}
         <label
           htmlFor={idTidakTahu}
-          className="flex min-h-11 shrink-0 cursor-pointer select-none items-center gap-2 text-right text-sm font-medium text-redup ms-auto order-1 lg:order-2 mb-5 lg:mb-0"
+          className="flex shrink-0 cursor-pointer select-none items-center gap-2 text-right text-xs font-medium text-redup ms-auto order-1 lg:order-2 mb-5 lg:mb-0"
         >
           <span>{labelTidakTahu}</span>
           <span className="relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border border-[#dbe4fb] bg-[#eef1f6] px-1 transition-colors has-[:checked]:border-[#0955d4] has-[:checked]:bg-[#0955d4]">
@@ -126,15 +126,14 @@ export default function BarisKeterangan({
         placeholder={placeholder}
         onChange={tanganiUbahNilai}
         rows={2}
-        className="min-h-14 w-full resize-none rounded-xl border border-[#e3e9f5] bg-[#f7faff] px-4 py-3 text-base text-[#0b1220] placeholder:text-[#9aa2b4] focus:border-[#0955d4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0955d4]/30 disabled:bg-latar-kosong disabled:text-tinta-lembut"
+        className="min-h-14 w-full resize-none rounded-xl border border-[#e3e9f5] bg-[#f7faff] px-4 py-3 text-xs text-[#0b1220] placeholder:text-[#9aa2b4] focus:border-[#0955d4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0955d4]/30 disabled:bg-latar-kosong disabled:text-tinta-lembut"
       />
 
       {/* Hitungan faktual, bukan penilaian (CLAUDE.md 3.2): angka kata yang
           sudah diketik terhadap batasnya. Abu netral — tidak ada warna
           sebagai penanda mutu, tidak ada ikon peringatan (3.6). Muncul hanya
-          saat MENDEKATI batas (>80 kata), supaya "n / 100" tidak terbaca
-          seperti skor di sepuluh kotak. */}
-      {jumlahKata > 80 ? (
+          saat ada isinya, supaya tidak jadi derau di sepuluh kotak kosong. */}
+      {jumlahKata > 0 ? (
         <span className="text-right text-sm text-redup">
           {jumlahKata} / {MAKSIMAL_KATA} {satuanKata}
         </span>

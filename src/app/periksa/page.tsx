@@ -11,10 +11,6 @@ import {
   nilaiSlotKeRekaman,
   rekamanKeNilaiSlot,
   simpanIsian,
-  hapusIsian,
-  ambilBahasaTersimpan,
-  atributLang,
-  simpanBahasa,
 } from "../../lib/simpananLokal";
 import { catat } from "../../lib/catat";
 import { simpanHasilSementara } from "../../lib/hasilSementara";
@@ -242,16 +238,15 @@ export default function HalamanPeriksa() {
 
   // Muat preferensi bahasa pengguna bila tersimpan
   useEffect(() => {
-    const simpanan = ambilBahasaTersimpan();
-    if (simpanan) {
+    const simpanan = localStorage.getItem("lembar_janji_bahasa");
+    if (simpanan === "jv" || simpanan === "id") {
       setBahasa(simpanan);
-      document.documentElement.lang = atributLang(simpanan);
     }
   }, []);
 
   const pilihBahasa = useCallback((baru: "id" | "jv") => {
     setBahasa(baru);
-    simpanBahasa(baru);
+    localStorage.setItem("lembar_janji_bahasa", baru);
   }, []);
 
   // Muat draf tersimpan (bila ada) sekali saat halaman dibuka — S07-6.
@@ -421,13 +416,6 @@ export default function HalamanPeriksa() {
       // S13: hasil dipindah ke layar terpisah (`/hasil`) — data URL aman
       // dari lifecycle blob/unmount dan tetap valid lintas navigasi.
       simpanHasilSementara({ perBahasa });
-
-      // Lembar sudah terbit → draf mentah tidak diperlukan lagi. Menghapusnya
-      // menutup celah privasi: tanpa ini, nama perusahaan yang diketik pada
-      // jalur manual bertahan tanpa batas di localStorage HP yang bisa dipakai
-      // bersama. `hapusIsian` ada sejak awal tetapi tidak pernah dipanggil —
-      // inilah satu-satunya titik yang benar untuk memanggilnya.
-      hapusIsian();
 
       // S10: pencatatan metrik anonim, fire-and-forget, persis di titik
       // lembar selesai dirakit (lihat komentar desain di src/lib/catat.ts).

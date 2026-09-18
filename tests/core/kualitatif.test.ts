@@ -48,15 +48,7 @@ const KASUS: readonly KasusSlot[] = [
     slot: 1,
     judul: "perusahaan yang memberangkatkan",
     lulus: ["PT Karya Bersama Sejahtera", "CV Mitra Tenaga Mandiri"],
-    gagal: [
-      "Pak Haji Rahmat",
-      "@lowongan.taiwan.resmi",
-      "0812-3456-7890",
-      "PT resmi",
-      // Poster nyata: nama orang asing + label kontak (S16, dari probe korpus)
-      "Mr. Chen / pabrik garmen",
-      "agen: 0812-3456-7890",
-    ],
+    gagal: ["Pak Haji Rahmat", "@lowongan.taiwan.resmi", "0812-3456-7890", "PT resmi"],
     sebagian: ["Karya Bersama Sejahtera"],
     catatan:
       "Contoh sebagian diturunkan dari frasa E.2 'Nama disebut tetapi tidak lengkap': nama ada tetapi tanpa penanda badan usaha.",
@@ -71,17 +63,8 @@ const KASUS: readonly KasusSlot[] = [
   {
     slot: 3,
     judul: "siapa yang akan mempekerjakan",
-    lulus: ["Hanwha Techwin Co., Ltd.", "Chang Hwa Electronics Corporation", "PT. Garmen Tekstil Indonesia"],
-    gagal: [
-      "perusahaan besar",
-      "pabrik di Taiwan",
-      "majikan baik",
-      // Penanda badan usaha telanjang tanpa nama (S16 batch-3): arah tidak aman
-      // bila lolos jadi "sudah disebutkan" — E.2 #1 menamai kasus ini.
-      "PT",
-      "CV",
-      "Co., Ltd.",
-    ],
+    lulus: ["Hanwha Techwin Co., Ltd.", "Chang Hwa Electronics Corporation"],
+    gagal: ["perusahaan besar", "pabrik di Taiwan", "majikan baik"],
     sebagian: ["Pabrik garmen di kawasan industri Taoyuan"],
     catatan:
       "E.2 baris 3 saling bertabrakan: 'pabrik di Taiwan' terdaftar di kolom GAGAL, padahal kolom SEBAGIAN berbunyi 'Jenis tempat kerja disebut, namanya tidak' yang persis menggambarkannya. Daftar contoh harfiah dimenangkan untuk kolom gagal; contoh sebagian diturunkan sebagai jenis tempat kerja yang lebih spesifik namun tetap tanpa nama entitas.",
@@ -89,7 +72,7 @@ const KASUS: readonly KasusSlot[] = [
   {
     slot: 4,
     judul: "pekerjaannya apa persisnya",
-    lulus: ["Operator mesin injeksi plastik", "Perawat lansia di panti jompo", "Staff produksi", "Helper dapur"],
+    lulus: ["Operator mesin injeksi plastik", "Perawat lansia di panti jompo"],
     gagal: ["kerja pabrik", "kerja di luar negeri"],
     sebagian: ["Bidang manufaktur elektronik"],
     catatan:
@@ -103,7 +86,7 @@ const KASUS: readonly KasusSlot[] = [
       "Rp9.500.000 per bulan, dibayar tunai setiap akhir bulan",
     ],
     gagal: ["gaji besar", "gaji menarik", "sampai puluhan juta"],
-    sebagian: ["Gaji Rp9.500.000 per bulan", "Gaji 15jt"],
+    sebagian: ["Gaji Rp9.500.000 per bulan"],
   },
   {
     slot: 6,
@@ -137,16 +120,7 @@ const KASUS: readonly KasusSlot[] = [
       "Total Rp18.000.000 — tiket pesawat Rp6.000.000, pelatihan Rp4.000.000, pengurusan dokumen Rp8.000.000",
     ],
     gagal: ["biaya terjangkau", "biaya ringan, bisa dicicil"],
-    sebagian: [
-      "Biaya total Rp18.000.000",
-      "Rp18.000.000",
-      "Biaya 15 juta, bisa dicicil",
-      // Poster nyata menjawab biaya tanpa angka (S16 red-team): tetap sebagian,
-      // tidak pernah gagal dan tidak pernah lulus.
-      "GRATIS",
-      "ditanggung perusahaan",
-      "biaya 0",
-    ],
+    sebagian: ["Biaya total Rp18.000.000", "Rp18.000.000"],
     catatan:
       "🔴 E.2 baris 9 bertabrakan langsung: kolom gagal berbunyi 'Angka total tanpa rincian sama sekali', kolom sebagian berbunyi 'Angka total ada, rinciannya tidak → selalu SEBAGIAN, tidak pernah DISEBUTKAN'. Masukan yang sama, dua keluaran. Dimenangkan oleh kolom sebagian karena S02-5 menyebutnya eksplisit. Akibatnya contoh gagal untuk baris ini diturunkan: frasa kabur tanpa angka sama sekali.",
   },

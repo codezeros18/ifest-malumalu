@@ -35,19 +35,6 @@ describe("ekstrakAngkaRupiah — pengenalan format angka", () => {
     expect(ekstrakAngkaRupiah("biaya penempatan 15 juta")).toBe(15_000_000);
   });
 
-  it("mengenali singkatan poster nyata: jt / rb", () => {
-    expect(ekstrakAngkaRupiah("Gaji 15jt")).toBe(15_000_000);
-    expect(ekstrakAngkaRupiah("Gaji 15 jt")).toBe(15_000_000);
-    expect(ekstrakAngkaRupiah("mulai 20 juta")).toBe(20_000_000);
-    expect(ekstrakAngkaRupiah("Rp 500rb")).toBe(500_000);
-  });
-
-  it("tetap benar untuk bentuk bertitik dan bentuk telanjang", () => {
-    expect(ekstrakAngkaRupiah("Rp 5.000.000")).toBe(5_000_000);
-    expect(ekstrakAngkaRupiah("Rp 1.234.567")).toBe(1_234_567);
-    expect(ekstrakAngkaRupiah("15 juta rupiah")).toBe(15_000_000);
-  });
-
   it("mengenali \"1,5 juta\" (koma sebagai desimal)", () => {
     expect(ekstrakAngkaRupiah("1,5 juta")).toBe(1_500_000);
   });

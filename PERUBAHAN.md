@@ -73,27 +73,6 @@ Memperkuat, bukan melemahkan: tujuan lembar adalah "dipegang dan diteruskan lewa
 
 ---
 
-## [PB-021] Draf manual tersimpan sementara di localStorage — memperjelas batas "nol data pribadi"
-
-**Catatan penomoran**: entri ini awalnya ditulis sebagai "PB-019" di `origin/s16-review-adversarial`, bentrok dengan PB-019 di atas (dua jalur menomori terpisah). Diganti PB-021 saat digabungkan lewat `git merge` — isinya tidak diubah.
-
-**Jam ke-**         : ~16,5 (18 September 2026, 23.45 WIB)
-**Diputuskan oleh** : Window 1 (kapten), setelah verifikasi klaim arsitektur menemukan selisih ini
-
-**Kondisi di proposal penyisihan**
-CLAUDE.md §3.5 menulis "**Nol data pribadi disimpan**" dan README baris 191 "tidak ada gambar yang disimpan setelah diproses". BLUEPRINT H.7 mewajibkan isian pengguna bertahan saat koneksi putus / muat ulang.
-
-**Hal yang diubah**
-`src/lib/simpananLokal.ts` menulis draf isian pengguna (termasuk **nama perusahaan yang diketik pada jalur manual**) ke `localStorage` peramban. `hapusIsian()` ada sejak awal untuk membersihkannya, tetapi **tidak pernah dipanggil di mana pun** — sehingga draf bertahan tanpa batas di perangkat, terutama di HP yang dipakai bersama. Perbaikan: `hapusIsian()` kini dipanggil tepat setelah lembar terbit di `src/app/periksa/page.tsx` (setelah `simpanHasilSementara`), jadi draf mentah hilang begitu pekerjaannya selesai.
-
-**Alasan perubahan**
-Dua aturan saling tarik: H.7 (jangan hilangkan pekerjaan pengguna saat jaringan putus) vs §3.5 (nol data pribadi). Yang menang adalah H.7 — kehilangan ketikan di tengah pemeriksaan lebih merugikan pengguna nyata daripada risiko nama perusahaan yang sudah ia ketik sendiri. Karena itu penyimpanan sementara selama pengisian DIPERTAHANKAN; yang diperbaiki adalah kebocorannya: draf tidak dibersihkan setelah selesai. Yang penting: ini **bukan** penyimpanan di server, **bukan** gambar, **bukan** akun, dan **bukan** agregasi lintas pengguna; tidak ada satu baris pun yang menghubungkan pemeriksaan ke orang, dan data kini hilang saat lembar terbit.
-
-**Dampak terhadap masalah inti**
-Positif. Pengguna yang koneksinya putus di tengah pengisian tidak kehilangan pekerjaannya. Klaim privasi tetap benar untuk hal yang paling penting: tidak ada gambar yang diunggah, tidak ada data yang sampai ke server, tidak ada akun. Yang perlu dilakukan hanyalah tidak mengklaim lebih kuat dari kenyataannya di depan juri.
-
----
-
 ## [PB-018] Kepala lembar jadi biru — kali ini lewat token baru, bukan menambal fungsi token
 
 **Jam ke-**         : ~15 (18 September 2026, 23.00 WIB)

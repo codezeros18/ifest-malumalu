@@ -10,13 +10,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import SitusFooter from "@/ui/SitusFooter";
-import {
-  simpanIsian,
-  nilaiSlotKeRekaman,
-  ambilBahasaTersimpan,
-  atributLang,
-  simpanBahasa,
-} from "@/lib/simpananLokal";
+import { simpanIsian, nilaiSlotKeRekaman } from "@/lib/simpananLokal";
 import { pilihPembaca } from "@/vision";
 import type { HasilBaca } from "@/core/tipe";
 import { KodeGalat } from "@/core/galat";
@@ -303,10 +297,9 @@ export default function App() {
   const [bahasa, setBahasa] = useState<"id" | "jv">("id");
 
   useEffect(() => {
-    const simpanan = ambilBahasaTersimpan();
-    if (simpanan) {
+    const simpanan = localStorage.getItem("lembar_janji_bahasa");
+    if (simpanan === "jv" || simpanan === "id") {
       setBahasa(simpanan);
-      document.documentElement.lang = atributLang(simpanan);
     }
   }, []);
 
@@ -323,7 +316,7 @@ export default function App() {
 
   const pilihBahasa = useCallback((baru: "id" | "jv") => {
     setBahasa(baru);
-    simpanBahasa(baru);
+    localStorage.setItem("lembar_janji_bahasa", baru);
     setBahasaMenuTerbuka(false);
   }, []);
 
@@ -450,10 +443,7 @@ export default function App() {
   const tanganiMulaiPeriksa = useCallback(() => {
     if (sedangMemroses) return;
     if (!berkasTerpilih) {
-      // Bukan galat format: pengguna belum memilih berkas sama sekali. Kode
-      // yang benar adalah "belum ada masukan", bukan "berkas tak terbaca" —
-      // kalimat E_FORMAT_TIDAK_DIDUKUNG menyalahkan berkas yang tidak ada.
-      setGalat(KodeGalat.E_TIDAK_ADA_MASUKAN);
+      setGalat(KodeGalat.E_FORMAT_TIDAK_DIDUKUNG);
       return;
     }
     void prosesGambar(berkasTerpilih);
@@ -862,7 +852,7 @@ export default function App() {
                     <button
                       type="button"
                       onClick={aksiGalatUtama}
-                      className="inline-flex min-h-11 items-center font-semibold underline underline-offset-2"
+                      className="font-semibold underline underline-offset-2"
                     >
                       {pesanGalatAktif.tindakan}
                     </button>
@@ -871,7 +861,7 @@ export default function App() {
                     <button
                       type="button"
                       onClick={aksiGalatSekunder}
-                      className="inline-flex min-h-11 items-center font-semibold underline underline-offset-2"
+                      className="font-semibold underline underline-offset-2"
                     >
                       {pesanGalatAktif.tindakanSekunder}
                     </button>
@@ -968,11 +958,11 @@ export default function App() {
                   className="hidden"
                   onChange={tanganiInputBerkas}
                 />
-                <div className="flex flex-col gap-2 sm:flex-row">
+                <div className="flex gap-2">
                   <button
                     onClick={tanganiMulaiPeriksa}
                     disabled={sedangMemroses || !berkasTerpilih}
-                    className="mt-3 flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#0955d4] px-6 py-4 text-[16px] font-bold text-white shadow-[0_14px_30px_-12px_rgba(9,85,212,0.8)] transition-transform hover:-translate-y-0.5 hover:bg-[#0a4bbb] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 text-sm"
+                    className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-[#0955d4] px-6 py-4 text-[16px] font-bold text-white shadow-[0_14px_30px_-12px_rgba(9,85,212,0.8)] transition-transform hover:-translate-y-0.5 hover:bg-[#0a4bbb] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 text-sm"
                   >
                     {sedangMemroses ? statusSedangMembaca : t.tombolMulai}
                     {!sedangMemroses ? (
@@ -994,11 +984,13 @@ export default function App() {
                   <button
                     onClick={tanganiJalurManual}
                     disabled={sedangMemroses}
-                    className="mt-3 flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#ffc508] px-6 py-4 text-[16px] font-bold text-white shadow-[0_14px_30px_-12px_#FFD346] transition-transform hover:-translate-y-0.5 hover:bg-[#ffc400] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 text-sm"
+                    className="mt-3 flex w-2/4 items-center justify-center gap-2 rounded-xl bg-[#ffc508] px-6 py-4 text-[16px] font-bold text-white shadow-[0_14px_30px_-12px_#FFD346] transition-transform hover:-translate-y-0.5 hover:bg-[#ffc400] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 text-sm"
                   >
-                    {/* Label TIDAK diganti saat memroses: tombol ini tidak
-                        membaca gambar, jadi jangan mengaku sedang membacanya. */}
-                    {bahasa === "jv" ? TOMBOL_JALUR_MANUAL_JAWA : TOMBOL_JALUR_MANUAL}
+                    {sedangMemroses
+                      ? statusSedangMembaca
+                      : bahasa === "jv"
+                        ? TOMBOL_JALUR_MANUAL_JAWA
+                        : TOMBOL_JALUR_MANUAL}
                   </button>
                 </div>
               </div>

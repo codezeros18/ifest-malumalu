@@ -155,6 +155,15 @@ export const CATATAN_PRIVASI =
 export const TOMBOL_COBA_LAGI = "Coba lagi";
 export const TOMBOL_ULANGI = "Ulangi";
 
+/**
+ * 🟡 PENAMBAHAN S12 (sprint pembekuan) — satu-satunya teks baru di sprint
+ * itu, wajib ada karena S12-1 mewajibkan tombol dan `tests/alur/koreksi-wajib`
+ * melarang literal di `page.tsx`. Ditulis di BLUEPRINT F.8 lebih dulu,
+ * dicatat di PERUBAHAN.md PB-005. Status saat ditekan memakai pesan F.9
+ * `E_MODEL_TIDAK_TERSEDIA` yang sudah ada — bukan kalimat baru.
+ */
+export const TOMBOL_MATIKAN_PEMBACAAN_GAMBAR = "Matikan pembacaan gambar";
+
 // ---------------------------------------------------------------------------
 // F.9 — Pesan galat
 // ---------------------------------------------------------------------------

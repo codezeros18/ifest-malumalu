@@ -95,6 +95,46 @@ describe("modelProvider — tepat satu panggilan model per pemeriksaan", () => {
   });
 });
 
+/**
+ * S12-4 — ditambahkan setelah verifikasi mutasi membuktikan celah: sebuah
+ * "coba ulang sekali bila status non-2xx" di modelProvider LULUS seluruh
+ * test di atas, karena jalur kegagalan tidak pernah menghitung panggilan.
+ *
+ * Tiruan di bawah GAGAL pada panggilan pertama dan BERHASIL pada panggilan
+ * berikutnya — perangkap yang realistis: coba ulang tanpa pagar tidak
+ * sekadar memanggil dua kali, ia diam-diam berhasil. Karena itu yang
+ * diperiksa DUA hal: jumlah panggilan tepat satu, dan hasilnya tetap galat.
+ */
+describe("modelProvider — tidak ada percobaan ulang pada jalur kegagalan (S12-4)", () => {
+  const kegagalanPertama: ReadonlyArray<readonly [string, () => Promise<Response>]> = [
+    ["status 500", async () => new Response("Internal Server Error", { status: 500 })],
+    ["status 429 (batas laju)", async () => new Response("Too Many Requests", { status: 429 })],
+    ["status 503", async () => new Response("Service Unavailable", { status: 503 })],
+    [
+      "fetch melempar",
+      async () => {
+        throw new Error("ECONNRESET tiruan");
+      },
+    ],
+    ["keluaran bukan JSON", async () => responsModelBerhasil("bukan json { { {")],
+  ];
+
+  it.each(kegagalanPertama)(
+    "%s → fetch TEPAT SATU KALI dan hasilnya tetap galat",
+    async (_nama, gagalSekali) => {
+      let panggilan = 0;
+      const fetchTiruan = vi.fn(async () => {
+        panggilan += 1;
+        return panggilan === 1 ? gagalSekali() : responsModelBerhasil(jsonPenuhValid());
+      });
+      vi.stubGlobal("fetch", fetchTiruan);
+
+      await expect(modelProvider.baca(tawaranGambar())).rejects.toThrow(GalatModelProvider);
+      expect(fetchTiruan).toHaveBeenCalledTimes(1);
+    },
+  );
+});
+
 describe("modelProvider — delapan cara kegagalan, masing-masing berujung GalatModelProvider", () => {
   it("MODEL_API_KEY tidak ada → alasan kunci-tidak-ada", async () => {
     delete process.env["MODEL_API_KEY"];

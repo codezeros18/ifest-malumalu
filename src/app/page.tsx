@@ -16,6 +16,7 @@ import {
   SUBJUDUL_HALAMAN_UTAMA,
   TOMBOL_JALUR_GAMBAR,
   TOMBOL_JALUR_MANUAL,
+  TOMBOL_MATIKAN_PEMBACAAN_GAMBAR,
   KETERANGAN_KESETARAAN,
   PESAN_GALAT,
 } from "../core/teks";
@@ -51,7 +52,20 @@ type HasilBacaGambar =
  * kosong, dan hasilnya SELALU jatuh ke `manualProvider` (nol jaringan,
  * nol risiko memanggil model sungguhan dari sini). Dicatat di PROGRESS.md.
  */
-async function bacaGambarSementara(berkas: File): Promise<HasilBacaGambar> {
+async function bacaGambarSementara(
+  berkas: File,
+  modelDimatikan: boolean,
+): Promise<HasilBacaGambar> {
+  // S12-1: saat tombol peragaan ditekan, `/api/baca` TIDAK dipanggil sama
+  // sekali. Endpoint itu memanggil `modelProvider` langsung (tidak lewat
+  // `pilihPembaca`), jadi satu-satunya cara menjamin model tidak tersentuh
+  // adalah tidak mengirim permintaannya.
+  if (modelDimatikan) {
+    const pembaca = pilihPembaca("gambar", { modelDimatikan: true });
+    const hasilBaca = await pembaca.baca({ sumber: "gambar", berkas });
+    return { jenis: "fallback-manual", hasilBaca };
+  }
+
   try {
     const formData = new FormData();
     formData.append("berkas", berkas);
@@ -78,6 +92,7 @@ export default function HalamanUtama() {
   const router = useRouter();
   const [galat, setGalat] = useState<KodeGalat | null>(null);
   const [sedangMemroses, setSedangMemroses] = useState(false);
+  const [modelDimatikan, setModelDimatikan] = useState(false);
 
   const tanganiJalurManual = useCallback(() => {
     router.push("/periksa");
@@ -94,7 +109,7 @@ export default function HalamanUtama() {
       setSedangMemroses(true);
 
       try {
-        const hasil = await bacaGambarSementara(berkas);
+        const hasil = await bacaGambarSementara(berkas, modelDimatikan);
 
         if (hasil.jenis === "galat") {
           setGalat(hasil.kode);
@@ -115,10 +130,11 @@ export default function HalamanUtama() {
         setSedangMemroses(false);
       }
     },
-    [router, sedangMemroses],
+    [router, sedangMemroses, modelDimatikan],
   );
 
   const pesanGalatAktif = galat ? PESAN_GALAT[galat] : null;
+  const pesanModelDimatikan = PESAN_GALAT[KodeGalat.E_MODEL_TIDAK_TERSEDIA];
 
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-8 px-4 py-10">
@@ -126,6 +142,16 @@ export default function HalamanUtama() {
         <h1 className="text-[28px] font-bold text-tinta">{JUDUL_HALAMAN_UTAMA}</h1>
         <p className="text-base text-tinta-lembut">{SUBJUDUL_HALAMAN_UTAMA}</p>
       </div>
+
+      {/* S12-1: saat tombol peragaan aktif, layar menyatakannya apa adanya
+          lewat pesan F.9 yang sudah ada — bukan kalimat baru. */}
+      {modelDimatikan ? (
+        <PesanGalat
+          pesan={pesanModelDimatikan.pesan}
+          tindakan={pesanModelDimatikan.tindakan}
+          onTindakan={tanganiJalurManual}
+        />
+      ) : null}
 
       {pesanGalatAktif ? (
         <PesanGalat
@@ -154,6 +180,20 @@ export default function HalamanUtama() {
       </div>
 
       <p className="text-center text-base text-redup">{KETERANGAN_KESETARAAN}</p>
+
+      {/* S12-1: tombol peragaan. `aria-pressed` membawa keadaannya, labelnya
+          tetap (pola tombol-toggle WAI-ARIA), keadaan juga terlihat lewat
+          pesan di atas — tidak lewat warna saja (CLAUDE.md §3.6). */}
+      <div className="flex justify-center">
+        <Tombol
+          varian="sekunder"
+          aria-pressed={modelDimatikan}
+          onClick={() => setModelDimatikan((sebelumnya) => !sebelumnya)}
+          disabled={sedangMemroses}
+        >
+          {TOMBOL_MATIKAN_PEMBACAAN_GAMBAR}
+        </Tombol>
+      </div>
     </main>
   );
 }

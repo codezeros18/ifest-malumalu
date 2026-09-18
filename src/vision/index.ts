@@ -29,12 +29,22 @@ export interface OpsiPemilihPembaca {
   readonly kunciApiModel?: string;
   /** Penyedia jalur model — pemanggil mengoper `modelProvider` (S06). */
   readonly penyediaModel?: Pembaca;
+  /**
+   * S12-1: tombol peragaan "matikan pembacaan gambar". Bila `true`,
+   * `manualProvider` SELALU dipilih — diperiksa paling awal, mengalahkan
+   * kunci API dan `penyediaModel` apa pun. Tidak ada jalan ke model.
+   */
+  readonly modelDimatikan?: boolean;
 }
 
 export function pilihPembaca(
   sumber: SumberTawaran,
   opsi: OpsiPemilihPembaca = {},
 ): Pembaca {
+  if (opsi.modelDimatikan) {
+    return manualProvider;
+  }
+
   const kunciApiModel = opsi.kunciApiModel ?? process.env["MODEL_API_KEY"];
   const kunciKosong = typeof kunciApiModel !== "string" || kunciApiModel.trim().length === 0;
 

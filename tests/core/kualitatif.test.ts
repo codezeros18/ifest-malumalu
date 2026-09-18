@@ -48,7 +48,15 @@ const KASUS: readonly KasusSlot[] = [
     slot: 1,
     judul: "perusahaan yang memberangkatkan",
     lulus: ["PT Karya Bersama Sejahtera", "CV Mitra Tenaga Mandiri"],
-    gagal: ["Pak Haji Rahmat", "@lowongan.taiwan.resmi", "0812-3456-7890", "PT resmi"],
+    gagal: [
+      "Pak Haji Rahmat",
+      "@lowongan.taiwan.resmi",
+      "0812-3456-7890",
+      "PT resmi",
+      // Poster nyata: nama orang asing + label kontak (S16, dari probe korpus)
+      "Mr. Chen / pabrik garmen",
+      "agen: 0812-3456-7890",
+    ],
     sebagian: ["Karya Bersama Sejahtera"],
     catatan:
       "Contoh sebagian diturunkan dari frasa E.2 'Nama disebut tetapi tidak lengkap': nama ada tetapi tanpa penanda badan usaha.",
@@ -63,7 +71,7 @@ const KASUS: readonly KasusSlot[] = [
   {
     slot: 3,
     judul: "siapa yang akan mempekerjakan",
-    lulus: ["Hanwha Techwin Co., Ltd.", "Chang Hwa Electronics Corporation"],
+    lulus: ["Hanwha Techwin Co., Ltd.", "Chang Hwa Electronics Corporation", "PT. Garmen Tekstil Indonesia"],
     gagal: ["perusahaan besar", "pabrik di Taiwan", "majikan baik"],
     sebagian: ["Pabrik garmen di kawasan industri Taoyuan"],
     catatan:
@@ -86,7 +94,7 @@ const KASUS: readonly KasusSlot[] = [
       "Rp9.500.000 per bulan, dibayar tunai setiap akhir bulan",
     ],
     gagal: ["gaji besar", "gaji menarik", "sampai puluhan juta"],
-    sebagian: ["Gaji Rp9.500.000 per bulan"],
+    sebagian: ["Gaji Rp9.500.000 per bulan", "Gaji 15jt"],
   },
   {
     slot: 6,
@@ -120,7 +128,7 @@ const KASUS: readonly KasusSlot[] = [
       "Total Rp18.000.000 — tiket pesawat Rp6.000.000, pelatihan Rp4.000.000, pengurusan dokumen Rp8.000.000",
     ],
     gagal: ["biaya terjangkau", "biaya ringan, bisa dicicil"],
-    sebagian: ["Biaya total Rp18.000.000", "Rp18.000.000"],
+    sebagian: ["Biaya total Rp18.000.000", "Rp18.000.000", "Biaya 15 juta, bisa dicicil"],
     catatan:
       "🔴 E.2 baris 9 bertabrakan langsung: kolom gagal berbunyi 'Angka total tanpa rincian sama sekali', kolom sebagian berbunyi 'Angka total ada, rinciannya tidak → selalu SEBAGIAN, tidak pernah DISEBUTKAN'. Masukan yang sama, dua keluaran. Dimenangkan oleh kolom sebagian karena S02-5 menyebutnya eksplisit. Akibatnya contoh gagal untuk baris ini diturunkan: frasa kabur tanpa angka sama sekali.",
   },

@@ -21,12 +21,27 @@ export type HasilUjiKualitatif = "lulus" | "sebagian" | "gagal";
 
 const PENANDA_BADAN_USAHA = /\b(pt|cv|ud|pd|firma|koperasi|perseroan terbatas)\b\.?/i;
 const KATA_GENERIK_TANPA_NAMA = /^(resmi|lengkap|terpercaya|berizin|besar)$/i;
-const PENANDA_ORANG = /\b(bapak|ibu|pak|bu|tuan|nyonya|nona|haji|hj)\b\.?/i;
-const HANYA_TELEPON = /^[\d\s+()-]+$/;
+const PENANDA_ORANG =
+  /\b(bapak|ibu|pak|bu|tuan|nyonya|nona|haji|hj|mr|mrs|ms|mister|miss)\b\.?/i;
 const AKUN_MEDSOS = /^[@#]/;
 
+/**
+ * Benar bila teks tidak menyisakan apa pun yang bisa jadi NAMA setelah
+ * angka, tanda baca, dan kata label kontak dibuang — mis. "0812-3456-7890"
+ * atau "agen: 0812-3456-7890" (dulu bentuk kedua lolos jadi sebagian karena
+ * pola lama hanya cocok bila SELURUH teks berupa telepon).
+ */
+const POLA_LABEL_KONTAK = /^(agen|kontak|telp|tel|hp|wa|whatsapp|cp|hubungi)\b[:.]?/i;
+function tanpaNama(teks: string): boolean {
+  const sisa = teks
+    .replace(/[\d\s+()\-./]/g, "")
+    .replace(POLA_LABEL_KONTAK, "")
+    .trim();
+  return sisa === "";
+}
+
 function ujiSlot1PerusahaanMemberangkatkan(teks: string): HasilUjiKualitatif {
-  if (HANYA_TELEPON.test(teks) || AKUN_MEDSOS.test(teks) || PENANDA_ORANG.test(teks)) {
+  if (tanpaNama(teks) || AKUN_MEDSOS.test(teks) || PENANDA_ORANG.test(teks)) {
     return "gagal";
   }
 
@@ -58,7 +73,7 @@ function ujiSlot2IzinDanNegara(teks: string): HasilUjiKualitatif {
 }
 
 const PENANDA_ENTITAS_PEMBERI_KERJA =
-  /\b(co\.?,?\s*ltd\.?|corporation|corp\.?|inc\.?|company|group|enterprise|gmbh|sdn\.?\s*bhd\.?|pte\.?\s*ltd\.?)\b/i;
+  /\b(pt|cv|ud|pd|co\.?,?\s*ltd\.?|corporation|corp\.?|inc\.?|company|group|enterprise|gmbh|sdn\.?\s*bhd\.?|pte\.?\s*ltd\.?)\b/i;
 const PENANDA_KAWASAN_INDUSTRI = /\bkawasan industri\b/i;
 const PENANDA_JENIS_INDUSTRI =
   /\b(garmen|elektronik|otomotif|tekstil|makanan|farmasi|logam|manufaktur|konstruksi|pertanian|perikanan|perkebunan)\b/i;
@@ -90,9 +105,9 @@ function ujiSlot4JenisPekerjaan(teks: string): HasilUjiKualitatif {
 
 function adaNominalMataUang(teks: string): boolean {
   if (/(rp\.?\s?\d|nt\$\s?\d|usd\s?\d|\$\s?\d|idr\s?\d)/i.test(teks)) return true;
-  // "15 juta rupiah" — angka dan kata mata uang terpisah, bukan berdempet
-  // dengan simbol seperti "Rp".
-  return /\d+\s*(juta|ribu)\b/i.test(teks) && /\brupiah\b/i.test(teks);
+  // "15 juta rupiah" / "15jt" / "15 jt" — angka dengan kata pengali, dengan
+  // atau tanpa kata "rupiah" (poster nyata sering menyingkat "jt").
+  return /\d+\s*(juta|jt|ribu|rb)\b/i.test(teks);
 }
 
 const POLA_TATA_CARA_PEMBAYARAN = /\b(ditransfer|transfer|dibayar|pembayaran|rekening|tunai|cash)\b/i;
@@ -148,7 +163,8 @@ function ujiSlot8JaminanSosial(teks: string): HasilUjiKualitatif {
  * dimenangkan. Konsekuensinya: satu kemunculan angka biaya = sebagian,
  * dua atau lebih (total + minimal satu rincian) = lulus, nol = gagal.
  */
-const POLA_ANGKA_BIAYA = /(rp\.?\s?\d[\d.,]*|idr\.?\s?\d[\d.,]*|\d+\s*juta\b)/gi;
+const POLA_ANGKA_BIAYA =
+  /(rp\.?\s?\d[\d.,]*|idr\.?\s?\d[\d.,]*|\d+\s*(juta|jt|ribu|rb)\b)/gi;
 
 /**
  * Angka biaya yang SAMA dua kali bukan rincian — "Total Rp15 juta, dibayar

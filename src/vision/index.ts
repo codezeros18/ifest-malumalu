@@ -1,18 +1,19 @@
 /**
  * Pemilih penyedia `Pembaca`.
  *
- * Aturan pemilihan (CLAUDE.md §3.3, prompt sprint S05) — KEDUANYA diperiksa,
- * bukan salah satu:
+ * Aturan pemilihan (CLAUDE.md §3.3) — KEDUANYA diperiksa, bukan salah satu:
  *   - `manualProvider` dipakai bila sumber tawaran adalah 'manual', ATAU
  *   - `manualProvider` dipakai bila `MODEL_API_KEY` kosong.
  *
- * `src/vision/modelProvider.ts` belum ada di sprint ini (itu pekerjaan S06),
- * dan berkas ini tidak diizinkan menyentuhnya. Karena itu penyedia model
- * DISUNTIKKAN oleh pemanggil lewat `opsi.penyediaModel`, bukan diimpor
- * langsung dari sini. Begitu S06 menulis `modelProvider.ts`, pemanggil
- * (endpoint `src/app/api/baca`, atau S12 saat mematikan lapisan model)
- * tinggal mengoper `{ penyediaModel: modelProvider }` — berkas ini tidak
- * perlu diubah.
+ * `modelProvider` (S06, `./modelProvider.ts`) sekarang ada, tetapi tetap
+ * DISUNTIKKAN pemanggil lewat `opsi.penyediaModel`, bukan dijadikan default
+ * diam-diam di sini — `src/app/api/baca/route.ts` yang mengimpor dan
+ * mengopernya (`pilihPembaca(sumber, { penyediaModel: modelProvider })`).
+ * Sengaja tidak diubah menjadi default otomatis: `tests/alur/tanpa-model.test.ts`
+ * (milik S05, di luar berkas yang boleh disentuh sprint ini) mengunci
+ * perilaku "melempar bila sumber gambar dan penyediaModel belum disuntikkan"
+ * sebagai bukti bahwa jalur gambar hanya aktif ketika pemanggil secara
+ * eksplisit menyediakannya — bukan celah yang menyala sendiri.
  */
 
 import type { SumberTawaran } from "../core/tipe";
@@ -21,11 +22,12 @@ import { manualProvider } from "./manualProvider";
 
 export type { Pembaca } from "./pembaca";
 export { manualProvider } from "./manualProvider";
+export { modelProvider } from "./modelProvider";
 
 export interface OpsiPemilihPembaca {
   /** Untuk pengujian: menggantikan `process.env.MODEL_API_KEY`. */
   readonly kunciApiModel?: string;
-  /** Penyedia jalur model, disuntikkan pemanggil begitu S06 tersedia. */
+  /** Penyedia jalur model — pemanggil mengoper `modelProvider` (S06). */
   readonly penyediaModel?: Pembaca;
 }
 
@@ -42,7 +44,7 @@ export function pilihPembaca(
 
   if (!opsi.penyediaModel) {
     throw new Error(
-      "Lapisan model belum tersedia — sediakan opsi.penyediaModel (lihat S06 src/vision/modelProvider.ts).",
+      "Jalur gambar memerlukan opsi.penyediaModel — oper modelProvider dari src/vision/modelProvider.ts.",
     );
   }
 

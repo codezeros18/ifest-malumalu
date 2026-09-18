@@ -22,10 +22,17 @@ import { describe, expect, it } from "vitest";
  * merender komponen.
  */
 
+// `.replace(/\r\n/g, "\n")` — Windows/git bisa menyimpan berkas ini dengan
+// CRLF (terbukti terjadi: lihat PROGRESS.md, test ini sempat merah karena
+// `indexOf("\n}\n", ...)` di bawah tidak pernah cocok dengan "\r\n}\r\n",
+// membuat `.slice()` melebar sampai hampir akhir berkas). Dinormalisasi
+// SEKALI di sini supaya seluruh pola LF di bawah tidak perlu diubah satu
+// per satu, dan tahan siapa pun/alat apa pun yang mengubah gaya baris file
+// sumbernya di kemudian hari.
 const SUMBER_LENCANA = readFileSync(
   join(process.cwd(), "src", "ui", "Lencana.tsx"),
   "utf8",
-);
+).replace(/\r\n/g, "\n");
 
 describe("Lencana — bentuk sungguhan berbeda per keadaan, bukan cuma warna", () => {
   it('"tanpa-penanda" (disebutkan) tidak merender bentuk apa pun — return null', () => {

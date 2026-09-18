@@ -34,7 +34,10 @@ export interface SitusNavbarProps {
  * `aksen` hijau — penyesuaian sadar mengikuti redesign home, dicatat di
  * PROGRESS.md.
  */
-export default function SitusNavbar({ bahasa, onPilihBahasa }: SitusNavbarProps) {
+export default function SitusNavbar({
+  bahasa,
+  onPilihBahasa,
+}: SitusNavbarProps) {
   const router = useRouter();
   const bahasaMenuRef = useRef<HTMLDivElement>(null);
   const [menuTerbuka, setMenuTerbuka] = useState(false);
@@ -69,7 +72,7 @@ export default function SitusNavbar({ bahasa, onPilihBahasa }: SitusNavbarProps)
 
   return (
     <>
-      <header className="relative z-20 flex items-center justify-between px-4 py-4 sm:px-6 sm:py-5 lg:px-14">
+      <header className="relative z-20 flex items-center justify-between px-4 py-4 sm:px-6 sm:py-5 lg:px-44">
         <button
           type="button"
           onClick={keBeranda}
@@ -92,7 +95,8 @@ export default function SitusNavbar({ bahasa, onPilihBahasa }: SitusNavbarProps)
               aria-expanded={bahasaMenuTerbuka}
               className="inline-flex items-center gap-1.5 rounded-full border border-[#dbe4fb] bg-white/70 px-3.5 py-1.5 text-[13px] font-semibold text-[#3f4657] backdrop-blur transition-colors hover:text-[#0955d4]"
             >
-              🌐 {bahasa === "id" ? LABEL_GANTI_BAHASA_ID : LABEL_GANTI_BAHASA_JV}
+              🌐{" "}
+              {bahasa === "id" ? LABEL_GANTI_BAHASA_ID : LABEL_GANTI_BAHASA_JV}
               <svg
                 width="12"
                 height="12"
@@ -127,7 +131,16 @@ export default function SitusNavbar({ bahasa, onPilihBahasa }: SitusNavbarProps)
                   >
                     {label}
                     {bahasa === kode ? (
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
                         <path d="M20 6 9 17l-5-5" />
                       </svg>
                     ) : null}
@@ -222,7 +235,16 @@ export default function SitusNavbar({ bahasa, onPilihBahasa }: SitusNavbarProps)
             >
               🌐 {label}
               {bahasa === kode ? (
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <path d="M20 6 9 17l-5-5" />
                 </svg>
               ) : null}

@@ -530,7 +530,8 @@ export default function App() {
               aria-expanded={bahasaMenuTerbuka}
               className="inline-flex items-center gap-1.5 rounded-full border border-[#dbe4fb] bg-white/70 px-3.5 py-1.5 text-[13px] font-semibold text-[#3f4657] backdrop-blur transition-colors hover:text-[#0955d4]"
             >
-              🌐 {bahasa === "id" ? LABEL_GANTI_BAHASA_ID : LABEL_GANTI_BAHASA_JV}
+              🌐{" "}
+              {bahasa === "id" ? LABEL_GANTI_BAHASA_ID : LABEL_GANTI_BAHASA_JV}
               <svg
                 width="12"
                 height="12"
@@ -570,7 +571,16 @@ export default function App() {
                   >
                     {label}
                     {bahasa === kode ? (
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
                         <path d="M20 6 9 17l-5-5" />
                       </svg>
                     ) : null}
@@ -710,7 +720,16 @@ export default function App() {
             >
               🌐 {label}
               {bahasa === kode ? (
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <path d="M20 6 9 17l-5-5" />
                 </svg>
               ) : null}
@@ -963,6 +982,7 @@ export default function App() {
                   </button>
                   <button
                     onClick={tanganiJalurManual}
+                    disabled={sedangMemroses}
                     className="mt-3 flex w-2/4 items-center justify-center gap-2 rounded-xl bg-[#ffc508] px-6 py-4 text-[16px] font-bold text-white shadow-[0_14px_30px_-12px_#FFD346] transition-transform hover:-translate-y-0.5 hover:bg-[#ffc400] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 text-sm"
                   >
                     {sedangMemroses
@@ -1033,7 +1053,7 @@ export default function App() {
         </main>
       )}
 
-      <footer className="relative z-10 flex items-center justify-between px-14 pb-6 pt-2 text-[12px] text-[#8890a0]">
+      <footer className="relative z-10 flex items-center justify-between px-44 pb-6 pt-2 text-[12px] text-[#8890a0]">
         <p>{t.footerKiri}</p>
         <p className="hidden sm:block">{t.footerKanan}</p>
       </footer>

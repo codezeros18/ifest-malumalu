@@ -87,8 +87,13 @@ export default function HalamanHasil() {
     if (!hasil?.urlGambarLembar) return;
     try {
       const blob = await urlKeBlob(hasil.urlGambarLembar);
-      const berkas = new File([blob], NAMA_BERKAS_LEMBAR, { type: "image/png" });
-      if (typeof navigator.canShare === "function" && navigator.canShare({ files: [berkas] })) {
+      const berkas = new File([blob], NAMA_BERKAS_LEMBAR, {
+        type: "image/png",
+      });
+      if (
+        typeof navigator.canShare === "function" &&
+        navigator.canShare({ files: [berkas] })
+      ) {
         await navigator.share({ files: [berkas] });
         return;
       }
@@ -111,7 +116,8 @@ export default function HalamanHasil() {
           backgroundImage:
             "linear-gradient(#d9e4fb 1px, transparent 1px), linear-gradient(90deg, #d9e4fb 1px, transparent 1px)",
           backgroundSize: "44px 44px",
-          maskImage: "radial-gradient(120% 80% at 20% 10%, #000 40%, transparent 80%)",
+          maskImage:
+            "radial-gradient(120% 80% at 20% 10%, #000 40%, transparent 80%)",
         }}
       />
       <div
@@ -123,7 +129,7 @@ export default function HalamanHasil() {
 
       <main
         aria-live="polite"
-        className="relative z-10 mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4 px-4 py-6 sm:px-6 sm:py-10 lg:px-14"
+        className="relative z-10 mx-auto flex w-full flex-1 flex-col gap-4 px-4 py-6 sm:px-6 sm:py-10 lg:px-44"
       >
         {/* S09: catatan Lapis 1/2 saat dimatikan/data kurang — selalu
             ditampilkan ke pengguna di layar, terlepas dari jalur gambar

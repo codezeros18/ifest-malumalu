@@ -36,13 +36,18 @@ import { isiTemplat } from "../core/perakitan";
 import { blokLembar } from "../ui/BlokLembar";
 import tailwindConfig from "../../tailwind.config";
 
-const DAFTAR_WARNA = tailwindConfig.theme!.extend!.colors as Record<string, string>;
+const DAFTAR_WARNA = tailwindConfig.theme!.extend!.colors as Record<
+  string,
+  string
+>;
 
 /** Akses token warna dengan jaminan non-undefined (tsconfig `noUncheckedIndexedAccess`). */
 function warna(kunci: string): string {
   const nilai = DAFTAR_WARNA[kunci];
   if (!nilai) {
-    throw new Error(`Token warna "${kunci}" tidak ditemukan di tailwind.config.ts`);
+    throw new Error(
+      `Token warna "${kunci}" tidak ditemukan di tailwind.config.ts`,
+    );
   }
   return nilai;
 }
@@ -50,45 +55,30 @@ function warna(kunci: string): string {
 /** BLUEPRINT H.9: "lebar render 1080px". */
 export const LEBAR_LEMBAR = 1080;
 
-const PADDING_HALAMAN = 56;
+const PADDING_HALAMAN = 48;
 const LEBAR_ISI = LEBAR_LEMBAR - PADDING_HALAMAN * 2;
 
 /**
- * Ukuran huruf dalam PIKSEL pada render 1080px lebar. CLAUDE.md bagian 4
- * mewajibkan isi minimal SETARA 14pt. Lembar ini dirancang dipakai penuh
- * lebar layar ponsel (bukan dilihat sekilas sebagai thumbnail) — pada
- * ponsel 5 inci beresolusi ~1080px lebar fisik (DPR umum ±3x), 14pt
- * (≈18,7px CSS) tampil setara ±56px pada render 1080px ini. Nilai di
- * bawah dipilih ≥30px untuk seluruh isi (jauh di atas ambang itu, dengan
- * marjin aman), dan ≥24px untuk teks sekunder (nomor pasal) yang secara
- * eksplisit wajib tetap terbaca (BLUEPRINT H.9, langkah verifikasi S08-8).
+ * Ukuran huruf dalam PIKSEL pada render 1080px lebar. Telah dioptimalkan
+ * agar lebih proporsional, kompak, dan nyaman dibaca (tidak terlalu besar/intimidatif)
+ * namun tetap mematuhi batas keterbacaan minimum.
  */
 const UKURAN = {
-  judul: 52,
-  subjudul: 28,
-  penandaWaktu: 24,
-  labelBlok: 30,
-  kalimatPembuka: 26,
-  blok1Label: 26,
-  blok1Nilai: 30,
-  blok2Kalimat: 30,
-  dasarHukum: 24,
-  kalimatBawahBlok2: 26,
-  pertanyaan: 30,
-  penutup: 26,
+  judul: 20,
+  subjudul: 13,
+  penandaWaktu: 11,
+  labelBlok: 11,
+  kalimatPembuka: 14,
+  blok1Label: 12,
+  blok1Nilai: 21,
+  blok2Kalimat: 15,
+  dasarHukum: 10,
+  kalimatBawahBlok2: 13,
+  pertanyaan: 15,
+  penutup: 12,
 } as const;
 
 const TINGGI_BARIS = 1.4;
-
-/** Batas tampilan nilai tawaran di blok1 — lihat catatan `tinggiLembar`. */
-const MAKS_KARAKTER_NILAI = 130;
-
-function potongNilai(nilai: string): string {
-  if (nilai.length <= MAKS_KARAKTER_NILAI) {
-    return nilai;
-  }
-  return `${nilai.slice(0, MAKS_KARAKTER_NILAI - 1).trimEnd()}…`;
-}
 
 function lencanaSebagian() {
   return (
@@ -96,7 +86,7 @@ function lencanaSebagian() {
       style={{
         display: "flex",
         alignItems: "center",
-        gap: 8,
+        gap: 6,
         fontSize: UKURAN.dasarHukum,
         color: warna("tinta-lembut"),
       }}
@@ -104,9 +94,9 @@ function lencanaSebagian() {
       <div
         style={{
           display: "flex",
-          width: 18,
-          height: 18,
-          borderRadius: 9,
+          width: 14,
+          height: 14,
+          borderRadius: 7,
           backgroundImage: `linear-gradient(90deg, ${warna("tinta-lembut")} 50%, transparent 50%)`,
           border: `1px solid ${warna("tinta-lembut")}`,
         }}
@@ -121,22 +111,20 @@ function lingkaranKosong() {
     <div
       style={{
         display: "flex",
-        width: 20,
-        height: 20,
-        borderRadius: 10,
+        width: 16,
+        height: 16,
+        borderRadius: 8,
         border: `2px solid ${warna("redup")}`,
         flexShrink: 0,
+        marginTop: 2,
       }}
     />
   );
 }
 
 /**
- * S09: hasil Lapis 1 (bila ada) melekat pada baris slot 1 — nama
- * perusahaan yang memberangkatkan adalah satu-satunya keterangan yang
- * dicocokkan ke salinan daftar. Abu netral (`redup`), tanpa lencana warna
- * atau ikon peringatan (CLAUDE.md §3.6). `tinggiBarisBlok1` di bawah HARUS
- * disesuaikan tiap kali baris ini berubah tinggi.
+ * Baris Blok 1 diubah menjadi susunan vertikal (label di atas, nilai di bawah dengan lebar penuh)
+ * agar teks yang panjang tidak terpotong (menghapus batasan karakter/potongNilai).
  */
 function barisBlok1(baris: IsiLembar["blok1"][number], kalimatLapis1?: string) {
   return (
@@ -148,61 +136,52 @@ function barisBlok1(baris: IsiLembar["blok1"][number], kalimatLapis1?: string) {
         width: "100%",
         padding: "16px 0",
         borderBottom: `1px solid ${warna("garis")}`,
+        gap: 8,
       }}
     >
+      <span
+        style={{
+          display: "flex",
+          fontSize: UKURAN.blok1Label,
+          color: warna("tinta-lembut"),
+          width: "100%",
+        }}
+      >
+        {baris.label}
+      </span>
       <div
         style={{
           display: "flex",
-          flexDirection: "row",
-          justifyContent: "space-between",
+          flexDirection: "column",
           alignItems: "flex-start",
-          gap: 24,
           width: "100%",
+          gap: 6,
         }}
       >
         <span
           style={{
             display: "flex",
-            fontSize: UKURAN.blok1Label,
-            color: warna("tinta-lembut"),
-            flex: "1 1 0%",
+            fontSize: UKURAN.blok1Nilai,
+            fontWeight: 700,
+            color: warna("tinta"),
+            width: "100%",
+            lineHeight: TINGGI_BARIS,
           }}
         >
-          {baris.label}
+          {baris.nilai}
         </span>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-end",
-            gap: 8,
-            flex: "1 1 0%",
-          }}
-        >
-          <span
-            style={{
-              display: "flex",
-              fontSize: UKURAN.blok1Nilai,
-              fontWeight: 700,
-              color: warna("tinta"),
-              textAlign: "right",
-            }}
-          >
-            {potongNilai(baris.nilai)}
-          </span>
-          {baris.keadaan === Keadaan.DISEBUTKAN_SEBAGIAN ? lencanaSebagian() : null}
-        </div>
+        {baris.keadaan === Keadaan.DISEBUTKAN_SEBAGIAN
+          ? lencanaSebagian()
+          : null}
       </div>
       {kalimatLapis1 ? (
         <span
           style={{
             display: "flex",
-            justifyContent: "flex-end",
             width: "100%",
-            marginTop: 8,
+            marginTop: 4,
             fontSize: UKURAN.dasarHukum,
             color: warna("redup"),
-            textAlign: "right",
           }}
         >
           {kalimatLapis1}
@@ -212,16 +191,6 @@ function barisBlok1(baris: IsiLembar["blok1"][number], kalimatLapis1?: string) {
   );
 }
 
-/**
- * Nomor pasal (`baris.dasarHukum`) ditumpuk DI BAWAH kalimat, bukan
- * disandingkan sejajar di kanan — beberapa slot punya sampai 4 sitasi
- * pasal sekaligus (mis. slot 10: "Pasal 6 ayat (1) huruf m, Pasal 6 ayat
- * (3) huruf c, Pasal 13 huruf g, Pasal 13 huruf h", ~87 karakter), yang
- * akan meluber bila dipaksa satu baris sejajar dengan kalimatnya. Tetap
- * "rata kanan" (BLUEPRINT H.9) — hanya barisnya yang beda, supaya lebar
- * baris SELALU penuh dan dapat diperkirakan tingginya dengan aman
- * (lihat `tinggiLembar`), apa pun jumlah sitasi pasalnya.
- */
 function barisBlok2(baris: IsiLembar["blok2"][number]) {
   return (
     <div
@@ -231,11 +200,20 @@ function barisBlok2(baris: IsiLembar["blok2"][number]) {
         flexDirection: "column",
         width: "100%",
         backgroundColor: warna("latar-kosong"),
-        padding: "20px 24px",
-        marginBottom: 12,
+        padding: "16px 20px",
+        marginBottom: 10,
+        borderRadius: 4,
       }}
     >
-      <div style={{ display: "flex", flexDirection: "row", alignItems: "flex-start", gap: 16, width: "100%" }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "flex-start",
+          gap: 12,
+          width: "100%",
+        }}
+      >
         {lingkaranKosong()}
         <span
           style={{
@@ -256,7 +234,7 @@ function barisBlok2(baris: IsiLembar["blok2"][number]) {
           fontSize: UKURAN.dasarHukum,
           color: warna("redup"),
           textAlign: "right",
-          marginTop: 8,
+          marginTop: 6,
         }}
       >
         {baris.dasarHukum.join(", ")}
@@ -278,21 +256,34 @@ export function elemenLembar(isiLembar: IsiLembar) {
         borderRadius: 0,
       }}
     >
-      {/* 1. Kepala — BLUEPRINT H.9 butir 1 */}
+      {/* 1. Kepala — Di-force menggunakan warna #0955D4 */}
       <div
         style={{
           display: "flex",
           flexDirection: "column",
           width: "100%",
-          backgroundColor: warna("tinta"),
-          padding: `40px ${PADDING_HALAMAN}px`,
-          gap: 10,
+          backgroundColor: "#0955D4",
+          padding: `32px ${PADDING_HALAMAN}px`,
+          gap: 8,
         }}
       >
-        <span style={{ display: "flex", fontSize: UKURAN.judul, fontWeight: 700, color: warna("kertas") }}>
+        <span
+          style={{
+            display: "flex",
+            fontSize: UKURAN.judul,
+            fontWeight: 700,
+            color: warna("kertas"),
+          }}
+        >
           {JUDUL_LEMBAR}
         </span>
-        <span style={{ display: "flex", fontSize: UKURAN.subjudul, color: warna("garis") }}>
+        <span
+          style={{
+            display: "flex",
+            fontSize: UKURAN.subjudul,
+            color: "#E2E8F0",
+          }}
+        >
           {SUBJUDUL_LEMBAR}
         </span>
         <span
@@ -301,27 +292,34 @@ export function elemenLembar(isiLembar: IsiLembar) {
             justifyContent: "flex-end",
             width: "100%",
             fontSize: UKURAN.penandaWaktu,
-            color: warna("garis"),
+            color: "#E2E8F0",
           }}
         >
           {isiLembar.tanggal}
         </span>
       </div>
 
-      {/* 2. Blok 1 — sudah disebutkan */}
+      {/* 2. Blok 1 */}
       {blokLembar({
         labelTeks: LABEL_BLOK_1,
         warnaLatarLabel: warna("latar-blok"),
         warnaTeksLabel: warna("tinta-lembut"),
         ukuranLabel: UKURAN.labelBlok,
         children: (
-          <div style={{ display: "flex", flexDirection: "column", width: "100%", gap: 0 }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              width: "100%",
+              gap: 0,
+            }}
+          >
             <span
               style={{
                 display: "flex",
                 fontSize: UKURAN.kalimatPembuka,
                 color: warna("tinta-lembut"),
-                marginBottom: 16,
+                marginBottom: 12,
               }}
             >
               {KALIMAT_PEMBUKA_BLOK_1}
@@ -337,35 +335,45 @@ export function elemenLembar(isiLembar: IsiLembar) {
       })}
 
       {/* 3. Garis pemisah */}
-      <div style={{ display: "flex", width: "100%", height: 1, backgroundColor: warna("garis") }} />
+      <div
+        style={{
+          display: "flex",
+          width: "100%",
+          height: 1,
+          backgroundColor: warna("garis"),
+        }}
+      />
 
-      {/* 4. Blok 2 — belum dijawab */}
+      {/* 4. Blok 2 */}
       {blokLembar({
-        labelTeks: isiTemplat(LABEL_BLOK_2_TEMPLAT, { n: String(isiLembar.blok2.length) }),
-        warnaLatarLabel: warna("tinta-lembut"),
-        warnaTeksLabel: warna("kertas"),
+        labelTeks: isiTemplat(LABEL_BLOK_2_TEMPLAT, {
+          n: String(isiLembar.blok2.length),
+        }),
+        warnaLatarLabel: "#ffd346",
+        warnaTeksLabel: "#000000",
         ukuranLabel: UKURAN.labelBlok,
         children: (
-          <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
+          <div
+            style={{ display: "flex", flexDirection: "column", width: "100%" }}
+          >
             <span
               style={{
                 display: "flex",
                 fontSize: UKURAN.kalimatPembuka,
                 color: warna("redup"),
-                marginBottom: 16,
+                marginBottom: 12,
               }}
             >
               {KALIMAT_PEMBUKA_BLOK_2}
             </span>
             {isiLembar.blok2.map((baris) => barisBlok2(baris))}
-            {/* 5. Kalimat "belum disebutkan bukan berarti tidak ada" */}
             <span
               style={{
                 display: "flex",
                 fontSize: UKURAN.kalimatBawahBlok2,
                 fontStyle: "italic",
                 color: warna("redup"),
-                marginTop: 8,
+                marginTop: 6,
               }}
             >
               {KALIMAT_BAWAH_BLOK_2}
@@ -374,18 +382,17 @@ export function elemenLembar(isiLembar: IsiLembar) {
         ),
       })}
 
-      {/* 6. Catatan hitungan — BLUEPRINT H.9 butir 6: HANYA muncul bila
-          Lapis 2 aktif dan datanya cukup. Kotak bergaris putus-putus, abu
-          netral, tanpa warna merah maupun ikon peringatan. */}
+      {/* 6. Catatan hitungan */}
       {isiLembar.catatanHitungan ? (
         <div
           style={{
             display: "flex",
             flexDirection: "column",
             width: LEBAR_ISI,
-            margin: `24px ${PADDING_HALAMAN}px 0`,
-            padding: "20px 24px",
+            margin: `20px ${PADDING_HALAMAN}px 0`,
+            padding: "16px 20px",
             border: `2px dashed ${warna("garis")}`,
+            borderRadius: 4,
           }}
         >
           <span
@@ -401,7 +408,7 @@ export function elemenLembar(isiLembar: IsiLembar) {
           <span
             style={{
               display: "flex",
-              marginTop: 8,
+              marginTop: 6,
               fontSize: UKURAN.kalimatPembuka,
               color: warna("tinta-lembut"),
             }}
@@ -418,13 +425,15 @@ export function elemenLembar(isiLembar: IsiLembar) {
         warnaTeksLabel: warna("tinta-lembut"),
         ukuranLabel: UKURAN.labelBlok,
         children: (
-          <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
+          <div
+            style={{ display: "flex", flexDirection: "column", width: "100%" }}
+          >
             <span
               style={{
                 display: "flex",
                 fontSize: UKURAN.kalimatPembuka,
                 color: warna("tinta-lembut"),
-                marginBottom: 16,
+                marginBottom: 12,
               }}
             >
               {KALIMAT_PEMBUKA_BLOK_3}
@@ -436,7 +445,7 @@ export function elemenLembar(isiLembar: IsiLembar) {
                   display: "flex",
                   fontSize: UKURAN.pertanyaan,
                   color: warna("tinta"),
-                  marginBottom: 14,
+                  marginBottom: 10,
                 }}
               >
                 {`${indeks + 1}. ${pertanyaan}`}
@@ -446,16 +455,22 @@ export function elemenLembar(isiLembar: IsiLembar) {
         ),
       })}
 
-      {/* 8. Kaki — kalimat penutup wajib, SELALU tercetak apa pun hasilnya */}
+      {/* 8. Kaki */}
       <div
         style={{
           display: "flex",
           width: "100%",
           backgroundColor: warna("latar-blok"),
-          padding: `28px ${PADDING_HALAMAN}px`,
+          padding: `24px ${PADDING_HALAMAN}px`,
         }}
       >
-        <span style={{ display: "flex", fontSize: UKURAN.penutup, color: warna("tinta-lembut") }}>
+        <span
+          style={{
+            display: "flex",
+            fontSize: UKURAN.penutup,
+            color: warna("tinta-lembut"),
+          }}
+        >
           {PENUTUP_LEMBAR}
         </span>
       </div>
@@ -463,106 +478,107 @@ export function elemenLembar(isiLembar: IsiLembar) {
   );
 }
 
-/**
- * Rasio lebar-per-karakter untuk Noto Sans Regular (font bawaan
- * `next/og`, dibuktikan tanpa perlu memuat font sendiri — lihat komentar
- * berkas). Dipilih 0,62 (bukan rata-rata literal glyph Latin ±0,5-0,55)
- * SENGAJA lebih besar dari perkiraan "wajar", karena pembungkusan kata
- * (word-wrap) selalu menyisakan spasi kosong di ujung baris — perkiraan
- * berbasis pembagian lebar/lebar-karakter akan selalu MELEBIH-LEBIHKAN
- * jumlah karakter yang benar-benar muat per baris bila rasionya terlalu
- * kecil. Dikalibrasi empiris terhadap render sungguhan (skrip sekali
- * pakai, dibuang), lihat PROGRESS.md.
- */
 const RASIO_LEBAR_KARAKTER = 0.62;
 
-function estimasiJumlahBaris(teks: string, ukuranFont: number, lebarTersedia: number): number {
+function estimasiJumlahBaris(
+  teks: string,
+  ukuranFont: number,
+  lebarTersedia: number,
+): number {
   const perkiraanLebarKarakter = ukuranFont * RASIO_LEBAR_KARAKTER;
-  const karakterPerBaris = Math.max(8, Math.floor(lebarTersedia / perkiraanLebarKarakter));
+  const karakterPerBaris = Math.max(
+    8,
+    Math.floor(lebarTersedia / perkiraanLebarKarakter),
+  );
   return Math.max(1, Math.ceil(teks.length / karakterPerBaris));
 }
 
-function tinggiTeks(teks: string, ukuranFont: number, lebarTersedia: number): number {
-  return estimasiJumlahBaris(teks, ukuranFont, lebarTersedia) * ukuranFont * TINGGI_BARIS;
+function tinggiTeks(
+  teks: string,
+  ukuranFont: number,
+  lebarTersedia: number,
+): number {
+  return (
+    estimasiJumlahBaris(teks, ukuranFont, lebarTersedia) *
+    ukuranFont *
+    TINGGI_BARIS
+  );
 }
 
-// Geometri berikut HARUS tetap sinkron dengan style di `elemenLembar`,
-// `barisBlok1`, `barisBlok2`, dan `blokLembar` — bila salah satu style
-// itu berubah, sesuaikan juga konstanta di sini.
-const PADDING_LABEL_BLOK_VERTIKAL = 20;
-const PADDING_ISI_BLOK_VERTIKAL = 28;
-const LEBAR_ISI_BLOK = LEBAR_ISI; // blokLembar: padding horizontal 56px, sama seperti PADDING_HALAMAN
+const PADDING_LABEL_BLOK_VERTIKAL = 16;
+const PADDING_ISI_BLOK_VERTIKAL = 24;
+const LEBAR_ISI_BLOK = LEBAR_ISI;
 
 const BLOK1_PADDING_BARIS_VERTIKAL = 16;
-const BLOK1_GAP_KOLOM = 24;
-const BLOK1_LEBAR_KOLOM = (LEBAR_ISI_BLOK - BLOK1_GAP_KOLOM) / 2;
-
-const BLOK2_PADDING_HORIZONTAL = 24;
-const BLOK2_PADDING_VERTIKAL = 20;
-const BLOK2_MARGIN_BAWAH = 12;
-const BLOK2_LEBAR_BARIS = LEBAR_ISI_BLOK - BLOK2_PADDING_HORIZONTAL * 2;
-const BLOK2_LEBAR_KALIMAT = BLOK2_LEBAR_BARIS - 20 - 16; // dikurangi lingkaran + gap
 
 function tinggiBarisBlok1(
   baris: IsiLembar["blok1"][number],
   kalimatLapis1?: string,
 ): number {
-  const tinggiLabel = tinggiTeks(baris.label, UKURAN.blok1Label, BLOK1_LEBAR_KOLOM);
-  const nilaiDipotong = potongNilai(baris.nilai);
-  let tinggiKolomKanan = tinggiTeks(nilaiDipotong, UKURAN.blok1Nilai, BLOK1_LEBAR_KOLOM);
+  const tinggiLabel = tinggiTeks(
+    baris.label,
+    UKURAN.blok1Label,
+    LEBAR_ISI_BLOK,
+  );
+  // Menggunakan lebar penuh (LEBAR_ISI_BLOK) karena nilai sekarang membentang ke bawah
+  let tinggiNilai = tinggiTeks(baris.nilai, UKURAN.blok1Nilai, LEBAR_ISI_BLOK);
   if (baris.keadaan === Keadaan.DISEBUTKAN_SEBAGIAN) {
-    tinggiKolomKanan += 8 + UKURAN.dasarHukum * TINGGI_BARIS; // gap + baris lencana
+    tinggiNilai += 6 + UKURAN.dasarHukum * TINGGI_BARIS;
   }
-  let tinggi = BLOK1_PADDING_BARIS_VERTIKAL * 2 + Math.max(tinggiLabel, tinggiKolomKanan);
-  // S09: baris kalimat Lapis 1 (bila ada), lebar penuh di bawah pasangan
-  // label-nilai — lihat perubahan layout `barisBlok1` di atas.
+  let tinggi =
+    BLOK1_PADDING_BARIS_VERTIKAL * 2 +
+    tinggiLabel +
+    8 + // gap antara label dan nilai
+    tinggiNilai;
+
   if (kalimatLapis1) {
-    tinggi += 8 + tinggiTeks(kalimatLapis1, UKURAN.dasarHukum, LEBAR_ISI_BLOK);
+    tinggi += 4 + tinggiTeks(kalimatLapis1, UKURAN.dasarHukum, LEBAR_ISI_BLOK);
   }
   return tinggi;
 }
 
 function tinggiBarisBlok2(baris: IsiLembar["blok2"][number]): number {
-  const tinggiKalimat = tinggiTeks(baris.kalimat, UKURAN.blok2Kalimat, BLOK2_LEBAR_KALIMAT);
-  const tinggiPasal = tinggiTeks(baris.dasarHukum.join(", "), UKURAN.dasarHukum, BLOK2_LEBAR_BARIS);
+  const BLOK2_PADDING_HORIZONTAL = 20;
+  const BLOK2_LEBAR_BARIS = LEBAR_ISI_BLOK - BLOK2_PADDING_HORIZONTAL * 2;
+  const BLOK2_LEBAR_KALIMAT = BLOK2_LEBAR_BARIS - 16 - 12;
+
+  const tinggiKalimat = tinggiTeks(
+    baris.kalimat,
+    UKURAN.blok2Kalimat,
+    BLOK2_LEBAR_KALIMAT,
+  );
+  const tinggiPasal = tinggiTeks(
+    baris.dasarHukum.join(", "),
+    UKURAN.dasarHukum,
+    BLOK2_LEBAR_BARIS,
+  );
   return (
-    BLOK2_PADDING_VERTIKAL * 2 +
-    Math.max(20, tinggiKalimat) + // 20 = tinggi lingkaran kosong
-    8 + // marginTop sebelum baris pasal
+    16 * 2 + // padding vertikal
+    Math.max(16, tinggiKalimat) +
+    6 +
     tinggiPasal +
-    BLOK2_MARGIN_BAWAH
+    10 // margin bawah
   );
 }
 
-/**
- * Menghitung tinggi render yang dibutuhkan SEBELUM memanggil `ImageResponse`
- * — Satori/`next/og` TIDAK mendukung tinggi otomatis mengikuti konten
- * (dibuktikan lewat percobaan manual: tanpa `height` eksplisit, hasilnya
- * diam-diam terpotong pada tinggi bawaan 630px). Perkiraan ini SENGAJA
- * konservatif (melebih-lebihkan — dikalibrasi lewat perbandingan terhadap
- * render sungguhan, lihat PROGRESS.md), supaya bila meleset, arahnya
- * adalah ruang kosong tambahan di bawah — BUKAN kalimat penutup wajib
- * terpotong. Nilai `nilai` di blok1 dipotong `MAKS_KARAKTER_NILAI` (lihat
- * `potongNilai`) justru supaya tinggi baris blok1 punya batas atas yang
- * pasti walau pengguna menempelkan teks yang sangat panjang ke satu
- * keterangan.
- */
 export function tinggiLembar(isiLembar: IsiLembar): number {
   let tinggi = 0;
 
   // Kepala
   tinggi +=
-    40 * 2 +
+    32 * 2 +
     UKURAN.judul * TINGGI_BARIS +
-    10 +
+    8 +
     UKURAN.subjudul * TINGGI_BARIS +
-    10 +
+    8 +
     UKURAN.penandaWaktu * TINGGI_BARIS;
 
   // Blok 1
-  tinggi += PADDING_LABEL_BLOK_VERTIKAL * 2 + UKURAN.labelBlok * TINGGI_BARIS; // label bar
-  tinggi += PADDING_ISI_BLOK_VERTIKAL * 2; // padding isi
-  tinggi += tinggiTeks(KALIMAT_PEMBUKA_BLOK_1, UKURAN.kalimatPembuka, LEBAR_ISI_BLOK) + 16;
+  tinggi += PADDING_LABEL_BLOK_VERTIKAL * 2 + UKURAN.labelBlok * TINGGI_BARIS;
+  tinggi += PADDING_ISI_BLOK_VERTIKAL * 2;
+  tinggi +=
+    tinggiTeks(KALIMAT_PEMBUKA_BLOK_1, UKURAN.kalimatPembuka, LEBAR_ISI_BLOK) +
+    12;
   for (const baris of isiLembar.blok1) {
     tinggi += tinggiBarisBlok1(
       baris,
@@ -576,32 +592,48 @@ export function tinggiLembar(isiLembar: IsiLembar): number {
   // Blok 2
   tinggi += PADDING_LABEL_BLOK_VERTIKAL * 2 + UKURAN.labelBlok * TINGGI_BARIS;
   tinggi += PADDING_ISI_BLOK_VERTIKAL * 2;
-  tinggi += tinggiTeks(KALIMAT_PEMBUKA_BLOK_2, UKURAN.kalimatPembuka, LEBAR_ISI_BLOK) + 16;
+  tinggi +=
+    tinggiTeks(KALIMAT_PEMBUKA_BLOK_2, UKURAN.kalimatPembuka, LEBAR_ISI_BLOK) +
+    12;
   for (const baris of isiLembar.blok2) {
     tinggi += tinggiBarisBlok2(baris);
   }
-  tinggi += tinggiTeks(KALIMAT_BAWAH_BLOK_2, UKURAN.kalimatBawahBlok2, LEBAR_ISI_BLOK) + 8;
+  tinggi +=
+    tinggiTeks(KALIMAT_BAWAH_BLOK_2, UKURAN.kalimatBawahBlok2, LEBAR_ISI_BLOK) +
+    6;
 
-  // Catatan hitungan (S09) — lihat kondisi render yang sama di `elemenLembar`.
+  // Catatan hitungan
   if (isiLembar.catatanHitungan) {
-    tinggi += 24; // marginTop kotak
-    tinggi += 20 * 2; // padding vertikal kotak
-    tinggi += UKURAN.blok1Label * TINGGI_BARIS; // judul "CATATAN HITUNGAN"
-    tinggi += 8 + tinggiTeks(isiLembar.catatanHitungan, UKURAN.kalimatPembuka, LEBAR_ISI_BLOK);
+    tinggi += 20;
+    tinggi += 16 * 2;
+    tinggi += UKURAN.blok1Label * TINGGI_BARIS;
+    tinggi +=
+      6 +
+      tinggiTeks(
+        isiLembar.catatanHitungan,
+        UKURAN.kalimatPembuka,
+        LEBAR_ISI_BLOK,
+      );
   }
 
   // Blok 3
   tinggi += PADDING_LABEL_BLOK_VERTIKAL * 2 + UKURAN.labelBlok * TINGGI_BARIS;
   tinggi += PADDING_ISI_BLOK_VERTIKAL * 2;
-  tinggi += tinggiTeks(KALIMAT_PEMBUKA_BLOK_3, UKURAN.kalimatPembuka, LEBAR_ISI_BLOK) + 16;
+  tinggi +=
+    tinggiTeks(KALIMAT_PEMBUKA_BLOK_3, UKURAN.kalimatPembuka, LEBAR_ISI_BLOK) +
+    12;
   for (const [indeks, pertanyaan] of isiLembar.pertanyaan.entries()) {
-    tinggi += tinggiTeks(`${indeks + 1}. ${pertanyaan}`, UKURAN.pertanyaan, LEBAR_ISI_BLOK) + 14;
+    tinggi +=
+      tinggiTeks(
+        `${indeks + 1}. ${pertanyaan}`,
+        UKURAN.pertanyaan,
+        LEBAR_ISI_BLOK,
+      ) + 10;
   }
 
   // Kaki
-  tinggi += 28 * 2 + tinggiTeks(PENUTUP_LEMBAR, UKURAN.penutup, LEBAR_ISI);
+  tinggi += 24 * 2 + tinggiTeks(PENUTUP_LEMBAR, UKURAN.penutup, LEBAR_ISI);
 
-  // Marjin aman tambahan — lihat catatan di atas.
-  const MARJIN_AMAN = 160;
+  const MARJIN_AMAN = 120;
   return Math.ceil(tinggi + MARJIN_AMAN);
 }

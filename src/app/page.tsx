@@ -10,7 +10,13 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import SitusFooter from "@/ui/SitusFooter";
-import { simpanIsian, nilaiSlotKeRekaman } from "@/lib/simpananLokal";
+import {
+  simpanIsian,
+  nilaiSlotKeRekaman,
+  ambilBahasaTersimpan,
+  atributLang,
+  simpanBahasa,
+} from "@/lib/simpananLokal";
 import { pilihPembaca } from "@/vision";
 import type { HasilBaca } from "@/core/tipe";
 import { KodeGalat } from "@/core/galat";
@@ -297,9 +303,10 @@ export default function App() {
   const [bahasa, setBahasa] = useState<"id" | "jv">("id");
 
   useEffect(() => {
-    const simpanan = localStorage.getItem("lembar_janji_bahasa");
-    if (simpanan === "jv" || simpanan === "id") {
+    const simpanan = ambilBahasaTersimpan();
+    if (simpanan) {
       setBahasa(simpanan);
+      document.documentElement.lang = atributLang(simpanan);
     }
   }, []);
 
@@ -316,7 +323,7 @@ export default function App() {
 
   const pilihBahasa = useCallback((baru: "id" | "jv") => {
     setBahasa(baru);
-    localStorage.setItem("lembar_janji_bahasa", baru);
+    simpanBahasa(baru);
     setBahasaMenuTerbuka(false);
   }, []);
 

@@ -80,7 +80,7 @@ const KASUS: readonly KasusSlot[] = [
   {
     slot: 4,
     judul: "pekerjaannya apa persisnya",
-    lulus: ["Operator mesin injeksi plastik", "Perawat lansia di panti jompo"],
+    lulus: ["Operator mesin injeksi plastik", "Perawat lansia di panti jompo", "Staff produksi", "Helper dapur"],
     gagal: ["kerja pabrik", "kerja di luar negeri"],
     sebagian: ["Bidang manufaktur elektronik"],
     catatan:
@@ -128,7 +128,16 @@ const KASUS: readonly KasusSlot[] = [
       "Total Rp18.000.000 — tiket pesawat Rp6.000.000, pelatihan Rp4.000.000, pengurusan dokumen Rp8.000.000",
     ],
     gagal: ["biaya terjangkau", "biaya ringan, bisa dicicil"],
-    sebagian: ["Biaya total Rp18.000.000", "Rp18.000.000", "Biaya 15 juta, bisa dicicil"],
+    sebagian: [
+      "Biaya total Rp18.000.000",
+      "Rp18.000.000",
+      "Biaya 15 juta, bisa dicicil",
+      // Poster nyata menjawab biaya tanpa angka (S16 red-team): tetap sebagian,
+      // tidak pernah gagal dan tidak pernah lulus.
+      "GRATIS",
+      "ditanggung perusahaan",
+      "biaya 0",
+    ],
     catatan:
       "🔴 E.2 baris 9 bertabrakan langsung: kolom gagal berbunyi 'Angka total tanpa rincian sama sekali', kolom sebagian berbunyi 'Angka total ada, rinciannya tidak → selalu SEBAGIAN, tidak pernah DISEBUTKAN'. Masukan yang sama, dua keluaran. Dimenangkan oleh kolom sebagian karena S02-5 menyebutnya eksplisit. Akibatnya contoh gagal untuk baris ini diturunkan: frasa kabur tanpa angka sama sekali.",
   },

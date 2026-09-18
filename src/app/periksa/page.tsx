@@ -4,7 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import BarisKeterangan from "../../ui/BarisKeterangan";
 import PesanGalat from "../../ui/PesanGalat";
-import Tombol from "../../ui/Tombol";
+import SitusNavbar from "../../ui/SitusNavbar";
+import SitusFooter from "../../ui/SitusFooter";
 import {
   ambilIsian,
   nilaiSlotKeRekaman,
@@ -29,15 +30,13 @@ import {
   LABEL_TIDAK_TAHU,
   TOMBOL_LANJUT,
   TOMBOL_SEDANG_MENERBITKAN,
+  PERINGATAN_LENGKAPI_KETERANGAN,
   PENANDA_WAKTU_TEMPLAT,
   PESAN_GALAT,
   CONTOH_ISIAN_PER_SLOT,
   LAPIS1_DIMATIKAN,
   LAPIS2_ANGKA_TIDAK_ADA,
   LAPIS2_DIMATIKAN,
-  LABEL_GANTI_BAHASA_ID,
-  LABEL_GANTI_BAHASA_JV,
-  LABEL_PILIH_BAHASA,
 } from "../../core/teks";
 import {
   JUDUL_LAYAR_KOREKSI_JAWA,
@@ -45,6 +44,7 @@ import {
   LABEL_TIDAK_TAHU_JAWA,
   TOMBOL_LANJUT_JAWA,
   TOMBOL_SEDANG_MENERBITKAN_JAWA,
+  PERINGATAN_LENGKAPI_KETERANGAN_JAWA,
   CONTOH_ISIAN_PER_SLOT_JAWA,
   PESAN_GALAT_JAWA,
 } from "../../core/teksJawa";
@@ -166,6 +166,10 @@ export default function HalamanPeriksa() {
   const [galatAwal, setGalatAwal] = useState<KodeGalat | null>(null);
   const [galatPeriksa, setGalatPeriksa] = useState<KodeGalat | null>(null);
   const [sedangMenerbitkan, setSedangMenerbitkan] = useState(false);
+  // Keterangan pertama yang belum diisi/ditandai saat pengguna mencoba
+  // menerbitkan — dipakai untuk menyorot baris itu dan menggulir ke sana,
+  // supaya pengguna tidak perlu mencari sendiri baris mana yang terlewat.
+  const [slotBelumLengkap, setSlotBelumLengkap] = useState<SlotId | null>(null);
   const [bahasa, setBahasa] = useState<"id" | "jv">("id");
   // Baseline hasil pembacaan gambar SEBELUM dikoreksi, dan jam halaman ini
   // dibuka — keduanya murni untuk metrik anonim (CLAUDE.md §3.5): "apakah
@@ -216,11 +220,13 @@ export default function HalamanPeriksa() {
 
   function ubahNilai(id: SlotId, teks: string) {
     if (galatPeriksa) setGalatPeriksa(null);
+    if (slotBelumLengkap === id && teks.trim().length > 0) setSlotBelumLengkap(null);
     setNilaiSlot((sebelumnya) => ({ ...sebelumnya, [id]: teks }));
   }
 
   function ubahTidakTahu(id: SlotId, ditandai: boolean) {
     if (galatPeriksa) setGalatPeriksa(null);
+    if (slotBelumLengkap === id && ditandai) setSlotBelumLengkap(null);
     setTidakTahu((sebelumnya) => {
       const berikutnya = new Set(sebelumnya);
       if (ditandai) {
@@ -244,11 +250,30 @@ export default function HalamanPeriksa() {
     const adaMasukan =
       SLOT_IDS.some((id) => nilaiSlot[id].trim().length > 0) || tidakTahu.size > 0;
     if (!adaMasukan) {
+      setSlotBelumLengkap(null);
       setGalatPeriksa(KodeGalat.E_TIDAK_ADA_MASUKAN);
       return;
     }
 
+    // Setiap keterangan wajib diisi ATAU ditandai "Saya tidak tahu" — bukan
+    // aturan penilaian (aturan keraguan §3.2 tetap sama: kosong = belum
+    // dijawab), murni memastikan pengguna sadar meninggalkan sebuah
+    // keterangan kosong, bukan lupa. Berhenti di keterangan PERTAMA yang
+    // belum lengkap dan gulir ke sana, supaya urutan tetap 1–10 (3.2).
+    const idBelumLengkap = SLOT_IDS.find(
+      (id) => nilaiSlot[id].trim().length === 0 && !tidakTahu.has(id),
+    );
+    if (idBelumLengkap !== undefined) {
+      setGalatPeriksa(null);
+      setSlotBelumLengkap(idBelumLengkap);
+      document
+        .getElementById(`keterangan-${idBelumLengkap}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+
     setGalatPeriksa(null);
+    setSlotBelumLengkap(null);
     setSedangMenerbitkan(true);
 
     try {
@@ -362,34 +387,36 @@ export default function HalamanPeriksa() {
     bahasa === "jv" ? CONTOH_ISIAN_PER_SLOT_JAWA : CONTOH_ISIAN_PER_SLOT;
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-latar-kosong via-kertas to-kertas">
+    <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-[#f2f6ff] text-[#0b1220]">
+      {/* Dekorasi latar — persis pola di halaman utama, supaya /periksa
+          terasa satu situs yang sama, bukan halaman terpisah. */}
       <div
         aria-hidden="true"
-        className="fixed inset-x-0 top-0 h-1.5 bg-aksen"
+        className="pointer-events-none absolute inset-0 opacity-[0.5]"
+        style={{
+          backgroundImage:
+            "linear-gradient(#d9e4fb 1px, transparent 1px), linear-gradient(90deg, #d9e4fb 1px, transparent 1px)",
+          backgroundSize: "44px 44px",
+          maskImage: "radial-gradient(120% 80% at 20% 10%, #000 40%, transparent 80%)",
+        }}
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -right-40 top-1/3 h-[420px] w-[420px] rounded-full bg-[#fac10b]/25 blur-[120px]"
       />
 
-      <div className="mx-auto flex max-w-2xl flex-col gap-5 px-4 py-8 sm:px-6 sm:py-12">
-        {/* Saklar Bahasa Daerah untuk kenyamanan musyawarah keluarga PMI */}
-        <div className="flex justify-end">
-          <button
-            type="button"
-            onClick={gantiBahasa}
-            aria-label={LABEL_PILIH_BAHASA}
-            className="inline-flex min-h-11 items-center gap-2 rounded-full border border-garis bg-kertas px-4 text-base font-semibold text-tinta-lembut shadow-sm hover:bg-latar-kosong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-aksen active:scale-[0.98] motion-reduce:transform-none"
-          >
-            <span>🌐 {bahasa === "id" ? LABEL_GANTI_BAHASA_JV : LABEL_GANTI_BAHASA_ID}</span>
-          </button>
-        </div>
+      <SitusNavbar bahasa={bahasa} onGantiBahasa={gantiBahasa} />
 
+      <main className="relative z-10 mx-auto flex w-full max-w-4xl flex-1 flex-col gap-5 px-4 py-6 sm:px-6 sm:py-10 lg:px-14">
         {/* Kartu utama — satu permukaan yang menampung judul, kesepuluh
             keterangan, dan tombol terbitkan, supaya alurnya terasa seperti
             satu formulir yang mengalir, bukan daftar lepas di halaman. */}
-        <div className="rounded-3xl border border-garis bg-kertas p-5 shadow-xl shadow-tinta/5 sm:p-8">
+        <div className="rounded-3xl border border-[#dbe4fb] bg-white p-5 shadow-[0_24px_60px_-30px_rgba(9,85,212,0.45)] sm:p-8">
           <div>
-            <h1 className="text-[28px] font-bold leading-tight tracking-tight text-tinta sm:text-[32px]">
+            <h1 className="text-[28px] font-extrabold leading-tight tracking-tight text-[#0b1220] sm:text-[34px]">
               {bahasa === "jv" ? JUDUL_LAYAR_KOREKSI_JAWA : JUDUL_LAYAR_KOREKSI}
             </h1>
-            <p className="mt-2 text-lg leading-relaxed text-tinta-lembut">
+            <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-[#52586b] sm:text-lg">
               {bahasa === "jv" ? KETERANGAN_KOREKSI_JAWA : KETERANGAN_KOREKSI}
             </p>
           </div>
@@ -404,11 +431,22 @@ export default function HalamanPeriksa() {
               <PesanGalat pesan={pesanGalatPeriksa.pesan} />
             </div>
           ) : null}
+          {slotBelumLengkap !== null ? (
+            <div
+              role="alert"
+              className="mt-5 rounded-xl border border-[#f7d7a1] bg-[#fff4d6] px-4 py-3 text-[14px] font-medium text-[#a97400]"
+            >
+              {bahasa === "jv"
+                ? PERINGATAN_LENGKAPI_KETERANGAN_JAWA
+                : PERINGATAN_LENGKAPI_KETERANGAN}
+            </div>
+          ) : null}
 
-          <div className="mt-6 flex flex-col gap-4">
+          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {SLOT_IDS.map((id) => (
               <BarisKeterangan
                 key={id}
+                id={`keterangan-${id}`}
                 nomor={id}
                 label={slotDenganId(id).nama}
                 nilai={nilaiSlot[id]}
@@ -417,23 +455,29 @@ export default function HalamanPeriksa() {
                 labelTidakTahu={bahasa === "jv" ? LABEL_TIDAK_TAHU_JAWA : LABEL_TIDAK_TAHU}
                 onUbahNilai={(teks) => ubahNilai(id, teks)}
                 onUbahTidakTahu={(ditandai) => ubahTidakTahu(id, ditandai)}
+                disorot={slotBelumLengkap === id}
               />
             ))}
           </div>
 
-          <div className="mt-6">
-            <Tombol className="w-full" onClick={tanganiTerbitkanLembar} disabled={sedangMenerbitkan}>
-              {sedangMenerbitkan
-                ? bahasa === "jv"
-                  ? TOMBOL_SEDANG_MENERBITKAN_JAWA
-                  : TOMBOL_SEDANG_MENERBITKAN
-                : bahasa === "jv"
-                  ? TOMBOL_LANJUT_JAWA
-                  : TOMBOL_LANJUT}
-            </Tombol>
-          </div>
+          <button
+            type="button"
+            onClick={tanganiTerbitkanLembar}
+            disabled={sedangMenerbitkan}
+            className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#0955d4] px-6 py-4 text-[16px] font-bold text-white shadow-[0_14px_30px_-12px_rgba(9,85,212,0.8)] transition-transform hover:-translate-y-0.5 hover:bg-[#0a4bbb] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+          >
+            {sedangMenerbitkan
+              ? bahasa === "jv"
+                ? TOMBOL_SEDANG_MENERBITKAN_JAWA
+                : TOMBOL_SEDANG_MENERBITKAN
+              : bahasa === "jv"
+                ? TOMBOL_LANJUT_JAWA
+                : TOMBOL_LANJUT}
+          </button>
         </div>
-      </div>
-    </main>
+      </main>
+
+      <SitusFooter bahasa={bahasa} />
+    </div>
   );
 }

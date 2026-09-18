@@ -28,6 +28,7 @@ import {
   LABEL_PILIH_BAHASA,
   TOMBOL_JALUR_MANUAL,
   TEKS_HALAMAN_UI,
+  ALT_LOGO,
 } from "@/core/teks";
 import {
   KETERANGAN_KESETARAAN_JAWA,
@@ -262,10 +263,9 @@ export default function App() {
   const berkasTerakhirRef = useRef<File | null>(null);
 
   const [active, setActive] = useState("beranda");
-  const [method, setMethod] = useState<"upload" | "manual">("upload");
+  const [menuTerbuka, setMenuTerbuka] = useState(false);
 
   const [berkasTerpilih, setBerkasTerpilih] = useState<File | null>(null);
-  const [tekstManual, setTekstManual] = useState("");
   const [dragOver, setDragOver] = useState(false);
 
   const [sedangMemroses, setSedangMemroses] = useState(false);
@@ -283,6 +283,14 @@ export default function App() {
     const simpanan = localStorage.getItem("lembar_janji_bahasa");
     if (simpanan === "jv" || simpanan === "id") {
       setBahasa(simpanan);
+    }
+  }, []);
+
+  // Dibuka dari SitusNavbar di /periksa atau /hasil ("Tentang Kami" hanya
+  // ada di halaman ini) — bukan pengganti nav Beranda/Tentang yang sudah ada.
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.location.search.includes("tentang=1")) {
+      setActive("tentang");
     }
   }, []);
 
@@ -404,22 +412,12 @@ export default function App() {
 
   const tanganiMulaiPeriksa = useCallback(() => {
     if (sedangMemroses) return;
-
-    if (method === "upload") {
-      if (!berkasTerpilih) {
-        setGalat(KodeGalat.E_FORMAT_TIDAK_DIDUKUNG);
-        return;
-      }
-      void prosesGambar(berkasTerpilih);
+    if (!berkasTerpilih) {
+      setGalat(KodeGalat.E_FORMAT_TIDAK_DIDUKUNG);
       return;
     }
-
-    // Jalur manual: sama seperti lama — arahkan ke /periksa dan biarkan
-    // pengguna mengisi slot di sana. TODO: bila nanti ingin auto-mengisi
-    // dari `tekstManual`, perlu fungsi parser teks bebas → slot terlebih
-    // dulu (belum ada di kode lama).
-    router.push("/periksa");
-  }, [method, berkasTerpilih, sedangMemroses, prosesGambar, router]);
+    void prosesGambar(berkasTerpilih);
+  }, [berkasTerpilih, sedangMemroses, prosesGambar]);
 
   const t = bahasa === "jv" ? TEKS_HALAMAN_UI_JAWA : TEKS_HALAMAN_UI;
   const kamusPesanGalat = bahasa === "jv" ? PESAN_GALAT_JAWA : PESAN_GALAT;
@@ -475,15 +473,16 @@ export default function App() {
       />
 
       {/* Header */}
-      <header className="relative z-10 flex items-center justify-between px-14 pt-7">
-        <div className="flex items-center gap-3">
-          <img src={imgLogo} alt="Logo Lembar Janji" className="h-11 w-auto" />
-          <span className="text-[20px] font-bold tracking-tight text-[#0955d4]">
+      <header className="relative z-20 flex items-center justify-between px-4 py-4 sm:px-6 sm:py-5 lg:px-14 lg:pt-7">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <img src={imgLogo} alt={ALT_LOGO} className="h-9 w-auto sm:h-11" />
+          <span className="text-[17px] font-bold tracking-tight text-[#0955d4] sm:text-[20px]">
             Lembar Janji
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* Kontrol navbar — baris penuh dari md ke atas */}
+        <div className="hidden items-center gap-2 md:flex">
           {/* Saklar Bahasa Daerah — inklusivitas keluarga PMI di desa */}
           <button
             type="button"
@@ -539,7 +538,85 @@ export default function App() {
             ))}
           </nav>
         </div>
+
+        {/* Tombol hamburger — di bawah md, menggantikan seluruh baris kontrol */}
+        <button
+          type="button"
+          onClick={() => setMenuTerbuka((sebelumnya) => !sebelumnya)}
+          aria-label={t.ariaMenu}
+          aria-expanded={menuTerbuka}
+          aria-controls="menu-navbar-mobile"
+          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#dbe4fb] bg-white/70 text-[#3f4657] backdrop-blur md:hidden"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            {menuTerbuka ? (
+              <>
+                <path d="M18 6 6 18" />
+                <path d="m6 6 12 12" />
+              </>
+            ) : (
+              <>
+                <path d="M4 7h16" />
+                <path d="M4 12h16" />
+                <path d="M4 17h16" />
+              </>
+            )}
+          </svg>
+        </button>
       </header>
+
+      {/* Panel menu mobile — muncul di bawah header, hanya di bawah md */}
+      {menuTerbuka ? (
+        <div
+          id="menu-navbar-mobile"
+          className="relative z-20 mx-4 mb-2 flex flex-col gap-1 rounded-2xl border border-[#dbe4fb] bg-white p-2 shadow-[0_20px_50px_-25px_rgba(11,18,32,0.35)] md:hidden"
+        >
+          {nav.map((id) => (
+            <button
+              key={id}
+              onClick={() => {
+                setActive(id);
+                setMenuTerbuka(false);
+              }}
+              className={`rounded-xl px-4 py-3 text-left text-[15px] font-semibold transition-colors ${
+                active === id
+                  ? "bg-[#0955d4] text-white"
+                  : "text-[#3f4657] hover:bg-[#f2f6ff]"
+              }`}
+            >
+              {t.nav[id]}
+            </button>
+          ))}
+          <div className="my-1 h-px bg-[#eef1f6]" />
+          <button
+            type="button"
+            onClick={() => {
+              gantiBahasa();
+              setMenuTerbuka(false);
+            }}
+            className="rounded-xl px-4 py-3 text-left text-[15px] font-semibold text-[#3f4657] hover:bg-[#f2f6ff]"
+          >
+            🌐 {bahasa === "id" ? LABEL_GANTI_BAHASA_JV : LABEL_GANTI_BAHASA_ID}
+          </button>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={modelDimatikan}
+            disabled={sedangMemroses}
+            onClick={() => {
+              tanganiSaklarModel();
+              setMenuTerbuka(false);
+            }}
+            className="flex items-center gap-2 rounded-xl px-4 py-3 text-left text-[15px] font-semibold text-[#3f4657] hover:bg-[#f2f6ff] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2v10" />
+              <path d="M18.4 6.6a9 9 0 1 1-12.77.04" />
+            </svg>
+            {modelDimatikan ? tombolNyalakanModel : tombolMatikanModel}
+          </button>
+        </div>
+      ) : null}
 
       {/* Modal keterangan saklar model — muncul saat model dimatikan */}
       {modalModelTerbuka ? (
@@ -644,122 +721,86 @@ export default function App() {
             </div>
           ) : null}
 
-          {/* Action module — satu alur kerja, dua titik masuk */}
+          {/* Action module — satu alur kerja, satu titik masuk gambar */}
           <div className="mt-7 rounded-2xl border border-[#dbe4fb] bg-white p-2 shadow-[0_24px_60px_-30px_rgba(9,85,212,0.45)]">
-            <div className="flex gap-1 rounded-xl bg-[#f2f6ff] p-1">
-              <button
-                onClick={() => setMethod("upload")}
-                disabled={sedangMemroses}
-                className={`flex-1 rounded-lg px-4 py-2 text-[14px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
-                  method === "upload"
-                    ? "bg-white text-[#0955d4] shadow-sm"
-                    : "text-[#6b7280] hover:text-[#0b1220]"
-                }`}
-              >
-                {t.tabUnggah}
-              </button>
-              {/* <button
-                onClick={() => setMethod("manual")}
-                disabled={sedangMemroses}
-                className={`flex-1 rounded-lg px-4 py-2 text-[14px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
-                  method === "manual"
-                    ? "bg-white text-[#0955d4] shadow-sm"
-                    : "text-[#6b7280] hover:text-[#0b1220]"
-                }`}
-              >
-                Ketik sendiri
-              </button> */}
-            </div>
-
             <div className="p-3">
-              {method === "upload" ? (
-                <div
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    setDragOver(true);
-                  }}
-                  onDragLeave={() => setDragOver(false)}
-                  onDrop={tanganiDrop}
-                  onPaste={tanganiPaste}
-                  tabIndex={0}
-                >
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={sedangMemroses}
-                    aria-busy={sedangMemroses}
-                    className={`flex w-full items-center gap-4 rounded-xl border-2 border-dashed px-4 py-5 text-left transition-colors disabled:cursor-not-allowed ${
-                      sedangMemroses
-                        ? "border-[#c3d4f7] bg-[#f7faff] opacity-90"
-                        : dragOver
-                          ? "border-[#0955d4] bg-[#eef4ff]"
-                          : "border-[#c3d4f7] bg-[#f7faff] hover:border-[#0955d4] hover:bg-[#eef4ff]"
-                    }`}
-                  >
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#0955d4]/10 text-[#0955d4]">
-                      {sedangMemroses ? (
-                        <svg
-                          className="animate-spin"
-                          width="20"
-                          height="20"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                        >
-                          <circle
-                            cx="12"
-                            cy="12"
-                            r="9"
-                            stroke="currentColor"
-                            strokeWidth="2.5"
-                            strokeOpacity="0.25"
-                          />
-                          <path
-                            d="M21 12a9 9 0 0 0-9-9"
-                            stroke="currentColor"
-                            strokeWidth="2.5"
-                            strokeLinecap="round"
-                          />
-                        </svg>
-                      ) : (
-                        <svg
-                          width="22"
-                          height="22"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                          <path d="M12 3v13" />
-                          <path d="m7 8 5-5 5 5" />
-                        </svg>
-                      )}
-                    </span>
-                    <span>
-                      <span className="block text-[14px] font-semibold text-[#0b1220]">
-                        {sedangMemroses
-                          ? statusSedangMembaca
-                          : (berkasTerpilih?.name ?? t.seretBerkas)}
-                      </span>
-                      <span className="block text-[12px] text-[#8890a0]">
-                        {sedangMemroses
-                          ? keteranganSedangMembaca
-                          : t.keteranganFormat}
-                      </span>
-                    </span>
-                  </button>
-                </div>
-              ) : (
-                <textarea
-                  rows={3}
-                  value={tekstManual}
-                  onChange={(e) => setTekstManual(e.target.value)}
+              <div
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDragOver(true);
+                }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={tanganiDrop}
+                onPaste={tanganiPaste}
+                tabIndex={0}
+              >
+                <button
+                  onClick={() => fileInputRef.current?.click()}
                   disabled={sedangMemroses}
-                  placeholder="Tempel atau ketik isi lowongan: gaji, negara, majikan, biaya, agen…"
-                  className="w-full resize-none rounded-xl border-2 border-[#e3e9f5] bg-[#f7faff] px-4 py-3 text-[14px] text-[#0b1220] outline-none transition-colors placeholder:text-[#9aa2b4] focus:border-[#0955d4] disabled:cursor-not-allowed disabled:opacity-60"
-                />
-              )}
+                  aria-busy={sedangMemroses}
+                  className={`flex w-full items-center gap-4 rounded-xl border-2 border-dashed px-4 py-5 text-left transition-colors disabled:cursor-not-allowed ${
+                    sedangMemroses
+                      ? "border-[#c3d4f7] bg-[#f7faff] opacity-90"
+                      : dragOver
+                        ? "border-[#0955d4] bg-[#eef4ff]"
+                        : "border-[#c3d4f7] bg-[#f7faff] hover:border-[#0955d4] hover:bg-[#eef4ff]"
+                  }`}
+                >
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#0955d4]/10 text-[#0955d4]">
+                    {sedangMemroses ? (
+                      <svg
+                        className="animate-spin"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                      >
+                        <circle
+                          cx="12"
+                          cy="12"
+                          r="9"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                          strokeOpacity="0.25"
+                        />
+                        <path
+                          d="M21 12a9 9 0 0 0-9-9"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                    ) : (
+                      <svg
+                        width="22"
+                        height="22"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <path d="M12 3v13" />
+                        <path d="m7 8 5-5 5 5" />
+                      </svg>
+                    )}
+                  </span>
+                  <span>
+                    <span className="block text-[14px] font-semibold text-[#0b1220]">
+                      {sedangMemroses
+                        ? statusSedangMembaca
+                        : (berkasTerpilih?.name ?? t.seretBerkas)}
+                    </span>
+                    <span className="block text-[12px] text-[#8890a0]">
+                      {sedangMemroses
+                        ? keteranganSedangMembaca
+                        : t.keteranganFormat}
+                    </span>
+                  </span>
+                </button>
+              </div>
 
               <input
                 ref={fileInputRef}
@@ -771,9 +812,7 @@ export default function App() {
               <div className="flex gap-2">
                 <button
                   onClick={tanganiMulaiPeriksa}
-                  disabled={
-                    sedangMemroses || (method === "upload" && !berkasTerpilih)
-                  }
+                  disabled={sedangMemroses || !berkasTerpilih}
                   className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-[#0955d4] px-6 py-4 text-[16px] font-bold text-white shadow-[0_14px_30px_-12px_rgba(9,85,212,0.8)] transition-transform hover:-translate-y-0.5 hover:bg-[#0a4bbb] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 text-sm"
                 >
                   {sedangMemroses

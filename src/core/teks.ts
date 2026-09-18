@@ -125,6 +125,8 @@ export const LAPIS2_DIMATIKAN =
 // F.8 — Teks antarmuka
 // ---------------------------------------------------------------------------
 
+export const ALT_LOGO = "Logo Lembar Janji";
+
 export const JUDUL_HALAMAN_UTAMA = "Periksa tawaran kerja luar negeri";
 export const SUBJUDUL_HALAMAN_UTAMA =
   "Kirim gambar tawarannya. Kami catat apa yang sudah disebutkan, dan apa yang belum.";
@@ -139,6 +141,8 @@ export const KETERANGAN_KOREKSI =
   "Mesin bisa salah baca. Betulkan yang keliru sebelum lanjut. Yang tidak Anda ketahui, biarkan kosong.";
 export const LABEL_TIDAK_TAHU = "Saya tidak tahu";
 export const TOMBOL_LANJUT = "Terbitkan lembar";
+export const PERINGATAN_LENGKAPI_KETERANGAN =
+  'Isi keterangan ini, atau tandai "Saya tidak tahu" bila memang belum tahu, sebelum menerbitkan lembar.';
 
 export const TOMBOL_UNDUH = "Simpan gambar";
 export const TOMBOL_BAGIKAN = "Bagikan";
@@ -285,7 +289,6 @@ export const TEKS_HALAMAN_UI = {
   heroJudulSorot: "menepati janji.",
   heroSubjudul:
     "Kirim poster lowongannya. Kami ubah menjadi daftar periksa yang jelas, apa yang sudah dijanjikan, apa yang belum dijawab, dan apa yang wajib Anda tanyakan sebelum menandatangani.",
-  tabUnggah: "Unggah / tempel gambar",
   seretBerkas: "Seret poster ke sini atau klik untuk pilih",
   keteranganFormat: "Format JPG atau PNG · maks. 8 MB",
   tombolMulai: "Mulai periksa tawaran",
@@ -304,6 +307,7 @@ export const TEKS_HALAMAN_UI = {
   },
   modalMengerti: "Mengerti",
   ariaTutup: "Tutup",
+  ariaMenu: "Menu",
   footerKiri: "© 2026 Lembar Janji",
   footerKanan: "Dibuat untuk melindungi pekerja migran Indonesia",
   tentang: {

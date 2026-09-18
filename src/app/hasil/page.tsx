@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Tombol from "../../ui/Tombol";
 import LembarPratinjau from "../../ui/LembarPratinjau";
+import SitusNavbar from "../../ui/SitusNavbar";
+import SitusFooter from "../../ui/SitusFooter";
 import { ambilHasilSementara } from "../../lib/hasilSementara";
 import type { HasilSementara } from "../../lib/hasilSementara";
 import { isiTemplat } from "../../core/perakitan";
@@ -60,6 +61,14 @@ export default function HalamanHasil() {
     }
   }, []);
 
+  const gantiBahasa = () => {
+    setBahasa((sebelumnya) => {
+      const baru = sebelumnya === "id" ? "jv" : "id";
+      localStorage.setItem("lembar_janji_bahasa", baru);
+      return baru;
+    });
+  };
+
   useEffect(() => {
     const tersimpan = ambilHasilSementara();
     if (!tersimpan) {
@@ -97,12 +106,27 @@ export default function HalamanHasil() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-latar-kosong via-kertas to-kertas">
-      <div aria-hidden="true" className="fixed inset-x-0 top-0 h-1.5 bg-aksen" />
-
+    <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-[#f2f6ff] text-[#0b1220]">
       <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 opacity-[0.5]"
+        style={{
+          backgroundImage:
+            "linear-gradient(#d9e4fb 1px, transparent 1px), linear-gradient(90deg, #d9e4fb 1px, transparent 1px)",
+          backgroundSize: "44px 44px",
+          maskImage: "radial-gradient(120% 80% at 20% 10%, #000 40%, transparent 80%)",
+        }}
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -right-40 top-1/3 h-[420px] w-[420px] rounded-full bg-[#fac10b]/25 blur-[120px]"
+      />
+
+      <SitusNavbar bahasa={bahasa} onGantiBahasa={gantiBahasa} />
+
+      <main
         aria-live="polite"
-        className="mx-auto flex max-w-2xl flex-col gap-4 px-4 py-8 sm:px-6 sm:py-12"
+        className="relative z-10 mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4 px-4 py-6 sm:px-6 sm:py-10 lg:px-14"
       >
         {/* S09: catatan Lapis 1/2 saat dimatikan/data kurang — selalu
             ditampilkan ke pengguna di layar, terlepas dari jalur gambar
@@ -110,35 +134,45 @@ export default function HalamanHasil() {
             ini (H.9 hanya menaruh kotak catatan hitungan saat aktif dan
             cukup). Abu netral, tanpa ikon peringatan. */}
         {hasil.catatanLapis1 ? (
-          <p className="text-base text-redup">{hasil.catatanLapis1}</p>
+          <p className="text-base text-[#52586b]">{hasil.catatanLapis1}</p>
         ) : null}
         {hasil.catatanLapis2 ? (
-          <p className="text-base text-redup">{hasil.catatanLapis2}</p>
+          <p className="text-base text-[#52586b]">{hasil.catatanLapis2}</p>
         ) : null}
 
-        <div className="rounded-3xl border border-garis bg-kertas p-5 shadow-xl shadow-tinta/5 sm:p-8">
+        <div className="rounded-3xl border border-[#dbe4fb] bg-white p-5 shadow-[0_24px_60px_-30px_rgba(9,85,212,0.45)] sm:p-8">
           {hasil.urlGambarLembar ? (
             <div className="flex flex-col gap-5">
-              {/* eslint-disable-next-line @next/next/no-img-element -- blob: URL sisi klien, bukan aset next/image */}
+              {/* eslint-disable-next-line @next/next/no-img-element -- blob/data URL sisi klien, bukan aset next/image */}
               <img
                 src={hasil.urlGambarLembar}
                 alt={teksAlternatifGambarLembar(hasil)}
-                className="w-full rounded-2xl border border-garis shadow-lg"
+                className="w-full rounded-2xl border border-[#dbe4fb] shadow-lg"
               />
-              <div className="flex gap-3">
-                <Tombol className="flex-1" onClick={tanganiUnduh}>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <button
+                  type="button"
+                  onClick={tanganiUnduh}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#0955d4] px-6 py-4 text-[16px] font-bold text-white shadow-[0_14px_30px_-12px_rgba(9,85,212,0.8)] transition-transform hover:-translate-y-0.5 hover:bg-[#0a4bbb]"
+                >
                   {bahasa === "jv" ? TOMBOL_UNDUH_JAWA : TOMBOL_UNDUH}
-                </Tombol>
-                <Tombol className="flex-1" varian="sekunder" onClick={tanganiBagikan}>
+                </button>
+                <button
+                  type="button"
+                  onClick={tanganiBagikan}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#ffc508] px-6 py-4 text-[16px] font-bold text-white shadow-[0_14px_30px_-12px_#FFD346] transition-transform hover:-translate-y-0.5 hover:bg-[#ffc400]"
+                >
                   {bahasa === "jv" ? TOMBOL_BAGIKAN_JAWA : TOMBOL_BAGIKAN}
-                </Tombol>
+                </button>
               </div>
             </div>
           ) : (
             <LembarPratinjau isiLembar={hasil.isiLembar} />
           )}
         </div>
-      </div>
-    </main>
+      </main>
+
+      <SitusFooter bahasa={bahasa} />
+    </div>
   );
 }

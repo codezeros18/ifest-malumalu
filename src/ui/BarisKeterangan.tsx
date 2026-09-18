@@ -16,6 +16,7 @@ import { useId } from "react";
  * ambang 4,5:1 (BLUEPRINT H.7). Diperiksa `tests/ui/kontras.test.ts`.
  */
 export interface BarisKeteranganProps {
+  readonly id?: string;
   readonly nomor: number;
   readonly label: string;
   readonly nilai: string;
@@ -24,9 +25,14 @@ export interface BarisKeteranganProps {
   readonly labelTidakTahu: string;
   readonly onUbahNilai: (nilai: string) => void;
   readonly onUbahTidakTahu: (tidakTahu: boolean) => void;
+  /** Sorotan sementara — dipakai pemanggil untuk menunjuk baris yang belum
+   * diisi/ditandai saat pengguna mencoba menerbitkan lembar. Abu-kuning
+   * netral, bukan merah (CLAUDE.md 3.6). */
+  readonly disorot?: boolean;
 }
 
 export default function BarisKeterangan({
+  id,
   nomor,
   label,
   nilai,
@@ -35,6 +41,7 @@ export default function BarisKeterangan({
   labelTidakTahu,
   onUbahNilai,
   onUbahTidakTahu,
+  disorot = false,
 }: BarisKeteranganProps) {
   const idDasar = useId();
   const idNilai = `${idDasar}-nilai`;
@@ -46,6 +53,7 @@ export default function BarisKeterangan({
 
   return (
     <div
+      id={id}
       className={[
         "flex flex-col gap-3 rounded-2xl border p-4 transition-colors sm:p-5",
         // Sprint UI-inklusif: baris "tidak tahu" diberi latar penuh supaya
@@ -53,14 +61,15 @@ export default function BarisKeterangan({
         // Abu netral, tanpa warna merah maupun ikon peringatan (3.6).
         tidakTahu
           ? "border-garis bg-latar-kosong"
-          : "border-garis bg-kertas focus-within:border-aksen",
+          : "border-[#e3e9f5] bg-kertas focus-within:border-[#0955d4]",
+        disorot ? "ring-2 ring-[#fac10b] ring-offset-2" : "",
       ]
         .filter(Boolean)
         .join(" ")}
     >
       <div className="flex items-start justify-between gap-3">
-        <label htmlFor={idNilai} className="text-base font-semibold text-tinta-lembut sm:text-lg">
-          <span className="mr-1.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-latar-blok text-sm font-bold text-tinta-lembut">
+        <label htmlFor={idNilai} className="text-base font-semibold text-[#0b1220] sm:text-lg">
+          <span className="mr-1.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#e7f0ff] text-sm font-bold text-[#0955d4]">
             {nomor}
           </span>
           {label}
@@ -72,7 +81,7 @@ export default function BarisKeterangan({
           className="flex shrink-0 cursor-pointer select-none items-center gap-2 text-right text-sm font-medium text-redup"
         >
           <span>{labelTidakTahu}</span>
-          <span className="relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border border-garis bg-latar-blok px-1 transition-colors has-[:checked]:border-aksen has-[:checked]:bg-aksen">
+          <span className="relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border border-[#dbe4fb] bg-[#eef1f6] px-1 transition-colors has-[:checked]:border-[#0955d4] has-[:checked]:bg-[#0955d4]">
             <input
               id={idTidakTahu}
               type="checkbox"
@@ -92,7 +101,7 @@ export default function BarisKeterangan({
         placeholder={placeholder}
         onChange={tanganiUbahNilai}
         rows={2}
-        className="min-h-14 w-full rounded-xl border border-garis bg-kertas px-4 py-3 text-lg text-tinta placeholder:text-redup focus:border-aksen focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-aksen/40 disabled:bg-latar-kosong disabled:text-tinta-lembut"
+        className="min-h-14 w-full rounded-xl border border-[#e3e9f5] bg-[#f7faff] px-4 py-3 text-lg text-[#0b1220] placeholder:text-[#9aa2b4] focus:border-[#0955d4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0955d4]/30 disabled:bg-latar-kosong disabled:text-tinta-lembut"
       />
     </div>
   );

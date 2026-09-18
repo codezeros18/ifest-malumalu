@@ -30,6 +30,8 @@ export const KETERANGAN_KOREKSI_JAWA =
   "Mesin saged lepat anggenipun maos. Leresaken ingkang klintu saderengipun lajeng. Ingkang mboten panjenengan mangertosi, kajengaken suwung.";
 export const LABEL_TIDAK_TAHU_JAWA = "Kula mboten mangertos";
 export const TOMBOL_LANJUT_JAWA = "Wedalaken lembar cathetan";
+export const PERINGATAN_LENGKAPI_KETERANGAN_JAWA =
+  'Isi katerangan menika, utawi tandhani "Kula mboten mangertos" menawi pancen dereng mangertos, saderengipun ngedalaken lembar.';
 
 export const TOMBOL_UNDUH_JAWA = "Simpen gambar";
 export const TOMBOL_BAGIKAN_JAWA = "Dum-dumaken (Bagikan)";
@@ -115,7 +117,6 @@ export const TEKS_HALAMAN_UI_JAWA: typeof TEKS_HALAMAN_UI = {
   heroJudulSorot: "netepi janjinipun.",
   heroSubjudul:
     "Kintun poster tawaripun. Kula owahi dados daftar priksa ingkang cetha: punapa ingkang sampun dipun-janjekaken, punapa ingkang dereng dipun-wangsuli, lan punapa ingkang wajib panjenengan tangletaken saderengipun nandhatangani.",
-  tabUnggah: "Unggah utawi tempel gambar",
   seretBerkas: "Seret poster mriki utawi klik kagem milih",
   keteranganFormat: "Format JPG utawi PNG · maks. 8 MB",
   tombolMulai: "Miwiti priksa tawaran",
@@ -134,6 +135,7 @@ export const TEKS_HALAMAN_UI_JAWA: typeof TEKS_HALAMAN_UI = {
   },
   modalMengerti: "Mangertos",
   ariaTutup: "Nutup",
+  ariaMenu: "Menu",
   footerKiri: "© 2026 Lembar Janji",
   footerKanan: "Dipun-damel kagem ngayomi para Pekerja Migran Indonesia",
   tentang: {

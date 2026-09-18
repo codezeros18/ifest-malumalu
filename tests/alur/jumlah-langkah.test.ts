@@ -51,12 +51,12 @@ interface Langkah {
 
 const LANGKAH_ALUR: readonly Langkah[] = [
   {
-    nama: "buka halaman utama (/) — tiga jalur masukan terlihat sekaligus",
-    buktiKode: /export default function HalamanUtama/,
+    nama: "buka halaman utama (/) — jalur masukan gambar dan tombol jalur manual terlihat sekaligus",
+    buktiKode: /export default function App/,
   },
   {
-    nama: "pilih jalur (tempel/seret/unggah gambar lewat AreaUnggah, atau tombol jalur manual) dan isi tawaran",
-    buktiKode: /<AreaUnggah\b/,
+    nama: "pilih jalur (tempel/seret/unggah gambar, atau tombol jalur manual) dan isi tawaran",
+    buktiKode: /onDrop=\{tanganiDrop\}/,
   },
   {
     nama: "berpindah ke layar periksa (/periksa) — hasil bacaan atau isian kosong ditampilkan untuk dikoreksi",

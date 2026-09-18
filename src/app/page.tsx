@@ -503,12 +503,18 @@ export default function App() {
 
       {/* Header */}
       <header className="relative z-20 flex items-center justify-between px-4 py-4 sm:px-6 sm:py-5 lg:px-44 lg:pt-7">
-        <div className="flex items-center gap-2 sm:gap-3">
+        <button
+          type="button"
+          onClick={() => setActive("beranda")}
+          aria-label={t.nav.beranda}
+          className="flex items-center gap-2 sm:gap-3"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element -- aset statis di public/, bukan konten dinamis */}
           <img src={imgLogo} alt={ALT_LOGO} className="h-9 w-auto sm:h-11" />
           <span className="text-[17px] font-bold tracking-tight text-[#0955d4] sm:text-[20px]">
             Lembar Janji
           </span>
-        </div>
+        </button>
 
         {/* Kontrol navbar — baris penuh dari md ke atas */}
         <div className="hidden items-center gap-2 md:flex">

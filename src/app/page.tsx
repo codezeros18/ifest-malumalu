@@ -822,7 +822,7 @@ export default function App() {
         <BagianTentang t={t} onKembali={() => setActive("beranda")} />
       ) : (
         <main className="relative z-10 grid flex-1 grid-cols-1 items-center gap-10 px-4 py-8 sm:px-6 sm:py-10 lg:grid-cols-[1.05fr_0.95fr] lg:px-44 lg:py-0">
-          <section className="order-1 max-w-[600px] lg:order-1 lg:col-start-1 lg:row-start-1">
+          <section className="max-w-[600px]">
             <span className="animasi-muncul inline-flex items-center gap-2 rounded-full border border-[#dbe4fb] bg-white/70 px-3 py-1 text-[12px] font-semibold uppercase tracking-wider text-[#0955d4]">
               <span className="h-1.5 w-1.5 rounded-full bg-[#fac10b]" />
               {t.heroLencana}
@@ -868,17 +868,9 @@ export default function App() {
                 </div>
               </div>
             ) : null}
-          </section>
 
-          {/* Action module — satu alur kerja, satu titik masuk gambar.
-              Dipisah dari section judul/deskripsi di atas supaya di mobile
-              bisa disisipi kartu ilustrasi DI ANTARA deskripsi dan modul
-              aksi ini (lewat urutan order-1/2/3), sesuai alur yang diminta
-              pengguna: headline → deskripsi → kartu ilustrasi → kartu
-              seret-poster. Di desktop (lg:) kembali ke kolom kiri yang sama
-              seperti judul di atasnya lewat auto-placement grid 2 kolom. */}
-          <section className="order-3 max-w-[600px] lg:order-3 lg:col-start-1 lg:row-start-2">
-            <div className="animasi-muncul animasi-tunda-3 rounded-2xl border border-[#dbe4fb] bg-white p-2 shadow-[0_24px_60px_-30px_rgba(9,85,212,0.45)]">
+            {/* Action module — satu alur kerja, satu titik masuk gambar */}
+            <div className="animasi-muncul animasi-tunda-3 mt-7 rounded-2xl border border-[#dbe4fb] bg-white p-2 shadow-[0_24px_60px_-30px_rgba(9,85,212,0.45)]">
               <div className="p-3">
                 <div
                   onDragOver={(e) => {
@@ -1004,20 +996,13 @@ export default function App() {
             </div>
           </section>
 
-          {/* RIGHT — panel ilustrasi statis (bukan hasil sungguhan). Alur
-              mobile murni (<640px): judul/deskripsi (order-1) → kartu ini
-              (order-2) → kartu seret-poster (order-3), sesuai permintaan
-              pengguna. Di rentang sm–md (640–1023px) DISEMBUNYIKAN lagi
-              (`sm:hidden`) — menampilkannya di lebar itu menyebabkan celah
-              kosong besar (bug dilaporkan pengguna), jadi kembali ke
-              perilaku asli sebelum redesign untuk rentang itu. Di desktop
-              (lg: ke atas) muncul lagi lewat `lg:flex` + `lg:row-span-2`,
-              membentang penuh di kolom kanan sejajar dua section kiri —
-              posisi aslinya. Kartu dekorasi belakang ikut menyusut di
-              mobile supaya tidak meluber. */}
-          <section className="relative order-2 mb-8 flex items-center justify-center sm:hidden lg:order-2 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:mb-0 lg:flex lg:h-full">
-            <div className="absolute right-3 top-8 h-[220px] w-[180px] rotate-6 rounded-2xl border border-[#dbe4fb] bg-white/60 sm:h-[300px] sm:w-[240px] lg:right-6 lg:top-14 lg:h-[420px] lg:w-[300px]" />
-            <div className="animasi-mengapung relative w-full max-w-[360px] rounded-2xl border border-[#dbe4fb] bg-white p-6 shadow-[0_40px_80px_-40px_rgba(11,18,32,0.4)] lg:w-[360px] lg:-rotate-2">
+          {/* RIGHT — panel ilustrasi statis (bukan hasil sungguhan). Kembali
+              ke perilaku semula atas permintaan pengguna: disembunyikan
+              total di bawah lg, tidak perlu tampil di mobile sama sekali
+              (percobaan reorder/interleave sebelumnya dibalik). */}
+          <section className="relative hidden lg:flex lg:h-full lg:items-center lg:justify-center">
+            <div className="absolute right-6 top-14 h-[420px] w-[300px] rotate-6 rounded-2xl border border-[#dbe4fb] bg-white/60" />
+            <div className="animasi-mengapung relative w-[360px] -rotate-2 rounded-2xl border border-[#dbe4fb] bg-white p-6 shadow-[0_40px_80px_-40px_rgba(11,18,32,0.4)]">
               <div className="flex items-center justify-between border-b border-[#eef1f6] pb-4">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-wider text-[#8890a0]">

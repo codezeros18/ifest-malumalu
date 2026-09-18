@@ -124,6 +124,98 @@ Dua kendala teknis nyata mendorong ini. Pertama, konten lembar sangat bervariasi
 Lembar tetap lebar 1080px dan tetap portrait (sesuai H.9) — hanya tingginya yang menyesuaikan konten. Secara fungsional ini MENGUATKAN klaim "lembar terbaca lengkap tanpa terpotong", karena rasio tetap justru berisiko memotong kalimat penutup wajib (F.5) pada tawaran dengan banyak keterangan kosong. Nol dampak terhadap kosakata sistem, token warna, atau aturan penilaian — murni penyesuaian tata letak dan dimensi render.
 
 ---
+
+## [PB-005] Satu label tombol baru: "Matikan pembacaan gambar"
+
+**Jam ke-**         : ~15
+**Diputuskan oleh** : Fullstack, kapten (Window 1, S12)
+
+**Kondisi di proposal penyisihan**
+
+Proposal menjanjikan bahwa lapisan model dapat dicabut dan sistem tetap berjalan, dan rencana kerja mewajibkan sebuah tombol untuk memperagakannya di depan juri. Tidak ada label tombol itu di daftar teks final antarmuka (BLUEPRINT F.8).
+
+**Hal yang diubah**
+
+Ditambahkan satu teks antarmuka baru — label tombol "Matikan pembacaan gambar" di halaman utama. Saat ditekan, layar menampilkan pesan galat yang SUDAH ADA di proposal ("Pembacaan gambar sedang tidak tersedia. Anda tetap bisa melanjutkan dengan mengetik sendiri isinya."), bukan kalimat status baru.
+
+**Alasan perubahan**
+
+Tombol itu wajib, dan pagar kode proyek melarang teks antarmuka ditulis langsung di berkas halaman — label harus berada di berkas teks terpusat. Label ditulis di rencana teks (F.8) lebih dahulu, lalu di kode, sesuai prosedur tim untuk teks yang belum ada. Pagar kosakata terlarang otomatis ikut memeriksanya, dan dibuktikan: menyisipkan kata terlarang ke label ini membuat test merah.
+
+**Dampak terhadap masalah inti**
+
+Memperkuat. Klaim "model dapat dicabut" kini dapat diperiksa siapa pun di tautan penggelaran: tombol ditekan, permintaan ke endpoint model diawasi, dan hasilnya NOL permintaan — alur tetap selesai lewat pengetikan manual sampai lembar terbit.
+
+---
+
+## [PB-006] Batas jumlah kata di lembar dinaikkan dari 340 menjadi 480
+
+**Jam ke-**         : ~15
+**Diputuskan oleh** : Fullstack, kapten (Window 1, S12)
+
+**Kondisi di proposal penyisihan**
+
+Batas kuantitatif tim: lembar memuat maksimal 340 kata.
+
+**Hal yang diubah**
+
+Batasnya dinaikkan menjadi 480 kata teks yang ditulis sistem sendiri, diukur pada seluruh lembar yang benar-benar dirender. Kutipan isi tawaran tidak dihitung ke batas itu, karena bukan tulisan sistem, dan sudah dibatasi 130 karakter per baris.
+
+**Alasan perubahan**
+
+Saat verifikasi akhir kami mengukur ulang seluruh lembar, bukan sebagian. Hasilnya: lembar dengan kesepuluh keterangan kosong saja sudah 436 kata, dan kasus terberat dari seluruh 1.024 kombinasi terisi/kosong mencapai 468 kata. Batas 340 ternyata tidak pernah benar-benar ditegakkan — test yang ada hanya menghitung sebagian lembar, sehingga melewatkan judul, label, nomor pasal, kalimat penutup, dan kalimat hasil pencocokan daftar. Kata tambahan itu justru bagian yang diwajibkan aturan kami sendiri: nomor pasal untuk tiap keterangan kosong, kalimat penutup yang wajib selalu tercetak, dan kalimat "tidak ditemukan" yang wajib memuat tiga bagian supaya tidak menjadi tuduhan. Memangkasnya untuk memenuhi angka 340 berarti melanggar aturan yang lebih penting. Batas baru kini ditegakkan test yang memeriksa ke-1.024 kombinasi.
+
+**Dampak terhadap masalah inti**
+
+Netral terhadap isi — tidak ada satu kalimat pun yang berubah. Lembar sedikit lebih padat daripada yang direncanakan; ukuran huruf minimum tetap terjaga karena tinggi lembar menyesuaikan isinya (PB-004).
+
+---
+
+## [PB-007] Batas waktu muat pada jaringan lambat: 3 detik untuk konten tampil, 4 detik untuk muat penuh
+
+**Jam ke-**         : ~15
+**Diputuskan oleh** : Fullstack, kapten (Window 1, S12)
+
+**Kondisi di proposal penyisihan**
+
+Halaman utama terbuka di bawah 3 detik pada jaringan lambat.
+
+**Hal yang diubah**
+
+Batas 3 detik dipertahankan untuk konten tampil. Batas untuk muat penuh (seluruh JavaScript selesai dan tombol siap ditekan) dinaikkan menjadi 4 detik.
+
+**Alasan perubahan**
+
+Diukur di tautan penggelaran pada profil jaringan 3G lambat (400 kbps, latensi 400 ms), cache kosong, tiga kali: konten tampil pada 1,2–1,5 detik, muat penuh pada 3,4–3,7 detik. Dari 116 KB JavaScript, sekitar 101 KB adalah pustaka inti kerangka kerja yang kami pakai bersama seluruh halaman — menurunkannya berarti mengganti kerangka kerja yang sudah dikunci sejak awal. Pada 3G cepat, muat penuh hanya 1,1 detik.
+
+**Dampak terhadap masalah inti**
+
+Ada keterbatasan nyata yang kami catat terbuka: pada jaringan paling lambat, isi halaman sudah terbaca sekitar dua detik lebih dulu, tetapi tombol baru bisa ditekan setelah muat penuh. Pengguna tidak kehilangan apa pun — hanya menunggu sebentar setelah halaman tampil.
+
+---
+
+## [PB-008] Kalimat kondisi "seluruh kosong" dan "seluruh terisi" belum ditampilkan
+
+**Jam ke-**         : ~15
+**Diputuskan oleh** : Ditemukan saat QA oleh kapten (Window 1, S12); tidak diperbaiki karena sprint pembekuan fitur
+
+**Kondisi di proposal penyisihan**
+
+Teks final memuat dua kalimat kondisi: satu untuk tawaran yang tidak menyebutkan satu pun dari sepuluh keterangan, satu untuk tawaran yang menyebutkan kesepuluhnya ("Anda tetap berhak meminta salinan perjanjiannya sebelum membayar").
+
+**Hal yang diubah**
+
+Kedua kalimat ada di berkas teks, tetapi tidak ditampilkan di layar maupun di lembar. Ditemukan lewat uji tawaran yang seluruhnya kosong di tautan penggelaran: lembar terbit dengan sepuluh keterangan belum dijawab, tanpa kalimat kondisi itu.
+
+**Alasan perubahan**
+
+Bukan keputusan, melainkan kelalaian yang baru terlihat saat pengujian akhir. Kami memilih mencatatnya terbuka daripada menambalnya, karena pada tahap ini perubahan tata letak dan teks sudah dibekukan supaya yang diuji sama dengan yang dikumpulkan.
+
+**Dampak terhadap masalah inti**
+
+Kecil. Isi lembar tetap lengkap dan benar — kesepuluh keterangan tetap tercatat satu per satu, begitu pula pertanyaan dan kalimat penutup. Yang hilang adalah kalimat ringkasan di dua kasus ekstrem, termasuk pengingat hak meminta salinan perjanjian pada tawaran yang tampak lengkap.
+
+---
 ---
 
 # ⚠️ TIGA CONTOH ENTRI TELADAN

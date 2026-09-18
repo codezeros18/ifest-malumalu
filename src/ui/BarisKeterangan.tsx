@@ -19,6 +19,7 @@ export interface BarisKeteranganProps {
   readonly nomor: number;
   readonly label: string;
   readonly nilai: string;
+  readonly placeholder?: string;
   readonly tidakTahu: boolean;
   readonly labelTidakTahu: string;
   readonly onUbahNilai: (nilai: string) => void;
@@ -29,6 +30,7 @@ export default function BarisKeterangan({
   nomor,
   label,
   nilai,
+  placeholder,
   tidakTahu,
   labelTidakTahu,
   onUbahNilai,
@@ -61,20 +63,21 @@ export default function BarisKeterangan({
         id={idNilai}
         value={nilai}
         disabled={tidakTahu}
+        placeholder={placeholder}
         onChange={tanganiUbahNilai}
         rows={2}
-        className="min-h-14 rounded-xl border border-garis bg-kertas px-3 py-2 text-lg text-tinta focus:border-aksen disabled:bg-latar-kosong disabled:text-tinta-lembut"
+        className="min-h-14 rounded-xl border border-garis bg-kertas px-3 py-2 text-lg text-tinta placeholder:text-redup focus:border-aksen focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-aksen focus-visible:ring-offset-2 disabled:bg-latar-kosong disabled:text-tinta-lembut"
       />
       <label
         htmlFor={idTidakTahu}
-        className="flex min-h-11 w-fit items-center gap-2 text-lg text-tinta-lembut"
+        className="flex min-h-11 w-fit cursor-pointer select-none items-center gap-2.5 text-lg text-tinta-lembut"
       >
         <input
           id={idTidakTahu}
           type="checkbox"
           checked={tidakTahu}
           onChange={(peristiwa) => onUbahTidakTahu(peristiwa.target.checked)}
-          className="h-6 w-6 rounded border-garis accent-aksen"
+          className="h-6 w-6 rounded border-garis accent-aksen focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-aksen"
         />
         {labelTidakTahu}
       </label>

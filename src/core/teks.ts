@@ -145,6 +145,33 @@ export const TOMBOL_BAGIKAN = "Bagikan";
 export const CATATAN_PRIVASI =
   "Gambar Anda tidak kami simpan. Tidak ada akun, tidak ada data pribadi yang diminta.";
 
+export const STATUS_SEDANG_MEMBACA = "Sedang membaca gambar tawaran...";
+export const KETERANGAN_SEDANG_MEMBACA =
+  "Proses ini memakan waktu beberapa detik. Mohon tunggu sejenak.";
+export const TOMBOL_SEDANG_MENERBITKAN = "Sedang menerbitkan lembar...";
+
+export const LABEL_GANTI_BAHASA_ID = "Bahasa Indonesia";
+export const LABEL_GANTI_BAHASA_JV = "Basa Jawa";
+export const LABEL_PILIH_BAHASA = "Pilih bahasa";
+
+/**
+ * Contoh isian per slot untuk mengubah layar koreksi dari "ujian" menjadi
+ * "wawancara terpandu" bagi pengguna awam berliterasi rendah.
+ * Seluruh string bebas dari kata terlarang (CLAUDE.md 3.1).
+ */
+export const CONTOH_ISIAN_PER_SLOT: Readonly<Record<SlotId, string>> = {
+  1: "Misal: PT Bina Mandiri Berkah",
+  2: "Misal: KEP.123/MEN/2023 tujuan Taiwan",
+  3: "Misal: Formosa Plastic Corp atau nama majikan",
+  4: "Misal: Operator mesin pabrik garmen",
+  5: "Misal: NT$ 27.470 per bulan lewat rekening bank",
+  6: "Misal: 8 jam sehari, 5 hari seminggu, libur akhir pekan",
+  7: "Misal: 3 tahun dan dapat diperpanjang",
+  8: "Misal: BPJS Ketenagakerjaan dan asuransi kecelakaan kerja",
+  9: "Misal: Biaya paspor dan tiket ditanggung pemberi kerja",
+  10: "Misal: Salinan perjanjian diserahkan sebelum keberangkatan",
+};
+
 /**
  * 🟡 PENAMBAHAN DI LUAR F.1–F.10 — dicatat sesuai instruksi sprint S04:
  * tabel F.9 mewajibkan tombol "coba lagi" (E_JARINGAN) dan "ulangi"
@@ -173,6 +200,7 @@ export const KETERANGAN_MODEL_DIMATIKAN =
 export interface PesanGalat {
   readonly pesan: string;
   readonly tindakan?: string;
+  readonly tindakanSekunder?: string;
 }
 
 /**
@@ -202,6 +230,7 @@ export const PESAN_GALAT: Readonly<Record<KodeGalat, PesanGalat>> = {
     pesan:
       "Gambar ini terbaca, tetapi kami tidak menemukan keterangan tawaran kerja di dalamnya. Pastikan yang dikirim adalah gambar tawarannya.",
     tindakan: TOMBOL_ULANGI,
+    tindakanSekunder: TOMBOL_JALUR_MANUAL,
   },
   [KodeGalat.E_MODEL_TIDAK_TERSEDIA]: {
     pesan:

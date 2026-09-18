@@ -15,7 +15,7 @@ type TombolProps = ButtonHTMLAttributes<HTMLButtonElement> & {
  * umpan balik fisik saat ditekan.
  */
 const kelasDasar =
-  "inline-flex min-h-14 items-center justify-center rounded-full px-6 text-lg font-bold transition-all disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98]";
+  "inline-flex min-h-14 items-center justify-center rounded-full px-6 text-lg font-bold transition-all disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-aksen focus-visible:ring-offset-2 motion-reduce:transform-none";
 
 const kelasVarian: Record<Varian, string> = {
   utama: "bg-aksen text-kertas hover:bg-aksen/90 shadow-sm",

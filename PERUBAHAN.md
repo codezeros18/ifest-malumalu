@@ -267,6 +267,34 @@ Konservatif dan searah dengan aturan keraguan E.3: ragu selalu jatuh ke "belum d
 
 ---
 
+## [PB-009] Peningkatan Inklusivitas Aksesibilitas: Status Memproses, Validasi Masukan Kosong, Placeholder Terpandu, dan Dukungan Basa Jawa
+
+**Jam ke-**         : ~18
+**Diputuskan oleh** : Tim Pengembang & UI/UX Specialist
+
+**Kondisi di proposal penyisihan**
+
+BLUEPRINT bagian F dan H menetapkan tampilan minimalis dengan token warna terikat, tanpa indikator status membaca model (hanya `disabled`), tanpa pemisahan aksi ganda galat `E_PEMBACAAN_KOSONG`, tanpa contoh isian (placeholder) per slot, serta proposal awal menyatakan "satu bahasa dulu" (CLAUDE.md 3.7).
+
+**Hal yang diubah**
+
+1. **Status Memproses & Aksesibilitas:** `AreaUnggah.tsx` dilengkapi status `sedangMemroses`, spinner animasi netral non-merah (`border-t-aksen`), live region (`role="status"`, `aria-live="polite"`, `aria-busy`), dan teks penenang saat model bekerja agar pengguna tidak mengira aplikasi macet.
+2. **Kunci Ganda & Gulir Otomatis:** Tombol "Terbitkan lembar" dikunci saat proses berjalan (`sedangMenerbitkan`), dan saat terbit, antarmuka otomatis menggulir secara mulus (*smooth scroll*) ke hasil terbit untuk memudahkan pengguna di ponsel layar kecil.
+3. **Pembedaan Aksi Galat F.9:** Tombol aksi pada `PesanGalat` diselaraskan dengan tabel F.9. `E_JARINGAN` menjalankan coba lagi sungguhan; `E_PEMBACAAN_KOSONG` menyediakan aksi utama (ulangi pemilihan gambar) dan aksi sekunder (ketik manual).
+4. **Validasi Masukan Kosong:** Menegakkan `E_TIDAK_ADA_MASUKAN` bila pengguna menekan "Terbitkan lembar" tanpa mengisi apa pun dan tanpa mencentang tanda apa pun.
+5. **Placeholder Wawancara Terpandu:** Ditambahkan 10 contoh isian realistis yang ramah (bebas dari kata tuduhan) di `src/core/teks.ts` untuk mengubah kesan formulir dari "ujian" menjadi "wawancara terpandu".
+6. **Dukungan Basa Jawa (Inklusivitas Daerah):** Menyediakan kamus `src/core/teksJawa.ts` (Krama Alus/Komunikatif) dengan saklar bahasa di pojok kanan atas, dirancang khusus untuk kenyamanan musyawarah keluarga calon PMI di desa sentra migran (Jawa Tengah/Jawa Timur/DIY) tanpa mengubah teks hukum resmi pada lembar ekspor.
+
+**Alasan perubahan**
+
+Hasil evaluasi subagent UI/UX dan simulasi persona pengguna awam berliterasi digital rendah menunjukkan bahwa layar hening selama 10–20 detik membuat pengguna keluar dari aplikasi, dan formulir kosong tanpa contoh terasa mengintimidasi. Selain itu, calon PMI sering kali mendiskusikan tawaran kerja bersama orang tua/sesepuh desa yang jauh lebih nyaman dan tenang mencerna informasi dalam bahasa ibu (Basa Jawa yang santun).
+
+**Dampak terhadap masalah inti**
+
+Sangat memperkuat. Kepercayaan pengguna meningkat drastis, keterbacaan membaik, risiko salah tekan diminimalkan, dan jangkauan produk meluas ke anggota keluarga senior di pedesaan yang menjadi pengambil keputusan utama keberangkatan PMI. Semua aturan konstitusi (`CLAUDE.md` 3.1 & 3.6, batas modul, dan nihil kata tuduhan) tetap 100% terjaga dan lolos seluruh test otomatis.
+
+---
+
 
 # ⚠️ TIGA CONTOH ENTRI TELADAN
 

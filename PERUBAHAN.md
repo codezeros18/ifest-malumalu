@@ -33,6 +33,44 @@ Ditulis konkret, bukan "karena keterbatasan waktu" saja.]
 
 ---
 
+## [PB-018] Tombol "Simpan PDF" tambahan di `/hasil` — dependensi baru `jspdf`
+
+**Jam ke-**         : ~21,5
+**Diputuskan oleh** : Pemilik produk (diminta langsung), dieksekusi Window 1
+
+**Kondisi di proposal penyisihan**
+Stack terkunci (CLAUDE.md §5) hanya menyebut "render gambar di sisi server" sebagai satu-satunya keluaran lembar. Tidak ada rencana format unduhan kedua.
+
+**Hal yang diubah**
+Ditambahkan satu tombol "Simpan PDF" di layar `/hasil`, di samping (bukan menggantikan) tombol "Simpan gambar" dan "Bagikan" yang sudah ada. PDF dibuat sepenuhnya di peramban lewat pustaka `jspdf` (dependensi runtime baru, dipasang via `npm install jspdf`), membungkus PNG lembar yang sama — dikonversi dulu ke JPEG kualitas 0,9 lewat kanvas sebelum ditempel ke PDF (lihat PROGRESS.md [Audit-W1c] untuk alasan teknisnya: PNG mentah menghasilkan PDF ~24,7 MB, JPEG ~0,63 MB).
+
+**Alasan perubahan**
+Permintaan pemilik produk untuk kemudahan menyimpan/membagikan lembar dalam format selain gambar.
+
+**Dampak terhadap masalah inti**
+Tidak ada. Gambar tetap format WAJIB dan tetap yang pertama dibuat (§5: "lembar harus berbentuk gambar agar dapat diteruskan lewat percakapan") — PDF murni pilihan tambahan, dibuat dari gambar yang sama, tidak menyentuh server, tidak ada penyimpanan objek (sejalan §3.5). Dependensi runtime bertambah dari 4 menjadi **5 dari batas 12** (§4) — masih jauh di bawah batas, tidak perlu menaikkan batasnya. `jspdf` bukan pustaka komponen UI/template siap pakai (bukan MUI/Chakra/AntD/starter kit), jadi tidak bersinggungan dengan larangan §5. Kegagalan pembuatan PDF (apa pun sebabnya) diam-diam tidak melakukan apa-apa — tombol gambar (wajib) tidak pernah terpengaruh.
+
+---
+
+## [PB-017] Resolusi keluaran PNG lembar digandakan 2x — BLUEPRINT H.9 secara literal menyebut "1080px", keluaran sungguhan sekarang 2160px
+
+**Jam ke-**         : ~21,5
+**Diputuskan oleh** : Window 1, atas laporan blur di HP dari pemilik produk
+
+**Kondisi di proposal penyisihan**
+BLUEPRINT H.9: "lebar render 1080px". `src/lib/renderLembar.tsx` merender tepat 1080px lebar lewat `next/og`'s `ImageResponse`, dan `LEBAR_LEMBAR = 1080` ditegaskan test (`Spesifikasi visual BLUEPRINT H.9 > lebar render 1080px`).
+
+**Hal yang diubah**
+`LEBAR_LEMBAR` (1080) TETAP menjadi ukuran LOGIS tata letak — tidak ada satu pun angka piksel tata letak yang diubah. Ditambahkan `SKALA_RENDER = 2` dan pembungkus `transform: scale(SKALA_RENDER)` di sekeliling elemen akar `elemenLembar`; `src/app/api/kartu/route.ts` meminta `ImageResponse` pada `width`/`height` yang sudah dikali `SKALA_RENDER`. Keluaran PNG sungguhan yang diunduh pengguna sekarang **2160px** lebar, bukan 1080px.
+
+**Alasan perubahan**
+Di layar HP rapat-piksel (device pixel ratio 2–3x, umum di kelas menengah-atas), gambar 1080px logis lebih sempit dari lebar fisik layar, sehingga peramban meregangkannya (blur) saat ditampilkan `w-full` di `/hasil`. Dibuktikan langsung: render PNG 2x disimpan dan dilihat secara visual (bukan cuma lolos test) — tata letak utuh, tidak terpotong, teks tajam.
+
+**Dampak terhadap masalah inti**
+Memperkuat, bukan melemahkan: tujuan lembar adalah "dipegang dan diteruskan lewat percakapan" (CLAUDE.md §1) — gambar yang blur di HP kelas menengah-atas justru menghambat itu. Tata letak, urutan keterangan, dan seluruh teks sistem sama sekali tidak berubah (`npm run verify` tetap 391/391 hijau, jumlah kata tidak tersentuh). Satu-satunya angka yang berubah adalah dimensi piksel keluaran akhir. Berkas PNG jadi lebih besar (~2-3x, dari test: render campuran ~495 KB sebelumnya lebih kecil), tapi masih jauh di bawah batas unggahan 8 MB dan wajar untuk dibagikan lewat aplikasi percakapan.
+
+---
+
 ## [PB-016] Ukuran huruf lembar diturunkan ke set kompak pilihan pemilik produk — DI BAWAH lantai 14pt §3.6, dicatat terbuka
 
 **Jam ke-**         : ~16

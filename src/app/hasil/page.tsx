@@ -2,21 +2,31 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { jsPDF } from "jspdf";
 import LembarPratinjau from "../../ui/LembarPratinjau";
 import SitusNavbar from "../../ui/SitusNavbar";
 import SitusFooter from "../../ui/SitusFooter";
 import { ambilHasilSementara } from "../../lib/hasilSementara";
 import type { HasilSementara, LembarTerbit } from "../../lib/hasilSementara";
 import { isiTemplat } from "../../core/perakitan";
-import { TOMBOL_UNDUH, TOMBOL_BAGIKAN } from "../../core/teks";
+import { TOMBOL_UNDUH, TOMBOL_BAGIKAN, TOMBOL_UNDUH_PDF } from "../../core/teks";
 import type { KamusLembar } from "../../core/teks";
 import {
   kamusLembarUntuk,
   TOMBOL_UNDUH_JAWA,
   TOMBOL_BAGIKAN_JAWA,
+  TOMBOL_UNDUH_PDF_JAWA,
 } from "../../core/teksJawa";
 
 const NAMA_BERKAS_LEMBAR = "lembar-janji.png";
+const NAMA_BERKAS_LEMBAR_PDF = "lembar-janji.pdf";
+
+/**
+ * Ukuran kertas PDF mengikuti rasio gambar lembar apa adanya (bukan
+ * dipotong/diregangkan ke A4 baku) — lebar tetap 210mm (lebar A4), tinggi
+ * menyesuaikan supaya gambar tidak terdistorsi.
+ */
+const LEBAR_PDF_MM = 210;
 
 /**
  * Teks alternatif gambar lembar (dibaca pembaca layar). Memakai kamus yang
@@ -116,6 +126,53 @@ export default function HalamanHasil() {
     tanganiUnduh();
   }
 
+  /**
+   * Fitur TAMBAHAN (bukan pengganti gambar) — BLUEPRINT/CLAUDE.md tetap
+   * mewajibkan lembar berbentuk gambar sebagai format utama agar dapat
+   * diteruskan lewat percakapan (§5). PDF ini cuma membungkus PNG yang
+   * sama persis apa adanya, dihasilkan sepenuhnya di peramban (tidak
+   * menyentuh server, tidak ada penyimpanan objek) — sejalan CLAUDE.md
+   * §3.5. Tidak menyelesaikan blur (raster yang sama), hanya kemudahan
+   * simpan/bagikan dalam format lain.
+   */
+  async function tanganiUnduhPdf() {
+    if (!lembar?.urlGambarLembar) return;
+    try {
+      const gambar = new window.Image();
+      gambar.src = lembar.urlGambarLembar;
+      await new Promise<void>((resolve, reject) => {
+        gambar.onload = () => resolve();
+        gambar.onerror = () => reject(new Error("gagal"));
+      });
+
+      // jsPDF tidak mempertahankan kompresi PNG asli — menempelkan data URL
+      // PNG apa adanya pernah menghasilkan berkas puluhan MB dari sumber
+      // ~0,5 MB (diverifikasi manual). Dikonversi ke JPEG kualitas tinggi
+      // lewat kanvas dulu; latar diisi putih karena JPEG tidak punya alfa.
+      const kanvas = document.createElement("canvas");
+      kanvas.width = gambar.naturalWidth;
+      kanvas.height = gambar.naturalHeight;
+      const konteks = kanvas.getContext("2d");
+      if (!konteks) return;
+      konteks.fillStyle = "#ffffff";
+      konteks.fillRect(0, 0, kanvas.width, kanvas.height);
+      konteks.drawImage(gambar, 0, 0);
+      const dataUrlJpeg = kanvas.toDataURL("image/jpeg", 0.9);
+
+      const tinggiMm = (gambar.naturalHeight / gambar.naturalWidth) * LEBAR_PDF_MM;
+      const dok = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: [LEBAR_PDF_MM, tinggiMm],
+      });
+      dok.addImage(dataUrlJpeg, "JPEG", 0, 0, LEBAR_PDF_MM, tinggiMm);
+      dok.save(NAMA_BERKAS_LEMBAR_PDF);
+    } catch {
+      // Diam-diam gagal — tombol gambar (wajib) tetap berfungsi normal.
+      // PDF murni tambahan, kegagalannya tidak boleh mengganggu alur inti.
+    }
+  }
+
   if (!hasil || !lembar) {
     return null;
   }
@@ -179,6 +236,13 @@ export default function HalamanHasil() {
                   className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#ffc508] px-6 py-4 text-[16px] font-bold text-white shadow-[0_14px_30px_-12px_#FFD346] transition-transform hover:-translate-y-0.5 hover:bg-[#ffc400]"
                 >
                   {bahasa === "jv" ? TOMBOL_BAGIKAN_JAWA : TOMBOL_BAGIKAN}
+                </button>
+                <button
+                  type="button"
+                  onClick={tanganiUnduhPdf}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-[#dbe4fb] bg-white px-6 py-4 text-[16px] font-bold text-[#0955d4] transition-transform hover:-translate-y-0.5 hover:bg-[#f2f6ff]"
+                >
+                  {bahasa === "jv" ? TOMBOL_UNDUH_PDF_JAWA : TOMBOL_UNDUH_PDF}
                 </button>
               </div>
             </div>

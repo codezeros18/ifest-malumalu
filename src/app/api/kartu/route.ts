@@ -14,7 +14,12 @@ import { NextResponse } from "next/server";
 import { ImageResponse } from "next/og";
 import type { IsiLembar } from "@/core/tipe";
 import { kamusLembarUntuk } from "@/core/teksJawa";
-import { elemenLembar, LEBAR_LEMBAR, tinggiLembar } from "@/lib/renderLembar";
+import {
+  elemenLembar,
+  LEBAR_LEMBAR,
+  SKALA_RENDER,
+  tinggiLembar,
+} from "@/lib/renderLembar";
 
 // Perlu API Node lengkap (dipakai next/og secara internal) — bukan edge.
 export const runtime = "nodejs";
@@ -53,7 +58,7 @@ export async function POST(request: Request): Promise<Response> {
   const kamus = kamusLembarUntuk(bahasa);
 
   return new ImageResponse(elemenLembar(isiLembar, kamus), {
-    width: LEBAR_LEMBAR,
-    height: tinggiLembar(isiLembar, kamus),
+    width: LEBAR_LEMBAR * SKALA_RENDER,
+    height: tinggiLembar(isiLembar, kamus) * SKALA_RENDER,
   });
 }

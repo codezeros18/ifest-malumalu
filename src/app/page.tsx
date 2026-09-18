@@ -205,7 +205,7 @@ const statusStyles: Record<
   { ring: string; dot: string; icon: string }
 > = {
   ok: { ring: "bg-[#e7f0ff] text-[#0955d4]", dot: "bg-[#0955d4]", icon: "✓" },
-  warn: { ring: "bg-[#fff4d6] text-[#a97400]", dot: "bg-[#fac10b]", icon: "!" },
+  warn: { ring: "bg-[#fff4d6] text-[#a97400]", dot: "bg-[#fac10b]", icon: "–" },
   ask: { ring: "bg-[#eef0f4] text-[#52525b]", dot: "bg-[#a1a1aa]", icon: "?" },
 };
 
@@ -1016,8 +1016,8 @@ export default function App() {
                     {t.panel.loker}
                   </p>
                 </div>
-                <span className="rounded-full bg-[#e7f0ff] px-3 py-1 text-[12px] font-bold text-[#0955d4]">
-                  3 / 5
+                <span className="rounded-full bg-[#eef0f4] px-3 py-1 text-[12px] font-bold uppercase tracking-wide text-[#52525b]">
+                  {t.panel.lencanaContoh}
                 </span>
               </div>
 

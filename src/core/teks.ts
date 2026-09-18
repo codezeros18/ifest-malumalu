@@ -202,6 +202,7 @@ export const PERINGATAN_LENGKAPI_KETERANGAN =
 
 export const TOMBOL_UNDUH = "Simpan gambar";
 export const TOMBOL_BAGIKAN = "Bagikan";
+export const TOMBOL_UNDUH_PDF = "Simpan PDF";
 export const CATATAN_PRIVASI =
   "Gambar Anda tidak kami simpan. Tidak ada akun, tidak ada data pribadi yang diminta.";
 
@@ -350,6 +351,7 @@ export const TEKS_HALAMAN_UI = {
   tombolMulai: "Mulai periksa tawaran",
   panel: {
     judul: "Lembar Periksa",
+    lencanaContoh: "Contoh",
     loker: "Loker: Perawat, Taiwan",
     baris: [
       { label: "Gaji & mata uang", note: "Rp 4.500.000 / bulan" },

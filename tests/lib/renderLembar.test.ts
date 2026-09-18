@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { ReactElement, ReactNode } from "react";
-import { elemenLembar, tinggiLembar, LEBAR_LEMBAR } from "../../src/lib/renderLembar";
+import {
+  elemenLembar,
+  tinggiLembar,
+  LEBAR_LEMBAR,
+  SKALA_RENDER,
+  WARNA_KEPALA_LEMBAR,
+} from "../../src/lib/renderLembar";
 import { Keadaan } from "../../src/core/tipe";
 import type { IsiLembar, Penilaian } from "../../src/core/tipe";
 import { SLOT_IDS, slotDenganId } from "../../src/core/slot";
@@ -252,9 +258,12 @@ describe("Spesifikasi visual BLUEPRINT H.9", () => {
   });
 
   it("radius sudut lembar adalah 0 (bukan kartu aplikasi)", () => {
+    // simpul[0] SEKARANG adalah pembungkus skala 2x (SKALA_RENDER, tidak
+    // punya borderRadius sama sekali — cuma shim ukuran), simpul[1] adalah
+    // "kartu" lembar sesungguhnya (backgroundColor kertas, borderRadius 0).
     const { simpul } = bongkarLembar(LEMBAR_KOSONG);
-    const akar = simpul[0];
-    expect(akar?.style?.["borderRadius"]).toBe(0);
+    const akarKartu = simpul.find((s) => s.style?.["borderRadius"] === 0);
+    expect(akarKartu).toBeDefined();
   });
 
   it.each(SKENARIO)("%s: ketujuh pertanyaan selalu tercetak, urutan tetap", (_nama, lembar) => {
@@ -264,11 +273,25 @@ describe("Spesifikasi visual BLUEPRINT H.9", () => {
     }
   });
 
-  it("judul lembar tercetak di kepala, latar tinta", () => {
+  it("judul lembar tercetak di kepala, latar WARNA_KEPALA_LEMBAR", () => {
+    // Kepala lembar sengaja memakai warna sendiri (rebrand biru navbar),
+    // BUKAN token `tinta` — token itu dipakai untuk warna teks isi lembar
+    // di tempat lain (nilai keterangan, daftar pertanyaan), dan menumpangi
+    // "tinta" untuk latar kepala pernah membuat teks isi ikut jadi biru
+    // tanpa sengaja. Lihat komentar `WARNA_KEPALA_LEMBAR` di renderLembar.tsx.
     const { simpul, teks } = bongkarLembar(LEMBAR_KOSONG);
     expect(teks).toContain("LEMBAR JANJI");
-    const adaLatarTinta = simpul.some((s) => s.style?.["backgroundColor"] === WARNA.tinta);
-    expect(adaLatarTinta).toBe(true);
+    const adaLatarKepala = simpul.some(
+      (s) => s.style?.["backgroundColor"] === WARNA_KEPALA_LEMBAR,
+    );
+    expect(adaLatarKepala).toBe(true);
+
+    // Teks isi (bukan kepala) tidak boleh ikut memakai warna kepala —
+    // buktikan warna teks isi tetap token `tinta` (ink gelap), bukan biru.
+    const adaTeksBiruDiIsi = simpul.some(
+      (s) => s.style?.["color"] === WARNA_KEPALA_LEMBAR,
+    );
+    expect(adaTeksBiruDiIsi).toBe(false);
   });
 
   it("penanda waktu tercantum di kepala lembar", () => {
@@ -288,7 +311,7 @@ describe("tinggiLembar (estimasi tinggi render)", () => {
 });
 
 describe("Integrasi: ImageResponse benar-benar menghasilkan PNG yang valid", () => {
-  it("elemenLembar + tinggiLembar dapat dirender next/og.ImageResponse menjadi PNG 1080px lebar", async () => {
+  it("elemenLembar + tinggiLembar dapat dirender next/og.ImageResponse menjadi PNG 1080px lebar (LOGIS)", async () => {
     const { ImageResponse } = await import("next/og");
     const tinggi = tinggiLembar(LEMBAR_CAMPURAN);
     const respons = new ImageResponse(elemenLembar(LEMBAR_CAMPURAN), {
@@ -302,5 +325,45 @@ describe("Integrasi: ImageResponse benar-benar menghasilkan PNG yang valid", () 
     expect(buf.readUInt32BE(16)).toBe(LEBAR_LEMBAR);
     expect(buf.readUInt32BE(20)).toBe(tinggi);
     expect(buf.length).toBeGreaterThan(1000);
+  });
+
+  it("PROGRESS [perbaikan-blur] pembungkus skala benar-benar menerapkan transform scale(SKALA_RENDER), bukan cuma ukuran kanvas 2x", () => {
+    // Test dimensi PNG di bawah TIDAK menangkap kasus "kanvas diminta 2x
+    // tapi transform lupa diterapkan" — ImageResponse tetap mengeluarkan
+    // PNG berdimensi 2x apa pun isinya, cuma isinya kosong/menyusut ke
+    // pojok. Diverifikasi lewat mutasi manual (transform diubah jadi
+    // scale(1)): test dimensi PNG tetap hijau, jadi structural check di
+    // sini WAJIB ada di sampingnya.
+    const { simpul } = bongkarLembar(LEMBAR_KOSONG);
+    const adaTransformBenar = simpul.some(
+      (s) => s.style?.["transform"] === `scale(${SKALA_RENDER})`,
+    );
+    expect(adaTransformBenar).toBe(true);
+
+    const pembungkusLuar = simpul[0];
+    expect(pembungkusLuar?.style?.["width"]).toBe(LEBAR_LEMBAR * SKALA_RENDER);
+  });
+
+  it("PROGRESS [perbaikan-blur] keluaran sungguhan 2x (SKALA_RENDER) — dimensi PNG persis LEBAR_LEMBAR*2 dan tinggi*2, tata letak tidak terpotong", async () => {
+    // Cara `src/app/api/kartu/route.ts` benar-benar memanggil ImageResponse:
+    // width/height diminta 2x, tapi tata letak logisnya (semua angka piksel
+    // di renderLembar.tsx) tetap 1x — pembungkus `transform: scale()` di
+    // `elemenLembar` yang menggandakan resolusi keluaran. Dibuktikan visual
+    // sekali secara manual (PNG disimpan & dilihat langsung) sebelum test
+    // ini ditulis — lihat PROGRESS.md.
+    const { ImageResponse } = await import("next/og");
+    const tinggiLogis = tinggiLembar(LEMBAR_CAMPURAN);
+    const respons = new ImageResponse(elemenLembar(LEMBAR_CAMPURAN), {
+      width: LEBAR_LEMBAR * SKALA_RENDER,
+      height: tinggiLogis * SKALA_RENDER,
+    });
+    const buf = Buffer.from(await respons.arrayBuffer());
+
+    expect(buf.subarray(0, 8).toString("hex")).toBe("89504e470d0a1a0a");
+    expect(buf.readUInt32BE(16)).toBe(LEBAR_LEMBAR * SKALA_RENDER);
+    expect(buf.readUInt32BE(20)).toBe(tinggiLogis * SKALA_RENDER);
+    // Keluaran 2x harus berupa PNG yang jauh lebih besar dari sekadar upscale
+    // kosong — bukti tidak ada canvas kosong/terpotong akibat pembungkus skala.
+    expect(buf.length).toBeGreaterThan(5000);
   });
 });

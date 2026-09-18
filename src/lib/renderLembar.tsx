@@ -22,12 +22,18 @@ const DAFTAR_WARNA = tailwindConfig.theme!.extend!.colors as Record<
   string
 >;
 
+/**
+ * Warna latar kepala lembar — sengaja BEDA dari token `tinta` (warna tinta
+ * teks isi). Mengikuti rebranding biru navbar/beranda (`#0955d4`, lihat
+ * SitusNavbar.tsx). Diberi nama sendiri, bukan menumpangi kunci "tinta",
+ * karena "tinta" dipakai ulang sebagai warna TEKS di beberapa tempat lain
+ * di berkas ini (nilai keterangan, daftar pertanyaan) — menumpanginya
+ * sebelumnya membuat teks isi ikut berubah biru tanpa sengaja.
+ */
+const WARNA_KEPALA_LEMBAR = "#0955d4";
+
 /** Akses token warna dengan jaminan non-undefined (tsconfig `noUncheckedIndexedAccess`). */
 function warna(kunci: string): string {
-  // Force warna kepala lembar ke #0955d4
-  if (kunci === "tinta") {
-    return "#0955d4";
-  }
   const nilai = DAFTAR_WARNA[kunci];
   if (!nilai) {
     throw new Error(
@@ -37,8 +43,22 @@ function warna(kunci: string): string {
   return nilai;
 }
 
-/** BLUEPRINT H.9: "lebar render 1080px". */
+/** BLUEPRINT H.9: "lebar render 1080px" — ini tetap ukuran LOGIS tata letak. */
 export const LEBAR_LEMBAR = 1080;
+
+/**
+ * Faktor penggandaan resolusi keluaran PNG, TIDAK mengubah tata letak.
+ * next/og (Satori) selalu merender 1 unit tata letak = 1 piksel keluaran —
+ * di layar HP rapat-piksel (device pixel ratio 2–3x), gambar 1080px logis
+ * jadi lebih sempit dari lebar fisik layar sehingga peramban meregangkannya
+ * (blur). Diterapkan lewat pembungkus `transform: scale()` di `elemenLembar`
+ * (bukan mengubah setiap angka piksel di berkas ini satu per satu, yang
+ * berisiko membuat `tinggiLembar` — perhitungan tinggi manual yang HARUS
+ * sama persis dengan tata letak sungguhan — tidak sinkron lagi).
+ */
+export const SKALA_RENDER = 2;
+
+export { WARNA_KEPALA_LEMBAR };
 
 const PADDING_HALAMAN = 48;
 const LEBAR_ISI = LEBAR_LEMBAR - PADDING_HALAMAN * 2;
@@ -227,16 +247,30 @@ export function elemenLembar(
   isiLembar: IsiLembar,
   kamus: KamusLembar = KAMUS_LEMBAR,
 ) {
+  // Tinggi LOGIS (1x) — sama persis dengan yang dihitung `tinggiLembar`,
+  // dipanggil ulang di sini murni untuk mengukur pembungkus skala di bawah.
+  // Fungsi murni, deterministik, aman dipanggil dua kali (lihat komentar
+  // `SKALA_RENDER`).
+  const tinggi = tinggiLembar(isiLembar, kamus);
+
   return (
+    <div
+      style={{
+        display: "flex",
+        width: LEBAR_LEMBAR * SKALA_RENDER,
+        height: tinggi * SKALA_RENDER,
+      }}
+    >
     <div
       style={{
         display: "flex",
         flexDirection: "column",
         width: LEBAR_LEMBAR,
-        minHeight: "100%",
         backgroundColor: warna("kertas"),
         fontFamily: "sans-serif",
         borderRadius: 0,
+        transform: `scale(${SKALA_RENDER})`,
+        transformOrigin: "top left",
       }}
     >
       {/* 1. Kepala */}
@@ -245,7 +279,7 @@ export function elemenLembar(
           display: "flex",
           flexDirection: "column",
           width: "100%",
-          backgroundColor: warna("tinta"),
+          backgroundColor: WARNA_KEPALA_LEMBAR,
           padding: `32px ${PADDING_HALAMAN}px`,
           gap: 8,
         }}
@@ -458,6 +492,7 @@ export function elemenLembar(
           {kamus.penutup}
         </span>
       </div>
+    </div>
     </div>
   );
 }

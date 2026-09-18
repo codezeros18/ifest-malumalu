@@ -177,7 +177,7 @@ Untuk memeriksa bahwa lapisan model benar-benar dapat dinonaktifkan, kosongkan `
 
 ## Artefak runnable
 
-Tautan penggelaran: `<TAUTAN-DEPLOYMENT-DIISI-DI-SINI>`
+Tautan penggelaran: [https://ifest-malumalu.vercel.app/](https://ifest-malumalu.vercel.app/)
 
 Aplikasi dapat dibuka langsung dari peramban mana pun tanpa pemasangan, tanpa pendaftaran akun, dan tanpa kredensial. Panitia dan penguji dapat langsung menempelkan sebuah gambar poster lowongan untuk mencoba alur intinya dari awal sampai akhir.
 

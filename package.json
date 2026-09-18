@@ -12,6 +12,7 @@
     "verify": "npm run lint && npm run typecheck && npm run test"
   },
   "dependencies": {
+    "jspdf": "^4.2.1",
     "next": "15.5.25",
     "pg": "^8",
     "react": "^19",

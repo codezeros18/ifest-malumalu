@@ -37,6 +37,7 @@ export const PERINGATAN_LENGKAPI_KETERANGAN_JAWA =
 
 export const TOMBOL_UNDUH_JAWA = "Simpen gambar";
 export const TOMBOL_BAGIKAN_JAWA = "Dum-dumaken (Bagikan)";
+export const TOMBOL_UNDUH_PDF_JAWA = "Simpen PDF";
 export const CATATAN_PRIVASI_JAWA =
   "Gambar panjenengan mboten kula simpen. Mboten wonten akun, mboten wonten data pribadi ingkang dipunsuwun.";
 
@@ -144,6 +145,7 @@ export const TEKS_HALAMAN_UI_JAWA: typeof TEKS_HALAMAN_UI = {
   tombolMulai: "Miwiti priksa tawaran",
   panel: {
     judul: "Lembar Priksa",
+    lencanaContoh: "Tuladha",
     loker: "Tawaran: Perawat, Taiwan",
     baris: [
       { label: "Bayaran & mata yatra", note: "Rp 4.500.000 / saben wulan" },

@@ -15,6 +15,13 @@ describe("ekstrakAngkaRupiah — kata pengali juta/ribu", () => {
     expect(ekstrakAngkaRupiah("Rp 500 ribu")).toBe(500_000);
   });
 
+  it("mengenali singkatan poster nyata: jt / rb", () => {
+    expect(ekstrakAngkaRupiah("Gaji 15jt")).toBe(15_000_000);
+    expect(ekstrakAngkaRupiah("Gaji 15 jt")).toBe(15_000_000);
+    expect(ekstrakAngkaRupiah("mulai 20 juta")).toBe(20_000_000);
+    expect(ekstrakAngkaRupiah("Rp 500rb")).toBe(500_000);
+  });
+
   it("tetap benar untuk bentuk bertitik dan bentuk telanjang", () => {
     expect(ekstrakAngkaRupiah("Rp 5.000.000")).toBe(5_000_000);
     expect(ekstrakAngkaRupiah("Rp 1.234.567")).toBe(1_234_567);

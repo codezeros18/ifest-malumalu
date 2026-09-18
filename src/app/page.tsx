@@ -862,7 +862,7 @@ export default function App() {
                     <button
                       type="button"
                       onClick={aksiGalatUtama}
-                      className="font-semibold underline underline-offset-2"
+                      className="inline-flex min-h-11 items-center font-semibold underline underline-offset-2"
                     >
                       {pesanGalatAktif.tindakan}
                     </button>
@@ -871,7 +871,7 @@ export default function App() {
                     <button
                       type="button"
                       onClick={aksiGalatSekunder}
-                      className="font-semibold underline underline-offset-2"
+                      className="inline-flex min-h-11 items-center font-semibold underline underline-offset-2"
                     >
                       {pesanGalatAktif.tindakanSekunder}
                     </button>

@@ -7,6 +7,7 @@ import type { AlasanBerkasDitolak } from "../ui/AreaUnggah";
 import PesanGalat from "../ui/PesanGalat";
 import Tombol from "../ui/Tombol";
 import { simpanIsian, nilaiSlotKeRekaman } from "../lib/simpananLokal";
+import { hapusHasilSementara } from "../lib/hasilSementara";
 import { pilihPembaca } from "../vision";
 import type { HasilBaca } from "../core/tipe";
 import { KodeGalat } from "../core/galat";
@@ -121,6 +122,7 @@ export default function HalamanUtama() {
   const berkasTerakhirRef = useRef<File | null>(null);
 
   useEffect(() => {
+    hapusHasilSementara();
     const simpanan = localStorage.getItem("lembar_janji_bahasa");
     if (simpanan === "jv" || simpanan === "id") {
       setBahasa(simpanan);

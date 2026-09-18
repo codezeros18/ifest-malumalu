@@ -39,7 +39,6 @@ import {
   KETERANGAN_SEDANG_MEMBACA_JAWA,
   TOMBOL_JALUR_MANUAL_JAWA,
 } from "@/core/teksJawa";
-import Tombol from "@/ui/Tombol";
 
 /** CLAUDE.md bagian 4: ukuran berkas unggahan maksimal 8 MB. */
 const UKURAN_MAKSIMAL_BYTE = 8 * 1024 * 1024;
@@ -59,9 +58,174 @@ const checklistContoh = [
   { label: "Gaji & mata uang", status: "ok", note: "Rp 4.500.000 / bulan" },
   { label: "Nama & alamat majikan", status: "ok", note: "Tercantum lengkap" },
   { label: "Biaya penempatan", status: "warn", note: "Belum disebutkan" },
-  { label: "Agen resmi (P3MI)", status: "warn", note: "Perlu ditanyakan" },
+  { label: "Agen berizin (P3MI)", status: "warn", note: "Perlu ditanyakan" },
   { label: "Masa & isi kontrak", status: "ask", note: "2 tahun — cek detail" },
 ];
+
+// Isi bagian "Tentang Kami" — statis, tanpa data pengguna.
+const keputusanKeterangan = [
+  {
+    label: "sudah disebutkan",
+    ket: "Tawaran menyebutkannya lengkap: angka, nama, atau rincian yang jelas.",
+    warna: "bg-[#e7f0ff] text-[#0955d4]",
+  },
+  {
+    label: "disebutkan sebagian",
+    ket: "Sudah disebut, tetapi masih terlalu kabur untuk dipakai — misalnya nominal tanpa mata uang.",
+    warna: "bg-[#fff4d6] text-[#a97400]",
+  },
+  {
+    label: "belum dijawab",
+    ket: "Belum disebut dalam tawaran, atau pembacaannya diragukan. Ragu selalu jatuh ke sini.",
+    warna: "bg-[#eef0f4] text-[#52525b]",
+  },
+];
+
+const langkahCaraKerja = [
+  {
+    judul: "Kirim gambarnya",
+    ket: "Seret, tempel, atau pilih poster dari galeri ponsel.",
+  },
+  {
+    judul: "Periksa hasil bacaannya",
+    ket: "Mesin bisa salah baca. Hasilnya ditampilkan kembali untuk Anda betulkan.",
+  },
+  {
+    judul: "Terbitkan lembarnya",
+    ket: "Simpan gambarnya, lalu teruskan ke percakapan tempat tawaran itu beredar.",
+  },
+];
+
+const tidakDisimpan = [
+  "Tidak ada akun, tidak ada pendaftaran, dan tidak ada sesi pengguna.",
+  "Gambar yang Anda kirim dibaca di memori lalu dibuang, tidak ditulis ke mana pun.",
+  "Tidak ada riwayat pemeriksaan yang bisa dicari, dan tidak ada penghitungan yang menggabungkan data antar pengguna.",
+];
+
+const batasKami = [
+  "Yang dibaca adalah dokumen tawaran yang Anda kirim, bukan pihak yang menawarkannya.",
+  "Tidak ada skor, peringkat, atau persentase kelengkapan. Yang ada hanya hitungan n dari 10 belum dijawab.",
+  "Bila pencocokan ke daftar perusahaan penempatan berizin tidak menemukan apa pun, lembar tetap menyebutkan tanggal salinan datanya, cara memastikannya sendiri, dan bahwa hal itu bukan berarti perusahaannya tidak berizin.",
+];
+
+function BagianTentang({ onKembali }: { onKembali: () => void }) {
+  return (
+    <main className="relative z-10 flex-1 overflow-y-auto px-14 py-10">
+      <div className="mx-auto flex max-w-[880px] flex-col gap-8">
+        <header>
+          <span className="inline-flex items-center gap-2 rounded-full border border-[#dbe4fb] bg-white/70 px-3 py-1 text-[12px] font-semibold uppercase tracking-wider text-[#0955d4]">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#fac10b]" />
+            Tentang kami
+          </span>
+          <h2 className="mt-5 text-[34px] font-extrabold leading-[1.1] tracking-tight text-[#0b1220]">
+            Satu lembar sebelum tanda tangan.
+          </h2>
+          <p className="mt-4 max-w-[640px] text-[16px] leading-relaxed text-[#52586b]">
+            Lembar Janji menerima gambar tawaran kerja ke luar negeri — poster,
+            tangkapan layar percakapan, atau foto brosur — lalu menerbitkan satu
+            lembar berisi apa yang sudah disebutkan tawaran itu, apa yang belum
+            dijawab menurut Undang-Undang Nomor 18 Tahun 2017, dan pertanyaan yang
+            bisa Anda ajukan. Lembarnya berbentuk gambar, agar bisa diteruskan
+            kembali ke percakapan tempat tawaran itu beredar.
+          </p>
+        </header>
+
+        <section>
+          <h3 className="text-[18px] font-bold text-[#0b1220]">
+            Tiap keterangan hanya punya tiga kemungkinan
+          </h3>
+          <div className="mt-4 grid gap-4 sm:grid-cols-3">
+            {keputusanKeterangan.map((k) => (
+              <div
+                key={k.label}
+                className="rounded-2xl border border-[#dbe4fb] bg-white p-5"
+              >
+                <span
+                  className={`inline-block rounded-full px-3 py-1 text-[13px] font-bold ${k.warna}`}
+                >
+                  {k.label}
+                </span>
+                <p className="mt-3 text-[15px] leading-relaxed text-[#52586b]">
+                  {k.ket}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-[#dbe4fb] bg-white p-6">
+          <h3 className="text-[18px] font-bold text-[#0b1220]">
+            Cara kerjanya
+          </h3>
+          <ol className="mt-5 grid gap-5 sm:grid-cols-3">
+            {langkahCaraKerja.map((l, i) => (
+              <li key={l.judul} className="flex gap-3">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0955d4] text-[14px] font-bold text-white">
+                  {i + 1}
+                </span>
+                <span>
+                  <span className="block text-[15px] font-semibold text-[#0b1220]">
+                    {l.judul}
+                  </span>
+                  <span className="mt-1 block text-[15px] leading-relaxed text-[#52586b]">
+                    {l.ket}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          <section className="rounded-2xl border border-[#dbe4fb] bg-white p-6">
+            <h3 className="text-[18px] font-bold text-[#0b1220]">
+              Yang tidak kami simpan
+            </h3>
+            <ul className="mt-4 space-y-2.5">
+              {tidakDisimpan.map((t) => (
+                <li key={t} className="flex gap-3">
+                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#0955d4]" />
+                  <span className="text-[15px] leading-relaxed text-[#52586b]">
+                    {t}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section className="rounded-2xl border border-[#dbe4fb] bg-white p-6">
+            <h3 className="text-[18px] font-bold text-[#0b1220]">
+              Batas kami
+            </h3>
+            <ul className="mt-4 space-y-2.5">
+              {batasKami.map((t) => (
+                <li key={t} className="flex gap-3">
+                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#fac10b]" />
+                  <span className="text-[15px] leading-relaxed text-[#52586b]">
+                    {t}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-4 rounded-2xl border border-[#dbe4fb] bg-white p-6">
+          <button
+            type="button"
+            onClick={onKembali}
+            className="rounded-xl bg-[#0955d4] px-6 py-3 text-[15px] font-bold text-white transition-colors hover:bg-[#0a4bbb]"
+          >
+            Mulai periksa tawaran
+          </button>
+          <p className="text-[15px] text-[#52586b]">
+            Tidak perlu mendaftar, dan tidak ada yang perlu dipasang.
+          </p>
+        </div>
+      </div>
+    </main>
+  );
+}
 
 const statusStyles: Record<
   string,
@@ -470,6 +634,9 @@ export default function App() {
       ) : null}
 
       {/* Workspace: asymmetric split */}
+      {active === "tentang" ? (
+        <BagianTentang onKembali={() => setActive("beranda")} />
+      ) : (
       <main className="relative z-10 grid flex-1 grid-cols-1 items-center gap-10 px-14 lg:grid-cols-[1.05fr_0.95fr]">
         <section className="max-w-[600px]">
           <span className="inline-flex items-center gap-2 rounded-full border border-[#dbe4fb] bg-white/70 px-3 py-1 text-[12px] font-semibold uppercase tracking-wider text-[#0955d4]">
@@ -742,6 +909,7 @@ export default function App() {
           </div>
         </section>
       </main>
+      )}
 
       <footer className="relative z-10 flex items-center justify-between px-14 pb-6 pt-2 text-[12px] text-[#8890a0]">
         <p>© 2026 Lembar Janji. All rights reserved</p>

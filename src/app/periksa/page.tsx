@@ -313,15 +313,25 @@ export default function HalamanPeriksa() {
           throw new Error("kartu-gagal");
         }
         const blob = await respons.blob();
-        urlGambarLembar = URL.createObjectURL(blob);
+        urlGambarLembar = await new Promise<string>((resolve, reject) => {
+          const pembaca = new FileReader();
+          pembaca.onloadend = () => {
+            if (typeof pembaca.result === "string") {
+              resolve(pembaca.result);
+            } else {
+              reject(new Error("pembaca-gagal"));
+            }
+          };
+          pembaca.onerror = reject;
+          pembaca.readAsDataURL(blob);
+        });
       } catch {
         // Diam-diam gagal — LembarPratinjau di /hasil tetap tampil sebagai
         // jalan mundur. Lembar tetap "terbit" apa adanya.
       }
 
-      // S13: hasil dipindah ke layar terpisah (`/hasil`) — object URL blob
-      // tetap valid lintas navigasi karena App Router berpindah rute tanpa
-      // memuat ulang dokumen (lihat komentar di src/lib/hasilSementara.ts).
+      // S13: hasil dipindah ke layar terpisah (`/hasil`) — data URL aman
+      // dari lifecycle blob/unmount dan tetap valid lintas navigasi.
       simpanHasilSementara({ isiLembar, urlGambarLembar, catatanLapis1, catatanLapis2 });
 
       // S10: pencatatan metrik anonim, fire-and-forget, persis di titik

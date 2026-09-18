@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Tombol from "../../ui/Tombol";
 import LembarPratinjau from "../../ui/LembarPratinjau";
-import { ambilHasilSementara, hapusHasilSementara } from "../../lib/hasilSementara";
+import { ambilHasilSementara } from "../../lib/hasilSementara";
 import type { HasilSementara } from "../../lib/hasilSementara";
 import { isiTemplat } from "../../core/perakitan";
 import {
@@ -19,6 +19,24 @@ const NAMA_BERKAS_LEMBAR = "lembar-janji.png";
 
 function teksAlternatifGambarLembar(hasil: HasilSementara): string {
   return `${isiTemplat(LABEL_BLOK_2_TEMPLAT, { n: String(hasil.isiLembar.blok2.length) })}. ${PENUTUP_LEMBAR}`;
+}
+
+function urlKeBlob(url: string): Promise<Blob> {
+  if (url.startsWith("data:")) {
+    const bagian = url.split(",");
+    const header = bagian[0] ?? "";
+    const mentah = bagian[1] ?? "";
+    const cocokTipe = /:(.*?);/.exec(header);
+    const tipe = cocokTipe?.[1] ?? "image/png";
+    const bstr = atob(mentah);
+    const n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    for (let i = 0; i < n; i++) {
+      u8arr[i] = bstr.charCodeAt(i);
+    }
+    return Promise.resolve(new Blob([u8arr], { type: tipe }));
+  }
+  return fetch(url).then((r) => r.blob());
 }
 
 /**
@@ -49,16 +67,6 @@ export default function HalamanHasil() {
       return;
     }
     setHasil(tersimpan);
-
-    // Gambar lembar hanya dipakai sekali di layar ini — dibuang saat
-    // ditinggalkan supaya tidak ada blob yang tersisa di memori peramban
-    // (CLAUDE.md §3.5).
-    return () => {
-      if (tersimpan.urlGambarLembar) {
-        URL.revokeObjectURL(tersimpan.urlGambarLembar);
-      }
-      hapusHasilSementara();
-    };
   }, [router]);
 
   function tanganiUnduh() {
@@ -72,8 +80,7 @@ export default function HalamanHasil() {
   async function tanganiBagikan() {
     if (!hasil?.urlGambarLembar) return;
     try {
-      const respons = await fetch(hasil.urlGambarLembar);
-      const blob = await respons.blob();
+      const blob = await urlKeBlob(hasil.urlGambarLembar);
       const berkas = new File([blob], NAMA_BERKAS_LEMBAR, { type: "image/png" });
       if (typeof navigator.canShare === "function" && navigator.canShare({ files: [berkas] })) {
         await navigator.share({ files: [berkas] });

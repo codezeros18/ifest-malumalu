@@ -1005,14 +1005,17 @@ export default function App() {
           </section>
 
           {/* RIGHT — panel ilustrasi statis (bukan hasil sungguhan). Alur
-              mobile: judul/deskripsi (order-1) → kartu ini (order-2) →
-              kartu seret-poster (order-3), sesuai permintaan pengguna.
-              Di desktop (lg:) `lg:row-span-2` membuatnya membentang penuh
-              di kolom kanan, sejajar dua section kolom kiri di atasnya —
-              posisi asli sebelum section ini dipecah jadi dua. Kartu
-              dekorasi belakang ikut tampil di semua ukuran layar, ukurannya
-              menyusut di mobile supaya tidak meluber. */}
-          <section className="relative order-2 mb-8 flex items-center justify-center lg:order-2 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:mb-0 lg:h-full">
+              mobile murni (<640px): judul/deskripsi (order-1) → kartu ini
+              (order-2) → kartu seret-poster (order-3), sesuai permintaan
+              pengguna. Di rentang sm–md (640–1023px) DISEMBUNYIKAN lagi
+              (`sm:hidden`) — menampilkannya di lebar itu menyebabkan celah
+              kosong besar (bug dilaporkan pengguna), jadi kembali ke
+              perilaku asli sebelum redesign untuk rentang itu. Di desktop
+              (lg: ke atas) muncul lagi lewat `lg:flex` + `lg:row-span-2`,
+              membentang penuh di kolom kanan sejajar dua section kiri —
+              posisi aslinya. Kartu dekorasi belakang ikut menyusut di
+              mobile supaya tidak meluber. */}
+          <section className="relative order-2 mb-8 flex items-center justify-center sm:hidden lg:order-2 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:mb-0 lg:flex lg:h-full">
             <div className="absolute right-3 top-8 h-[220px] w-[180px] rotate-6 rounded-2xl border border-[#dbe4fb] bg-white/60 sm:h-[300px] sm:w-[240px] lg:right-6 lg:top-14 lg:h-[420px] lg:w-[300px]" />
             <div className="animasi-mengapung relative w-full max-w-[360px] rounded-2xl border border-[#dbe4fb] bg-white p-6 shadow-[0_40px_80px_-40px_rgba(11,18,32,0.4)] lg:w-[360px] lg:-rotate-2">
               <div className="flex items-center justify-between border-b border-[#eef1f6] pb-4">

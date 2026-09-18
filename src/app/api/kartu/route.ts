@@ -93,8 +93,19 @@ export async function POST(request: Request): Promise<Response> {
     (body as { bahasa?: unknown } | null)?.bahasa === "jv" ? "jv" : "id";
   const kamus = kamusLembarUntuk(bahasa);
 
+  // Batas keras kedua setelah `isiLembarValid`: walau validasi lolos, jangan
+  // pernah meminta Satori merender kanvas absurd (jaga-jaga bila bentuk sah
+  // berubah tanpa memperbarui pagar). 20.000px jauh di atas tinggi LOGIS
+  // nyata (kasus penuh ~4.000px) — diklem di ruang logis INI, baru dikali
+  // `SKALA_RENDER` (penggandaan resolusi keluaran, lihat renderLembar.tsx),
+  // supaya batas absolutnya tetap konsisten apa pun nilai skalanya.
+  const tinggiLogisTerklem = Math.min(
+    20_000,
+    Math.max(1, tinggiLembar(isiLembar, kamus)),
+  );
+
   return new ImageResponse(elemenLembar(isiLembar, kamus), {
     width: LEBAR_LEMBAR * SKALA_RENDER,
-    height: tinggiLembar(isiLembar, kamus) * SKALA_RENDER,
+    height: tinggiLogisTerklem * SKALA_RENDER,
   });
 }

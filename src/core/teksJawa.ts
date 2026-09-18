@@ -211,6 +211,10 @@ export const TEKS_HALAMAN_UI_JAWA: typeof TEKS_HALAMAN_UI = {
     ],
     tombolKembali: "Miwiti priksa tawaran",
     catatanKembali: "Mboten perlu ndhaftar, lan mboten wonten ingkang perlu dipun-pasang.",
+    ctaJudulAwal: "Ayo, lajengaken prosesipun kanthi",
+    ctaJudulSorot: "langkung gampil!",
+    ctaParagraf:
+      "Prosesipun dipun-damel langkung cetha, langkung tentrem, lan langkung ramah kagem panjenengan ingkang badhe lajeng tanpa ribet.",
   },
 };
 

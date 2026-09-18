@@ -197,16 +197,15 @@ function BagianTentang({
           <div className="relative flex flex-col gap-2 md:flex-row md:items-center xl:justify-between">
             <div className="max-w-[560px]">
               <h3 className="text-[24px] font-extrabold leading-[1.1] tracking-[-0.04em] text-[#0b1220] sm:text-[30px] lg:text-[34px]">
-                Yuk, lanjutkan prosesnya dengan
+                {t.tentang.ctaJudulAwal}{" "}
                 <span className="relative inline-block">
-                  <span className="relative z-10">lebih gampang!</span>
+                  <span className="relative z-10">{t.tentang.ctaJudulSorot}</span>
                   <span className="absolute inset-x-0 bottom-1 z-0 h-2 rounded-sm bg-[#fac10b]/75" />
                 </span>
               </h3>
 
               <p className="mt-3 max-w-[460px] text-[15px] font-medium leading-relaxed text-[#52586b] sm:text-[16px]">
-                Prosesnya dibuat lebih jelas, lebih santai, dan lebih ramah buat
-                kamu yang ingin langsung lanjut tanpa ribet.
+                {t.tentang.ctaParagraf}
               </p>
 
               <button

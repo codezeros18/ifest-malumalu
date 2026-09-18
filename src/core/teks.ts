@@ -433,5 +433,14 @@ export const TEKS_HALAMAN_UI = {
     ],
     tombolKembali: "Mulai periksa tawaran",
     catatanKembali: "Tidak perlu mendaftar, dan tidak ada yang perlu dipasang.",
+    // 🟡 PENAMBAHAN DI LUAR F.1–F.10 — judul+paragraf ajakan di bagian bawah
+    // "Tentang Kami" (redesain kartu ajakan). Dipecah dua (ctaJudulAwal +
+    // ctaJudulSorot) supaya penyorotan kuning bisa menempel hanya pada frasa
+    // terakhir, tanpa menaruh satu pun kalimat sebagai literal di page.tsx
+    // (pagar S07-10).
+    ctaJudulAwal: "Yuk, lanjutkan prosesnya dengan",
+    ctaJudulSorot: "lebih gampang!",
+    ctaParagraf:
+      "Prosesnya dibuat lebih jelas, lebih santai, dan lebih ramah buat kamu yang ingin langsung lanjut tanpa ribet.",
   },
 };

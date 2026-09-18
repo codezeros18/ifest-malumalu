@@ -93,7 +93,7 @@ export default function SitusNavbar({
               aria-label={LABEL_PILIH_BAHASA}
               aria-haspopup="listbox"
               aria-expanded={bahasaMenuTerbuka}
-              className="inline-flex items-center gap-1.5 rounded-full border border-[#dbe4fb] bg-white/70 px-3.5 py-1.5 text-[13px] font-semibold text-[#3f4657] backdrop-blur transition-colors hover:text-[#0955d4]"
+              className="inline-flex items-center gap-1.5 rounded-full border border-[#dbe4fb] bg-white/70 px-5 py-2 text-[15px] font-semibold text-[#3f4657] backdrop-blur transition-colors hover:text-[#0955d4]"
             >
               🌐{" "}
               {bahasa === "id" ? LABEL_GANTI_BAHASA_ID : LABEL_GANTI_BAHASA_JV}
@@ -114,7 +114,7 @@ export default function SitusNavbar({
             {bahasaMenuTerbuka ? (
               <div
                 role="listbox"
-                className="absolute right-0 top-[calc(100%+8px)] z-30 w-44 overflow-hidden rounded-xl border border-[#dbe4fb] bg-white p-1 shadow-[0_20px_50px_-25px_rgba(11,18,32,0.35)]"
+                className="absolute right-0 top-[calc(100%+8px)] z-30 min-w-[190px] overflow-hidden rounded-xl border border-[#dbe4fb] bg-white p-1 shadow-[0_20px_50px_-25px_rgba(11,18,32,0.35)]"
               >
                 {PILIHAN_BAHASA.map(([kode, label]) => (
                   <button
@@ -123,7 +123,7 @@ export default function SitusNavbar({
                     role="option"
                     aria-selected={bahasa === kode}
                     onClick={() => pilihBahasa(kode)}
-                    className={`flex min-h-11 w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-semibold transition-colors ${
+                    className={`flex min-h-11 w-full items-center justify-between gap-3 rounded-lg px-4 py-2.5 text-left text-[14px] font-semibold transition-colors ${
                       bahasa === kode
                         ? "bg-[#e7f0ff] text-[#0955d4]"
                         : "text-[#3f4657] hover:bg-[#f2f6ff]"

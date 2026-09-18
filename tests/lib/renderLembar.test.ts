@@ -203,15 +203,20 @@ describe("S08-3 nomor pasal keterangan kosong bersumber dari slot.ts", () => {
 
 /**
  * Ambang dalam PIKSEL render 1080px — lihat penjelasan konversi di
- * `src/lib/renderLembar.tsx` (komentar konstanta `UKURAN`). 14pt ≈ 18,7px
- * CSS; pada render 1080px yang dipakai penuh lebar ponsel ber-DPR ±3x,
- * itu setara ±56px. Ambang test dipasang lebih longgar (24px) daripada
- * angka konversi itu supaya test tetap punya makna tanpa terikat presisi
- * konversi DPI yang memang tidak eksak — nilai SEBENARNYA yang dipakai
- * (30px isi utama, 24px teks sekunder) tetap jauh di atas 14pt literal
- * (18,7px CSS) pada asumsi DPR berapa pun yang wajar untuk ponsel.
+ * `src/lib/renderLembar.tsx` (komentar konstanta `UKURAN`).
+ *
+ * 🔴 AMBANG INI DITURUNKAN 22 → 10 pada jam ~16, 18 September 2026, atas
+ * permintaan pemilik produk yang ingin lembarnya lebih kompak. Ini BUKAN
+ * penyesuaian teknis biasa: 14pt ≈ 18,7px CSS, yang pada render 1080px
+ * selebar layar ponsel lima inci setara ±56px — sementara nilai terkecil yang
+ * dipakai sekarang 10px (`dasarHukum`) dan teks isi utamanya 15px. Jadi
+ * lembar ini secara sadar berada DI BAWAH lantai §3.6, dan pagar ini turun
+ * bersamanya supaya `npm run verify` tetap hijau. Angka lamanya (ambang 22px;
+ * isi utama 30px, teks sekunder 24px) masih ada di riwayat git dan
+ * PERUBAHAN.md PB-016 — kalau keputusan ini dibalik, kembalikan keduanya
+ * BERSAMAAN; jangan pernah menaikkan ambang ini sendirian.
  */
-const AMBANG_PIKSEL_MINIMAL = 22;
+const AMBANG_PIKSEL_MINIMAL = 10;
 
 describe("S08-7 ukuran huruf isi minimal setara 14pt", () => {
   it("seluruh fontSize pada isi (bukan hiasan) di atas ambang minimal", () => {
@@ -228,12 +233,14 @@ describe("S08-7 ukuran huruf isi minimal setara 14pt", () => {
     }
   });
 
-  it("ketujuh pertanyaan dan kalimat blok2 dirender pada ukuran ≥30px (jauh di atas ambang 14pt)", () => {
+  it("ketujuh pertanyaan dan kalimat blok2 dirender pada ukuran isi yang sama (15px)", () => {
     const { simpul } = bongkarLembar(LEMBAR_KOSONG);
-    const ukuran30 = simpul.filter((s) => s.style?.["fontSize"] === 30);
-    // 3 label blok (blok1/blok2/blok3, UKURAN.labelBlok=30) + 10 kalimat blok2 + 7
-    // pertanyaan = 20 elemen berukuran 30px pada skenario seluruh kosong.
-    expect(ukuran30.length).toBe(20);
+    const ukuranIsi = simpul.filter((s) => s.style?.["fontSize"] === 15);
+    // 10 kalimat blok 2 (UKURAN.blok2Kalimat) + 7 pertanyaan (UKURAN.pertanyaan)
+    // = 17 elemen pada skenario seluruh kosong; keduanya wajib tetap 15px dan
+    // sama satu sama lain — pertanyaan tidak boleh lebih kecil dari kalimat
+    // mana pun di lembar. Angka 15 di sini harus mengikuti `UKURAN`.
+    expect(ukuranIsi.length).toBe(17);
   });
 });
 

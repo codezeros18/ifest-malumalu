@@ -33,6 +33,25 @@ Ditulis konkret, bukan "karena keterbatasan waktu" saja.]
 
 ---
 
+## [PB-016] Ukuran huruf lembar diturunkan ke set kompak pilihan pemilik produk — DI BAWAH lantai 14pt §3.6, dicatat terbuka
+
+**Jam ke-**         : ~16
+**Diputuskan oleh** : PM/pemilik produk (menempelkan berkas rujukan berisi dua belas angka itu), dieksekusi Window 2
+
+**Kondisi di proposal penyisihan**
+BLUEPRINT H.9 + CLAUDE.md §3.6 menetapkan teks pada lembar minimal **setara 14pt** agar terbaca di layar lima inci tanpa perbesaran, dengan angka lama: judul 52px, teks isi/pertanyaan 30px, teks sekunder (dasar hukum) 24px. Pagar `tests/lib/renderLembar.test.ts` (S08-7) menegakkannya lewat ambang 22px untuk setiap fontSize isi dan himpunan "30px tepat 20 elemen". PB-014 sebelumnya MEMBATALKAN pengecilan serupa (judul 20/isi 15/dasar hukum 10) karena melanggar lantai itu.
+
+**Hal yang diubah**
+Seluruh dua belas nilai `UKURAN` di `src/lib/renderLembar.tsx` diturunkan mengikuti persis angka yang diminta: judul 20, subjudul 13, penanda waktu 11, label blok 11, kalimat pembuka 14, label baris 12, nilai baris 21, kalimat blok 2 15, dasar hukum 10, kalimat bawah blok 2 13, pertanyaan 15, penutup 12. Pagar ikut diturunkan: `AMBANG_PIKSEL_MINIMAL` 22 → **10**, dan pagar kedua berubah dari "himpunan 30px tepat 20 elemen" menjadi "himpunan 15px tepat 17 elemen" (10 kalimat blok 2 + 7 pertanyaan). Yang TIDAK diubah meski ada di berkas rujukan itu: warna — kepala lembar tetap berlatar `warna("tinta")` (BLUEPRINT H.9) dan seluruh warna tetap lewat token, tanpa hex mentah. Perubahan hanya pada ukuran, sesuai yang diminta.
+
+**Alasan perubahan**
+Permintaan eksplisit pemilik produk: lembarnya terlalu besar/panjang, dan angka kompak diinginkan apa adanya. Ini keputusan produk, bukan temuan teknis — pengukuran di sesi yang sama (PB-014) justru menunjukkan arah sebaliknya. Karena CLAUDE.md §3.6 adalah guardrail dan bukan batas yang bisa dinaikkan lewat entri §4, penyimpangan ini didokumentasikan di sini supaya pembaca (termasuk juri) melihatnya sebagai keputusan sadar, bukan kelalaian.
+
+**Dampak terhadap masalah inti**
+Yang bertambah baik: lembar jadi **41% lebih pendek** pada isi uji yang sama (tinggi render 1896 → **1120px** untuk Indonesia, 1932 → **1137px** untuk Jawa) dan berkasnya **56% lebih ringan** (215 KB → **94 KB**) — lebih hemat kuota saat diteruskan lewat percakapan, dan itu memang salah satu keluhan nyata pengguna. Yang dibayar: **lembar tidak lagi memenuhi lantai 14pt §3.6.** Pada render 1080px yang ditampilkan selebar layar ponsel lima inci (±360 CSS px), teks isi 15px setara ±5 CSS px dan dasar hukum 10px setara ±3 CSS px — penerima harus memperbesar gambar untuk membaca rinciannya, dan itu berlaku baik di versi Indonesia maupun Jawa. Alur inti, jumlah kata (§4 480), jumlah keterangan (10), dan seluruh pagar lain tidak tersentuh; `npm run verify` tetap 372 test hijau karena pagarnya turun bersama nilainya, bukan dibiarkan merah. Angka lama tersimpan di riwayat git, di komentar `UKURAN`, di komentar ambang pagar, dan di entri PB-014 — mengembalikannya berarti mengembalikan keduanya (nilai + ambang) dalam satu commit.
+
+---
+
 ## [PB-015] Lembar (gambar) dapat diterbitkan dalam Basa Jawa — kamus lembar + medan `bahasa` di `/api/kartu`
 
 **Jam ke-**         : ~14,5

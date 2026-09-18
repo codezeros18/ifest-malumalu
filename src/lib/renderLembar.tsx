@@ -51,40 +51,35 @@ const LEBAR_ISI = LEBAR_LEMBAR - PADDING_HALAMAN * 2;
 /**
  * Ukuran huruf dalam PIKSEL pada render 1080px lebar.
  *
- * 🔴 DUA ZONA, jangan dicampur:
+ * 🔴 ANGKA-ANGKA INI DIPILIH PEMILIK PRODUK (jam ~16, 18 September 2026) demi
+ * lembar yang kompak: 10–21px, turun dari 24–52px. Konsekuensinya ditulis
+ * terang-terangan, bukan disembunyikan: **lembar TIDAK lagi memenuhi lantai
+ * 14pt yang diminta CLAUDE.md 3.6.** Pada render 1080px yang ditampilkan
+ * selebar layar ponsel lima inci (±360 CSS px), 15px di sini setara ±5 CSS px;
+ * angka lama hanya bisa dibaca kalau penerima memperbesar gambarnya.
  *
- * (1) TEKS ISI — `labelBlok` 30, `blok1Nilai` 30, `blok2Kalimat` 30,
- *     `pertanyaan` 30, `kalimatPembuka`/`blok1Label`/`kalimatBawahBlok2`/
- *     `penutup` 26, `dasarHukum` 24. Ini LANTAI, bukan selera: lembar
- *     diteruskan lewat percakapan WhatsApp dan dibaca di ponsel lima inci
- *     TANPA perbesaran, dan CLAUDE.md 3.6 menetapkan teks lembar minimal
- *     setara 14pt. Percobaan menurunkannya (judul 20, isi 15, dasar hukum 10)
- *     pada commit "fix: hasil lembar janji" membuat tiga pagar S08-7/H.9 merah
- *     dan sudah dibatalkan — lihat PERUBAHAN.md PB-014.
+ * Pagar `tests/lib/renderLembar.test.ts` ikut diturunkan (ambang 22 → 10,
+ * himpunan 30px → 15px) supaya build tetap hijau, dan angka lamanya masih ada
+ * di riwayat git + PERUBAHAN.md PB-016 kalau keputusan ini perlu dibalik
+ * (satu `git revert` pada commit ini).
  *
- * (2) KEPALA YANG BUKAN TEKS ISI — `judul` dan `subjudul` boleh lebih kompak
- *     (34 dan 22) atas permintaan pengguna, supaya kepalanya tidak menelan
- *     seperempat tinggi lembar. Sekalipun di sini lantainya tetap berlaku:
- *     `tests/lib/renderLembar.test.ts` menahan SETIAP fontSize isi pada
- *     >= 22px, dan `subjudul: 22` duduk PERSIS di ambang itu — menurunkannya
- *     satu piksel saja langsung merah.
- *
- * Pagar yang mengunci: setiap fontSize isi >= 22px, dan himpunan 30px wajib
- * tepat 20 elemen (3 label blok + 10 kalimat blok2 + 7 pertanyaan).
+ * Yang TETAP dijaga: kepala lembar berlatar tinta (BLUEPRINT H.9), seluruh
+ * warna lewat token `warna(...)` tanpa hex mentah, dan tiap ukuran dipakai
+ * secara sengaja — bukan hasil perataan.
  */
 const UKURAN = {
-  judul: 34,
-  subjudul: 22,
-  penandaWaktu: 24,
-  labelBlok: 30,
-  kalimatPembuka: 26,
-  blok1Label: 26,
-  blok1Nilai: 30,
-  blok2Kalimat: 30,
-  dasarHukum: 24,
-  kalimatBawahBlok2: 26,
-  pertanyaan: 30,
-  penutup: 26,
+  judul: 20,
+  subjudul: 13,
+  penandaWaktu: 11,
+  labelBlok: 11,
+  kalimatPembuka: 14,
+  blok1Label: 12,
+  blok1Nilai: 21,
+  blok2Kalimat: 15,
+  dasarHukum: 10,
+  kalimatBawahBlok2: 13,
+  pertanyaan: 15,
+  penutup: 12,
 } as const;
 
 const TINGGI_BARIS = 1.4;

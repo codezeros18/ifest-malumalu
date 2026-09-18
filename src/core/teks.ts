@@ -32,6 +32,12 @@ export const LABEL_BLOK_3 = "YANG BISA ANDA TANYAKAN";
 export const LABEL_CATATAN_HITUNGAN = "CATATAN HITUNGAN";
 export const LABEL_SEBAGIAN = "disebutkan sebagian";
 
+/**
+ * Satuan hitungan kata di layar koreksi (`/periksa`) — satu kata, supaya
+ * angkanya tetap kalimat faktual ("83 / 100 kata"), bukan penilaian.
+ */
+export const SATUAN_KATA = "kata";
+
 // ---------------------------------------------------------------------------
 // F.2 — Kalimat pembuka tiap blok
 // ---------------------------------------------------------------------------

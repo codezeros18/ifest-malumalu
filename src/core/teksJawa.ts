@@ -29,6 +29,7 @@ export const JUDUL_LAYAR_KOREKSI_JAWA = "Priksa rumiyin asil waosanipun";
 export const KETERANGAN_KOREKSI_JAWA =
   "Mesin saged lepat anggenipun maos. Leresaken ingkang klintu saderengipun lajeng. Ingkang mboten panjenengan mangertosi, kajengaken suwung.";
 export const LABEL_TIDAK_TAHU_JAWA = "Kula mboten mangertos";
+export const SATUAN_KATA_JAWA = "tembung";
 export const TOMBOL_LANJUT_JAWA = "Wedalaken lembar cathetan";
 export const PERINGATAN_LENGKAPI_KETERANGAN_JAWA =
   'Isi katerangan menika, utawi tandhani "Kula mboten mangertos" menawi pancen dereng mangertos, saderengipun ngedalaken lembar.';
@@ -62,6 +63,26 @@ export const CONTOH_ISIAN_PER_SLOT_JAWA: Readonly<Record<SlotId, string>> = {
   8: "Tuladha: BPJS Ketenagakerjaan lan asuransi kacilakan damel",
   9: "Tuladha: Wragad paspor lan tiket dipun-tanggung juragan",
   10: "Tuladha: Salinan prajanjian dipun-paringaken saderengipun budhal",
+};
+
+/**
+ * Label sepuluh katrangan ing basa Jawa — pasanganipun `slotDenganId(id).nama`
+ * ing `src/core/slot.ts`, kagem layar koreksi (`/periksa`) nalika basa
+ * dipun-gantos dhateng `jv`. Tipe `Record<SlotId, string>` njamin sedasa
+ * kunci wonten sedayanipun: menawi wonten ingkang lali, `tsc` ingkang gagal,
+ * sanes pangangge ingkang manggihaken label Indonesia ing layar Jawa.
+ */
+export const NAMA_SLOT_JAWA: Readonly<Record<SlotId, string>> = {
+  1: "Perusahaan ingkang mberangkataken panjenengan",
+  2: "Idin penempatan menika lan negaranipun",
+  3: "Sinten ingkang badhe maringi padamelan",
+  4: "Padamelanipun punapa cethanipun",
+  5: "Bayaranipun lan caranipun dipun-paringaken",
+  6: "Jam damel, prei, lan wekdal ngaso",
+  7: "Laminipun prajanjian",
+  8: "Jaminan sosial lan kaslametan",
+  9: "Wragad: ingkang dipun-suwesti lan sinten ingkang nanggung",
+  10: "Dokumen ingkang badhe panjenengan genggem",
 };
 
 export const PESAN_GALAT_JAWA: Readonly<Record<KodeGalat, { pesan: string; tindakan?: string; tindakanSekunder?: string }>> = {

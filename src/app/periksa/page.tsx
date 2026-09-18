@@ -37,6 +37,7 @@ import {
   LAPIS1_DIMATIKAN,
   LAPIS2_ANGKA_TIDAK_ADA,
   LAPIS2_DIMATIKAN,
+  SATUAN_KATA,
 } from "../../core/teks";
 import {
   JUDUL_LAYAR_KOREKSI_JAWA,
@@ -46,6 +47,8 @@ import {
   TOMBOL_SEDANG_MENERBITKAN_JAWA,
   PERINGATAN_LENGKAPI_KETERANGAN_JAWA,
   CONTOH_ISIAN_PER_SLOT_JAWA,
+  NAMA_SLOT_JAWA,
+  SATUAN_KATA_JAWA,
   PESAN_GALAT_JAWA,
 } from "../../core/teksJawa";
 
@@ -480,12 +483,17 @@ export default function HalamanPeriksa() {
                 key={id}
                 id={`keterangan-${id}`}
                 nomor={id}
-                label={slotDenganId(id).nama}
+                label={
+                  bahasa === "jv" ? NAMA_SLOT_JAWA[id] : slotDenganId(id).nama
+                }
                 nilai={nilaiSlot[id]}
                 placeholder={contohIsianAktif[id]}
                 tidakTahu={tidakTahu.has(id)}
                 labelTidakTahu={
                   bahasa === "jv" ? LABEL_TIDAK_TAHU_JAWA : LABEL_TIDAK_TAHU
+                }
+                satuanKata={
+                  bahasa === "jv" ? SATUAN_KATA_JAWA : SATUAN_KATA
                 }
                 onUbahNilai={(teks) => ubahNilai(id, teks)}
                 onUbahTidakTahu={(ditandai) => ubahTidakTahu(id, ditandai)}

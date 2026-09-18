@@ -1,5 +1,6 @@
 import type { ChangeEvent } from "react";
-import { useId } from "react";
+import { useEffect, useId, useRef } from "react";
+import { MAKSIMAL_KATA, batasiKata, hitungKata } from "../lib/kata";
 
 /**
  * Komponen presentasional murni — TIDAK mengimpor apa pun dari `src/core`
@@ -23,6 +24,9 @@ export interface BarisKeteranganProps {
   readonly placeholder?: string;
   readonly tidakTahu: boolean;
   readonly labelTidakTahu: string;
+  /** Satuan hitungan kata ("kata" / "tembung"). Dioper pemanggil, bukan
+   * diambil di sini, supaya komponen ini tetap tidak mengimpor `src/core`. */
+  readonly satuanKata: string;
   readonly onUbahNilai: (nilai: string) => void;
   readonly onUbahTidakTahu: (tidakTahu: boolean) => void;
   /** Sorotan sementara — dipakai pemanggil untuk menunjuk baris yang belum
@@ -39,6 +43,7 @@ export default function BarisKeterangan({
   placeholder,
   tidakTahu,
   labelTidakTahu,
+  satuanKata,
   onUbahNilai,
   onUbahTidakTahu,
   disorot = false,
@@ -46,9 +51,23 @@ export default function BarisKeterangan({
   const idDasar = useId();
   const idNilai = `${idDasar}-nilai`;
   const idTidakTahu = `${idDasar}-tidak-tahu`;
+  const kotakRef = useRef<HTMLTextAreaElement>(null);
+  const jumlahKata = hitungKata(nilai);
+
+  // Tinggi kotak mengikuti isinya — bukan `rows` tetap lagi. `min-h-14` tetap
+  // jadi lantainya, jadi kotak kosong tidak pernah lebih pendek dari
+  // sebelumnya, dan `resize` dimatikan karena tingginya kini urusan skrip ini.
+  useEffect(() => {
+    const kotak = kotakRef.current;
+    if (!kotak) return;
+    kotak.style.height = "auto";
+    kotak.style.height = `${kotak.scrollHeight}px`;
+  }, [nilai]);
 
   function tanganiUbahNilai(peristiwa: ChangeEvent<HTMLTextAreaElement>) {
-    onUbahNilai(peristiwa.target.value);
+    // Hanya ketikan/tempelan pengguna yang dibatasi. Nilai dari pembacaan
+    // gambar atau dari draf tersimpan tidak pernah dipotong di sini.
+    onUbahNilai(batasiKata(peristiwa.target.value));
   }
 
   return (
@@ -101,13 +120,24 @@ export default function BarisKeterangan({
 
       <textarea
         id={idNilai}
+        ref={kotakRef}
         value={nilai}
         disabled={tidakTahu}
         placeholder={placeholder}
         onChange={tanganiUbahNilai}
         rows={2}
-        className="min-h-14 w-full rounded-xl border border-[#e3e9f5] bg-[#f7faff] px-4 py-3 text-xs text-[#0b1220] placeholder:text-[#9aa2b4] focus:border-[#0955d4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0955d4]/30 disabled:bg-latar-kosong disabled:text-tinta-lembut"
+        className="min-h-14 w-full resize-none rounded-xl border border-[#e3e9f5] bg-[#f7faff] px-4 py-3 text-xs text-[#0b1220] placeholder:text-[#9aa2b4] focus:border-[#0955d4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0955d4]/30 disabled:bg-latar-kosong disabled:text-tinta-lembut"
       />
+
+      {/* Hitungan faktual, bukan penilaian (CLAUDE.md 3.2): angka kata yang
+          sudah diketik terhadap batasnya. Abu netral — tidak ada warna
+          sebagai penanda mutu, tidak ada ikon peringatan (3.6). Muncul hanya
+          saat ada isinya, supaya tidak jadi derau di sepuluh kotak kosong. */}
+      {jumlahKata > 0 ? (
+        <span className="text-right text-sm text-redup">
+          {jumlahKata} / {MAKSIMAL_KATA} {satuanKata}
+        </span>
+      ) : null}
     </div>
   );
 }

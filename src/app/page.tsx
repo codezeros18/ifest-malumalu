@@ -498,7 +498,7 @@ export default function App() {
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute -right-40 top-1/3 h-[420px] w-[420px] rounded-full bg-[#fac10b]/25 blur-[120px]"
+        className="animasi-denyut pointer-events-none absolute -right-40 top-1/3 h-[420px] w-[420px] rounded-full bg-[#fac10b]/25 blur-[120px]"
       />
 
       {/* Header */}
@@ -823,20 +823,20 @@ export default function App() {
       ) : (
         <main className="relative z-10 grid flex-1 grid-cols-1 items-center gap-10 px-4 py-8 sm:px-6 sm:py-10 lg:grid-cols-[1.05fr_0.95fr] lg:px-44 lg:py-0">
           <section className="max-w-[600px]">
-            <span className="inline-flex items-center gap-2 rounded-full border border-[#dbe4fb] bg-white/70 px-3 py-1 text-[12px] font-semibold uppercase tracking-wider text-[#0955d4]">
+            <span className="animasi-muncul inline-flex items-center gap-2 rounded-full border border-[#dbe4fb] bg-white/70 px-3 py-1 text-[12px] font-semibold uppercase tracking-wider text-[#0955d4]">
               <span className="h-1.5 w-1.5 rounded-full bg-[#fac10b]" />
               {t.heroLencana}
             </span>
 
-            <h1 className="mt-5 text-[32px] font-extrabold leading-[1.1] tracking-tight text-[#0b1220] sm:text-[38px] lg:text-[46px] lg:leading-[1.05]">
+            <h1 className="animasi-muncul animasi-tunda-1 mt-5 text-[32px] font-extrabold leading-[1.1] tracking-tight text-[#0b1220] sm:text-[38px] lg:text-[46px] lg:leading-[1.05]">
               {t.heroJudulAwal}{" "}
               <span className="relative whitespace-nowrap">
                 <span className="relative z-10">{t.heroJudulSorot}</span>
-                <span className="absolute inset-x-0 bottom-1 z-0 h-3 bg-[#fac10b]/60" />
+                <span className="animasi-garis absolute inset-x-0 bottom-1 z-0 h-3 bg-[#fac10b]/60" />
               </span>
             </h1>
 
-            <p className="mt-4 max-w-[480px] text-[15px] leading-relaxed text-[#52586b]">
+            <p className="animasi-muncul animasi-tunda-2 mt-4 max-w-[480px] text-[15px] leading-relaxed text-[#52586b]">
               {t.heroSubjudul}
             </p>
 
@@ -870,7 +870,7 @@ export default function App() {
             ) : null}
 
             {/* Action module — satu alur kerja, satu titik masuk gambar */}
-            <div className="mt-7 rounded-2xl border border-[#dbe4fb] bg-white p-2 shadow-[0_24px_60px_-30px_rgba(9,85,212,0.45)]">
+            <div className="animasi-muncul animasi-tunda-3 mt-7 rounded-2xl border border-[#dbe4fb] bg-white p-2 shadow-[0_24px_60px_-30px_rgba(9,85,212,0.45)]">
               <div className="p-3">
                 <div
                   onDragOver={(e) => {
@@ -1000,10 +1000,13 @@ export default function App() {
               hidden di bawah lg; sekarang selalu tampil supaya halaman
               mobile tidak terasa kosong — kartu dekorasi belakang & rotasi
               cuma aktif di lg ke atas, karena posisi absolut + rotasinya
-              didesain untuk ruang kolom kanan yang lega, bukan mobile. */}
+              didesain untuk ruang kolom kanan yang lega, bukan mobile.
+              Animasi mengapungnya ikut dibatasi ke lg saja (lihat
+              globals.css): keyframe-nya membawa rotasi -2deg, jadi di
+              mobile yang kartunya tegak ia akan memaksa kartunya miring. */}
           <section className="relative mt-8 flex items-center justify-center lg:mt-0 lg:h-full">
             <div className="absolute right-6 top-14 hidden h-[420px] w-[300px] rotate-6 rounded-2xl border border-[#dbe4fb] bg-white/60 lg:block" />
-            <div className="relative w-full max-w-[360px] rounded-2xl border border-[#dbe4fb] bg-white p-6 shadow-[0_40px_80px_-40px_rgba(11,18,32,0.4)] lg:w-[360px] lg:-rotate-2">
+            <div className="animasi-mengapung relative w-full max-w-[360px] rounded-2xl border border-[#dbe4fb] bg-white p-6 shadow-[0_40px_80px_-40px_rgba(11,18,32,0.4)] lg:w-[360px] lg:-rotate-2">
               <div className="flex items-center justify-between border-b border-[#eef1f6] pb-4">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-wider text-[#8890a0]">

@@ -33,6 +33,64 @@ Ditulis konkret, bukan "karena keterbatasan waktu" saja.]
 
 ---
 
+## [PB-013] Lapisan 3D hiasan di halaman depan DICABUT — `three` dilepas dari dependensi
+
+**Jam ke-**         : ~13
+**Diputuskan oleh** : PM/pengguna, dieksekusi Window 2
+
+**Kondisi di proposal penyisihan**
+Proposal babak penyisihan tidak memuat pustaka 3D sama sekali (tabel stack §5 hanya Next.js, TypeScript, Tailwind, Vitest, Vercel, Postgres, satu API model, dan render lembar sisi server). PB-011 mencatat penambahan lapisan 3D hiasan di atas usulan itu.
+
+**Hal yang diubah**
+Seluruh lapisan 3D hiasan dicabut kembali:
+
+- `src/ui/LatarTiga.tsx` **dihapus**, beserta impor dan pemasangannya di `src/app/page.tsx`.
+- `three` dan `@types/three` **dilepas** dari `package.json`; dependensi runtime kembali **4** (`next`, `pg`, `react`, `react-dom`) dari 5.
+- Gerak CSS di `src/app/globals.css` (lima keyframe: muncul naik berurutan, garis sorot tumbuh, panel mengapung, kotak emas bernapas) **DIPERTAHANKAN** — itu bukan bagian yang dikhawatirkan.
+
+**Alasan perubahan**
+Kekhawatiran kompatibilitas perangkat: WebGL bergantung pada driver GPU dan dukungan peramban yang tidak seragam di ponsel kelas bawah, sementara sasaran utama produk ini justru keluarga PMI di desa dengan ponsel murah — kadang Android lama dengan peramban bawaan. Hiasan yang berisiko membuat halaman gagal (atau berat) di perangkat itu bukan hiasan yang layak dipasang. Keputusan pengguna, bukan temuan teknis baru: pemeriksaan di peramban sebelumnya (WebGL 2.0, `gl.getError()` 0, rasio piksel dibatasi 1,6, batal dimuat saat reduced-motion/2G) memang tidak menunjukkan kerusakan — yang tidak bisa dibuktikan di sesi ini adalah perilaku di perangkat tua yang sesungguhnya, dan taruhannya terlalu besar untuk sebuah latar belakang.
+
+**Dampak terhadap masalah inti**
+Nol dampak buruk — lapisan itu memang tidak pernah menyentuh alur inti (unggah gambar → koreksi → penilaian → lembar terbit), dan tetap tidak menyentuhnya. Yang berubah ke arah lebih aman: halaman depan kembali 100% HTML + CSS tanpa satu pun canvas maupun panggilan GPU; ukuran halaman `/` turun 15,7 kB → **13,9 kB** (First Load JS 124 kB → **123 kB**), dan chunk `three` 86 KB gzip yang tadinya diunduh setelah halaman terhidrasi **hilang sepenuhnya** — jadi justru lebih ringan di jaringan desa. Gerak yang tersisa murni `transform`/`opacity` CSS: didukung peramban lama, tidak butuh JS, dan mati sendiri saat pengguna meminta `prefers-reduced-motion`. Halaman depan tidak lagi punya satu pun dependensi yang bisa gagal karena perangkat.
+
+## [PB-012] Kotak keterangan tumbuh mengikuti isinya, dan dibatasi 100 kata per kotak
+
+**Jam ke-**         : ~12,5
+**Diputuskan oleh** : PM/pengguna, dieksekusi Window 2
+
+**Kondisi di proposal penyisihan**
+BLUEPRINT F menggambarkan kesepuluh keterangan di layar koreksi sebagai kotak isian setinggi dua baris (`rows=2` + `min-h-14`), dan tidak menetapkan batas jumlah kata per keterangan — tabel batas kuantitatif CLAUDE.md §4 pun tidak memuatnya (isi tabelnya soal jumlah keterangan, layar, langkah, panggilan model, kata di LEMBAR, dependensi, dan ukuran berkas unggahan). Tidak ada hitungan kata yang ditampilkan ke pengguna.
+
+**Hal yang diubah**
+Dua hal di `src/ui/BarisKeterangan.tsx`, satu-satunya kotak teks di seluruh aplikasi (kesepuluh keterangan memakai komponen yang sama, jadi satu perubahan berlaku untuk semuanya):
+
+1. **Tinggi kotak mengikuti isinya.** Tinggi dihitung ulang dari `scrollHeight` setiap nilai berubah; lantai 56px (`min-h-14`) dipertahankan supaya kotak kosong tidak pernah lebih pendek dari sebelumnya, dan tuas ubah-ukuran bawaan peramban dimatikan (`resize-none`) karena tingginya kini diurus skrip.
+2. **Batas 100 kata per keterangan**, ditegakkan di `onChange` lewat fungsi murni baru `src/lib/kata.ts` (`batasiKata`, `hitungKata`; 9 test), plus hitungan faktual `83 / 100 kata` — `83 / 100 tembung` saat bahasa Jawa — di bawah kotak selama isinya tidak kosong. Satuannya diambil dari kamus (`SATUAN_KATA` di `teks.ts`, `SATUAN_KATA_JAWA` di `teksJawa.ts`) dan dioper sebagai prop, karena `BarisKeterangan` sengaja tidak mengimpor `src/core` (BLUEPRINT G.4).
+
+**Alasan perubahan**
+Permintaan eksplisit pengguna: kotak yang tingginya tetap terasa sesak saat mengetik dan memaksa menggulir di dalam kotak; dan panjangnya perlu ada batasnya. Batas 100 kata dipilih karena tawaran kerja dijawab dalam beberapa kalimat — contoh isian yang disediakan jauh lebih pendek — sedangkan kotak yang tumbuh bisa jadi setinggi layar bila ada yang menempelkan satu halaman kontrak penuh.
+
+**Dampak terhadap masalah inti**
+Alur inti tidak berubah: mengetik, menandai "tidak tahu", dan menerbitkan lembar tetap sama. Yang dijaga secara sadar adalah arah sebaliknya — **pemotongan hanya berlaku untuk ketikan dan tempelan pengguna, TIDAK untuk nilai hasil pembacaan gambar maupun draf tersimpan**, supaya isi tawaran yang sudah terbaca tidak pernah hilang diam-diam di depan pengguna. Batas ini tidak menaikkan batas kuantitatif mana pun di CLAUDE.md §4: anggaran 480 kata pada lembar menghitung teks SISTEM, bukan teks pengguna, dan jumlah panggilan model tidak tersentuh. Hitungan kata ditampilkan sebagai hitungan faktual ("n dari 100"), bukan skor, persentase, atau penanda mutu — ia abu netral tanpa ikon peringatan, sesuai §3.2 dan §3.6.
+
+## [PB-011] Lapisan 3D hiasan di halaman depan — dependensi runtime `three` ditambahkan
+
+**Jam ke-**         : ~11,5
+**Diputuskan oleh** : PM/pengguna, dieksekusi Window 2
+
+**Kondisi di proposal penyisihan**
+Tabel stack di proposal (dan CLAUDE.md §5) hanya menyebut Next.js, TypeScript, Tailwind, Vitest, Vercel, Postgres, satu API model, dan render lembar di sisi server. Tidak ada pustaka 3D, dan halaman depan dirancang sebagai halaman diam: teks, satu kartu unggah, satu panel ilustrasi statis, dan dua lapis latar CSS (kisi + kotak emas blur). Empat dependensi runtime tercatat saat itu: `next`, `pg`, `react`, `react-dom`.
+
+**Hal yang diubah**
+Ditambahkan `three` (dependensi runtime kelima dari batas 12) sebagai lapisan hiasan tunggal di belakang halaman depan, di berkas baru `src/ui/LatarTiga.tsx` — tujuh lembar kertas mengambang, tujuh ratus butir yang naik, kisi yang bergulir, paraleks penunjuk, dan respons gulir. Ditambahkan juga lima keyframe CSS di `src/app/globals.css` untuk gerak masuk berurutan, garis sorot yang tumbuh, panel yang mengapung, dan kotak emas yang bernapas. Tidak ada teks, label, tombol, aturan penilaian, atau batas kuantitatif lain yang berubah.
+
+**Alasan perubahan**
+Permintaan eksplisit pengguna: halaman depan dirasa terlalu datar untuk dinilai dan dipresentasikan, dan gerak diminta langsung. `three` dipilih karena memang pustaka yang diminta, dan dibatasi keras supaya tidak menyentuh apa pun di jalur inti: diimpor DINAMIS di dalam `useEffect` sehingga unduhannya (86 KB gzip) tidak disebut sama sekali di berkas awal halaman, tidak ada bayangan/postprocessing, rasio piksel dibatasi 1,6, perulangan berhenti saat tab disembunyikan, dan seluruh lapisan batal dimuat bila pengguna meminta `prefers-reduced-motion: reduce`, bila WebGL tidak tersedia, atau bila jaringannya 2G/hemat kuota. Animasi CSS dipasang di stylesheet, bukan oleh JS, sehingga tidak ada isi halaman yang bergantung pada JS atau pada animasi yang berjalan.
+
+**Dampak terhadap masalah inti**
+Alur inti tidak berubah sama sekali dan tetap dapat diselesaikan tanpa lapisan ini maupun tanpa JS: unggah gambar → koreksi wajib → penilaian → lembar terbit. Yang bertambah hanya berat opsional: 86 KB gzip yang diunduh SETELAH halaman terhidrasi dan tidak muncul di berkas awal (dibuktikan: `.next/server/app/index.html` tidak menyebut chunk `three`; halaman `/` tetap 15,7 kB / 124 kB First Load JS). Batas waktu muat CLAUDE.md §4 tidak tersentuh karena batas itu mengukur konten yang tampil, dan konten tetap tampil lewat CSS yang sama seperti sebelumnya. Pada perangkat atau jaringan yang lemah, lapisan ini tidak dimuat sama sekali — jadi biayanya jatuh ke perangkat yang memang mampu membayarnya.
+
 ## [PB-010] Layar hasil dipisah dari layar koreksi — 3 layar, batas langkah dinaikkan 5 → 6
 
 **Jam ke-**         : ~S13 (redesign UI)

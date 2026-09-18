@@ -37,3 +37,94 @@ body {
   outline: 3px solid theme("colors.aksen");
   outline-offset: 2px;
 }
+
+/* ---------------------------------------------------------------------
+   Gerak — semuanya hiasan. Aturannya dua:
+   1. Tidak ada isi halaman yang boleh BERGANTUNG pada animasi ini. Kalau
+      animasi tidak jalan (peramban lama, JS mati, reduced-motion), seluruh
+      teks dan tombol tetap tampil apa adanya — tidak ada yang disembunyikan
+      lebih dulu lalu dimunculkan JS.
+   2. Tidak ada animasi pada properti yang memicu tata letak ulang; hanya
+      transform dan opacity.
+   --------------------------------------------------------------------- */
+@keyframes munculNaik {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes mengapung {
+  0%,
+  100% {
+    transform: translateY(-7px) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(7px) rotate(-2deg);
+  }
+}
+
+@keyframes garisTumbuh {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Hanya opacity: kotak ini punya blur 120px, mengubah ukurannya tiap frame
+   berarti menggambar ulang blur-nya terus-menerus di ponsel murah. */
+@keyframes denyutLembut {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.animasi-muncul {
+  animation: munculNaik 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+/* Hanya di lg ke atas. Panel ilustrasi di halaman depan kini tegak di
+   mobile (rotasi -2deg hanya dipasang pada lg), sementara keyframe ini
+   membawa rotasi itu di dalam transform-nya — memasangnya di mobile akan
+   memaksa kartu miring dan menabrak tata letak yang justru sengaja
+   dihilangkan rotasinya. Efek sampingnya menguntungkan: ponsel tidak
+   menjalankan animasi ini sama sekali. */
+@media (min-width: 1024px) {
+  .animasi-mengapung {
+    animation: mengapung 7s ease-in-out infinite;
+  }
+}
+.animasi-denyut {
+  animation: denyutLembut 8s ease-in-out infinite;
+}
+.animasi-garis {
+  transform-origin: left center;
+  animation: garisTumbuh 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.35s both;
+}
+.animasi-tunda-1 {
+  animation-delay: 0.08s;
+}
+.animasi-tunda-2 {
+  animation-delay: 0.16s;
+}
+.animasi-tunda-3 {
+  animation-delay: 0.24s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animasi-muncul,
+  .animasi-mengapung,
+  .animasi-denyut,
+  .animasi-garis {
+    animation: none;
+  }
+}

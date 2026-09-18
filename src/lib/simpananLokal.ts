@@ -12,6 +12,50 @@
  */
 
 const KUNCI_ISIAN = "lembar-janji.isian-sementara.v1";
+const KUNCI_BAHASA = "lembar_janji_bahasa";
+
+/** Bahasa antarmuka yang didukung. */
+export type BahasaAntarmuka = "id" | "jv";
+
+/**
+ * Kode BCP-47 untuk atribut `lang` pada `<html>`. Basa Jawa = `jv`, sehingga
+ * pembaca layar memakai pelafalan yang benar (WCAG 3.1.1). Dipisah sebagai
+ * fungsi murni supaya dapat diuji tanpa DOM.
+ */
+export function atributLang(bahasa: BahasaAntarmuka): string {
+  return bahasa === "jv" ? "jv" : "id";
+}
+
+/** Bahasa tersimpan, atau `null` bila belum pernah dipilih. */
+export function ambilBahasaTersimpan(): BahasaAntarmuka | null {
+  const penyimpanan = ambilLocalStorage();
+  if (!penyimpanan) return null;
+  try {
+    const nilai = penyimpanan.getItem(KUNCI_BAHASA);
+    return nilai === "jv" || nilai === "id" ? nilai : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Menyimpan pilihan bahasa DAN menyinkronkan `document.documentElement.lang`.
+ * Dulu atribut `lang` di `layout.tsx` dipaku `"id"`; akibatnya pembaca layar
+ * tetap membaca lembar berbahasa Jawa sebagai bahasa Indonesia.
+ */
+export function simpanBahasa(bahasa: BahasaAntarmuka): void {
+  if (typeof document !== "undefined") {
+    document.documentElement.lang = atributLang(bahasa);
+  }
+  const penyimpanan = ambilLocalStorage();
+  if (!penyimpanan) return;
+  try {
+    penyimpanan.setItem(KUNCI_BAHASA, bahasa);
+  } catch {
+    // Diam-diam gagal — lihat catatan berkas.
+  }
+}
+
 
 export interface IsianTersimpan {
   readonly sumber: "gambar" | "manual";

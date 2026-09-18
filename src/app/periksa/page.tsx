@@ -11,6 +11,9 @@ import {
   nilaiSlotKeRekaman,
   rekamanKeNilaiSlot,
   simpanIsian,
+  ambilBahasaTersimpan,
+  atributLang,
+  simpanBahasa,
 } from "../../lib/simpananLokal";
 import { catat } from "../../lib/catat";
 import { simpanHasilSementara } from "../../lib/hasilSementara";
@@ -238,15 +241,16 @@ export default function HalamanPeriksa() {
 
   // Muat preferensi bahasa pengguna bila tersimpan
   useEffect(() => {
-    const simpanan = localStorage.getItem("lembar_janji_bahasa");
-    if (simpanan === "jv" || simpanan === "id") {
+    const simpanan = ambilBahasaTersimpan();
+    if (simpanan) {
       setBahasa(simpanan);
+      document.documentElement.lang = atributLang(simpanan);
     }
   }, []);
 
   const pilihBahasa = useCallback((baru: "id" | "jv") => {
     setBahasa(baru);
-    localStorage.setItem("lembar_janji_bahasa", baru);
+    simpanBahasa(baru);
   }, []);
 
   // Muat draf tersimpan (bila ada) sekali saat halaman dibuka — S07-6.

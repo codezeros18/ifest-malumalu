@@ -27,6 +27,7 @@ import {
   LABEL_GANTI_BAHASA_JV,
   LABEL_PILIH_BAHASA,
   TOMBOL_JALUR_MANUAL,
+  TEKS_HALAMAN_UI,
 } from "@/core/teks";
 import {
   KETERANGAN_KESETARAAN_JAWA,
@@ -38,6 +39,7 @@ import {
   STATUS_SEDANG_MEMBACA_JAWA,
   KETERANGAN_SEDANG_MEMBACA_JAWA,
   TOMBOL_JALUR_MANUAL_JAWA,
+  TEKS_HALAMAN_UI_JAWA,
 } from "@/core/teksJawa";
 
 /** CLAUDE.md bagian 4: ukuran berkas unggahan maksimal 8 MB. */
@@ -47,101 +49,57 @@ const FORMAT_DIDUKUNG = ["image/jpeg", "image/png", "image/webp"];
 const assetPathPrefix = "/assets";
 const imgLogo = `${assetPathPrefix}/logo.svg`;
 
-const nav = [
-  { id: "beranda", label: "Beranda" },
-  { id: "tentang", label: "Tentang Kami" },
-];
+// Id menu — labelnya datang dari kamus per bahasa (TEKS_HALAMAN_UI).
+const nav = ["beranda", "tentang"] as const;
 
 // Metafora daftar periksa di panel kanan — murni ilustrasi statis, TIDAK
-// terhubung ke hasil baca sungguhan.
-const checklistContoh = [
-  { label: "Gaji & mata uang", status: "ok", note: "Rp 4.500.000 / bulan" },
-  { label: "Nama & alamat majikan", status: "ok", note: "Tercantum lengkap" },
-  { label: "Biaya penempatan", status: "warn", note: "Belum disebutkan" },
-  { label: "Agen berizin (P3MI)", status: "warn", note: "Perlu ditanyakan" },
-  { label: "Masa & isi kontrak", status: "ask", note: "2 tahun — cek detail" },
+// terhubung ke hasil baca sungguhan. Warna dan ikonnya bukan teks, jadi
+// tetap di sini; label dan catatannya ikut kamus per bahasa.
+const statusPanel = ["ok", "ok", "warn", "warn", "ask"] as const;
+
+// Warna chip tiga kemungkinan keterangan di bagian "Tentang Kami", sesuai
+// urutan `TEKS_HALAMAN_UI.tentang.keputusan`.
+const warnaKeputusan = [
+  "bg-[#e7f0ff] text-[#0955d4]",
+  "bg-[#fff4d6] text-[#a97400]",
+  "bg-[#eef0f4] text-[#52525b]",
 ];
 
-// Isi bagian "Tentang Kami" — statis, tanpa data pengguna.
-const keputusanKeterangan = [
-  {
-    label: "sudah disebutkan",
-    ket: "Tawaran menyebutkannya lengkap: angka, nama, atau rincian yang jelas.",
-    warna: "bg-[#e7f0ff] text-[#0955d4]",
-  },
-  {
-    label: "disebutkan sebagian",
-    ket: "Sudah disebut, tetapi masih terlalu kabur untuk dipakai — misalnya nominal tanpa mata uang.",
-    warna: "bg-[#fff4d6] text-[#a97400]",
-  },
-  {
-    label: "belum dijawab",
-    ket: "Belum disebut dalam tawaran, atau pembacaannya diragukan. Ragu selalu jatuh ke sini.",
-    warna: "bg-[#eef0f4] text-[#52525b]",
-  },
-];
-
-const langkahCaraKerja = [
-  {
-    judul: "Kirim gambarnya",
-    ket: "Seret, tempel, atau pilih poster dari galeri ponsel.",
-  },
-  {
-    judul: "Periksa hasil bacaannya",
-    ket: "Mesin bisa salah baca. Hasilnya ditampilkan kembali untuk Anda betulkan.",
-  },
-  {
-    judul: "Terbitkan lembarnya",
-    ket: "Simpan gambarnya, lalu teruskan ke percakapan tempat tawaran itu beredar.",
-  },
-];
-
-const tidakDisimpan = [
-  "Tidak ada akun, tidak ada pendaftaran, dan tidak ada sesi pengguna.",
-  "Gambar yang Anda kirim dibaca di memori lalu dibuang, tidak ditulis ke mana pun.",
-  "Tidak ada riwayat pemeriksaan yang bisa dicari, dan tidak ada penghitungan yang menggabungkan data antar pengguna.",
-];
-
-const batasKami = [
-  "Yang dibaca adalah dokumen tawaran yang Anda kirim, bukan pihak yang menawarkannya.",
-  "Tidak ada skor, peringkat, atau persentase kelengkapan. Yang ada hanya hitungan n dari 10 belum dijawab.",
-  "Bila pencocokan ke daftar perusahaan penempatan berizin tidak menemukan apa pun, lembar tetap menyebutkan tanggal salinan datanya, cara memastikannya sendiri, dan bahwa hal itu bukan berarti perusahaannya tidak berizin.",
-];
-
-function BagianTentang({ onKembali }: { onKembali: () => void }) {
+function BagianTentang({
+  t,
+  onKembali,
+}: {
+  t: typeof TEKS_HALAMAN_UI;
+  onKembali: () => void;
+}) {
   return (
     <main className="relative z-10 flex-1 overflow-y-auto px-14 py-10">
       <div className="mx-auto flex max-w-[880px] flex-col gap-8">
         <header>
           <span className="inline-flex items-center gap-2 rounded-full border border-[#dbe4fb] bg-white/70 px-3 py-1 text-[12px] font-semibold uppercase tracking-wider text-[#0955d4]">
             <span className="h-1.5 w-1.5 rounded-full bg-[#fac10b]" />
-            Tentang kami
+            {t.tentang.lencana}
           </span>
           <h2 className="mt-5 text-[34px] font-extrabold leading-[1.1] tracking-tight text-[#0b1220]">
-            Satu lembar sebelum tanda tangan.
+            {t.tentang.judul}
           </h2>
           <p className="mt-4 max-w-[640px] text-[16px] leading-relaxed text-[#52586b]">
-            Lembar Janji menerima gambar tawaran kerja ke luar negeri — poster,
-            tangkapan layar percakapan, atau foto brosur — lalu menerbitkan satu
-            lembar berisi apa yang sudah disebutkan tawaran itu, apa yang belum
-            dijawab menurut Undang-Undang Nomor 18 Tahun 2017, dan pertanyaan yang
-            bisa Anda ajukan. Lembarnya berbentuk gambar, agar bisa diteruskan
-            kembali ke percakapan tempat tawaran itu beredar.
+            {t.tentang.paragraf}
           </p>
         </header>
 
         <section>
           <h3 className="text-[18px] font-bold text-[#0b1220]">
-            Tiap keterangan hanya punya tiga kemungkinan
+            {t.tentang.judulKeputusan}
           </h3>
           <div className="mt-4 grid gap-4 sm:grid-cols-3">
-            {keputusanKeterangan.map((k) => (
+            {t.tentang.keputusan.map((k, i) => (
               <div
                 key={k.label}
                 className="rounded-2xl border border-[#dbe4fb] bg-white p-5"
               >
                 <span
-                  className={`inline-block rounded-full px-3 py-1 text-[13px] font-bold ${k.warna}`}
+                  className={`inline-block rounded-full px-3 py-1 text-[13px] font-bold ${warnaKeputusan[i]}`}
                 >
                   {k.label}
                 </span>
@@ -155,10 +113,10 @@ function BagianTentang({ onKembali }: { onKembali: () => void }) {
 
         <section className="rounded-2xl border border-[#dbe4fb] bg-white p-6">
           <h3 className="text-[18px] font-bold text-[#0b1220]">
-            Cara kerjanya
+            {t.tentang.judulCaraKerja}
           </h3>
           <ol className="mt-5 grid gap-5 sm:grid-cols-3">
-            {langkahCaraKerja.map((l, i) => (
+            {t.tentang.langkah.map((l, i) => (
               <li key={l.judul} className="flex gap-3">
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0955d4] text-[14px] font-bold text-white">
                   {i + 1}
@@ -179,14 +137,14 @@ function BagianTentang({ onKembali }: { onKembali: () => void }) {
         <div className="grid gap-4 lg:grid-cols-2">
           <section className="rounded-2xl border border-[#dbe4fb] bg-white p-6">
             <h3 className="text-[18px] font-bold text-[#0b1220]">
-              Yang tidak kami simpan
+              {t.tentang.judulDisimpan}
             </h3>
             <ul className="mt-4 space-y-2.5">
-              {tidakDisimpan.map((t) => (
-                <li key={t} className="flex gap-3">
+              {t.tentang.tidakDisimpan.map((b) => (
+                <li key={b} className="flex gap-3">
                   <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#0955d4]" />
                   <span className="text-[15px] leading-relaxed text-[#52586b]">
-                    {t}
+                    {b}
                   </span>
                 </li>
               ))}
@@ -195,14 +153,14 @@ function BagianTentang({ onKembali }: { onKembali: () => void }) {
 
           <section className="rounded-2xl border border-[#dbe4fb] bg-white p-6">
             <h3 className="text-[18px] font-bold text-[#0b1220]">
-              Batas kami
+              {t.tentang.judulBatas}
             </h3>
             <ul className="mt-4 space-y-2.5">
-              {batasKami.map((t) => (
-                <li key={t} className="flex gap-3">
+              {t.tentang.batas.map((b) => (
+                <li key={b} className="flex gap-3">
                   <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#fac10b]" />
                   <span className="text-[15px] leading-relaxed text-[#52586b]">
-                    {t}
+                    {b}
                   </span>
                 </li>
               ))}
@@ -216,10 +174,10 @@ function BagianTentang({ onKembali }: { onKembali: () => void }) {
             onClick={onKembali}
             className="rounded-xl bg-[#0955d4] px-6 py-3 text-[15px] font-bold text-white transition-colors hover:bg-[#0a4bbb]"
           >
-            Mulai periksa tawaran
+            {t.tentang.tombolKembali}
           </button>
           <p className="text-[15px] text-[#52586b]">
-            Tidak perlu mendaftar, dan tidak ada yang perlu dipasang.
+            {t.tentang.catatanKembali}
           </p>
         </div>
       </div>
@@ -463,6 +421,7 @@ export default function App() {
     router.push("/periksa");
   }, [method, berkasTerpilih, sedangMemroses, prosesGambar, router]);
 
+  const t = bahasa === "jv" ? TEKS_HALAMAN_UI_JAWA : TEKS_HALAMAN_UI;
   const kamusPesanGalat = bahasa === "jv" ? PESAN_GALAT_JAWA : PESAN_GALAT;
   const pesanGalatAktif = galat ? kamusPesanGalat[galat] : null;
 
@@ -565,17 +524,17 @@ export default function App() {
             {modelDimatikan ? tombolNyalakanModel : tombolMatikanModel}
           </button>
           <nav className="flex items-center gap-1 rounded-full border border-[#dbe4fb] bg-white/70 p-1 backdrop-blur">
-            {nav.map((item) => (
+            {nav.map((id) => (
               <button
-                key={item.id}
-                onClick={() => setActive(item.id)}
+                key={id}
+                onClick={() => setActive(id)}
                 className={`rounded-full px-5 py-2 text-[15px] font-semibold transition-colors ${
-                  active === item.id
+                  active === id
                     ? "bg-[#0955d4] text-white"
                     : "text-[#3f4657] hover:text-[#0955d4]"
                 }`}
               >
-                {item.label}
+                {t.nav[id]}
               </button>
             ))}
           </nav>
@@ -601,7 +560,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={tanganiTutupModalModel}
-                aria-label="Tutup"
+                aria-label={t.ariaTutup}
                 className="shrink-0 rounded-full p-1 text-[#8890a0] hover:bg-[#f2f6ff] hover:text-[#0b1220]"
               >
                 <svg
@@ -627,7 +586,7 @@ export default function App() {
               onClick={tanganiTutupModalModel}
               className="mt-4 w-full rounded-xl bg-[#0955d4] px-4 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-[#0a4bbb]"
             >
-              Mengerti
+              {t.modalMengerti}
             </button>
           </div>
         </div>
@@ -635,27 +594,25 @@ export default function App() {
 
       {/* Workspace: asymmetric split */}
       {active === "tentang" ? (
-        <BagianTentang onKembali={() => setActive("beranda")} />
+        <BagianTentang t={t} onKembali={() => setActive("beranda")} />
       ) : (
       <main className="relative z-10 grid flex-1 grid-cols-1 items-center gap-10 px-14 lg:grid-cols-[1.05fr_0.95fr]">
         <section className="max-w-[600px]">
           <span className="inline-flex items-center gap-2 rounded-full border border-[#dbe4fb] bg-white/70 px-3 py-1 text-[12px] font-semibold uppercase tracking-wider text-[#0955d4]">
             <span className="h-1.5 w-1.5 rounded-full bg-[#fac10b]" />
-            Periksa sebelum berangkat
+            {t.heroLencana}
           </span>
 
           <h1 className="mt-5 text-[46px] font-extrabold leading-[1.05] tracking-tight text-[#0b1220]">
-            Pastikan tawaran kerja itu{" "}
+            {t.heroJudulAwal}{" "}
             <span className="relative whitespace-nowrap">
-              <span className="relative z-10">menepati janji.</span>
+              <span className="relative z-10">{t.heroJudulSorot}</span>
               <span className="absolute inset-x-0 bottom-1 z-0 h-3 bg-[#fac10b]/60" />
             </span>
           </h1>
 
           <p className="mt-4 max-w-[480px] text-[15px] leading-relaxed text-[#52586b]">
-            Kirim poster lowongannya. Kami ubah menjadi daftar periksa yang
-            jelas, apa yang sudah dijanjikan, apa yang belum dijawab, dan apa
-            yang wajib Anda tanyakan sebelum menandatangani.
+            {t.heroSubjudul}
           </p>
 
           {pesanGalatAktif ? (
@@ -699,7 +656,7 @@ export default function App() {
                     : "text-[#6b7280] hover:text-[#0b1220]"
                 }`}
               >
-                Unggah / tempel gambar
+                {t.tabUnggah}
               </button>
               {/* <button
                 onClick={() => setMethod("manual")}
@@ -783,13 +740,12 @@ export default function App() {
                       <span className="block text-[14px] font-semibold text-[#0b1220]">
                         {sedangMemroses
                           ? statusSedangMembaca
-                          : (berkasTerpilih?.name ??
-                            "Seret poster ke sini atau klik untuk pilih")}
+                          : (berkasTerpilih?.name ?? t.seretBerkas)}
                       </span>
                       <span className="block text-[12px] text-[#8890a0]">
                         {sedangMemroses
                           ? keteranganSedangMembaca
-                          : "Format JPG atau PNG · maks. 8 MB"}
+                          : t.keteranganFormat}
                       </span>
                     </span>
                   </button>
@@ -822,7 +778,7 @@ export default function App() {
                 >
                   {sedangMemroses
                     ? statusSedangMembaca
-                    : "Mulai periksa tawaran"}
+                    : t.tombolMulai}
                   {!sedangMemroses ? (
                     <svg
                       width="14"
@@ -866,10 +822,10 @@ export default function App() {
             <div className="flex items-center justify-between border-b border-[#eef1f6] pb-4">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-[#8890a0]">
-                  Lembar Periksa
+                  {t.panel.judul}
                 </p>
                 <p className="text-[16px] font-bold text-[#0b1220]">
-                  Loker: Perawat, Taiwan
+                  {t.panel.loker}
                 </p>
               </div>
               <span className="rounded-full bg-[#e7f0ff] px-3 py-1 text-[12px] font-bold text-[#0955d4]">
@@ -878,8 +834,8 @@ export default function App() {
             </div>
 
             <ul className="mt-4 space-y-3">
-              {checklistContoh.map((item) => {
-                const s = statusStyles[item.status] ?? statusStyles.ask!;
+              {t.panel.baris.map((item, i) => {
+                const s = statusStyles[statusPanel[i] ?? "ask"] ?? statusStyles.ask!;
                 return (
                   <li key={item.label} className="flex items-start gap-3">
                     <span
@@ -902,9 +858,9 @@ export default function App() {
 
             <div className="mt-5 rounded-xl bg-[#f2f6ff] p-3 text-[12px] leading-relaxed text-[#52586b]">
               <span className="font-semibold text-[#0955d4]">
-                2 hal perlu ditanyakan
+                {t.panel.catatanSorot}
               </span>{" "}
-              sebelum Anda menyetujui tawaran ini.
+              {t.panel.catatanSisa}
             </div>
           </div>
         </section>
@@ -912,10 +868,8 @@ export default function App() {
       )}
 
       <footer className="relative z-10 flex items-center justify-between px-14 pb-6 pt-2 text-[12px] text-[#8890a0]">
-        <p>© 2026 Lembar Janji. All rights reserved</p>
-        <p className="hidden sm:block">
-          Dibuat untuk melindungi pekerja migran Indonesia
-        </p>
+        <p>{t.footerKiri}</p>
+        <p className="hidden sm:block">{t.footerKanan}</p>
       </footer>
     </div>
   );

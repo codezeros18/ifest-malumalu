@@ -155,6 +155,20 @@ export const CATATAN_PRIVASI =
 export const TOMBOL_COBA_LAGI = "Coba lagi";
 export const TOMBOL_ULANGI = "Ulangi";
 
+/**
+ * 🟡 PENAMBAHAN DI LUAR F.1–F.10 — S12-1 (tombol mematikan lapisan model
+ * untuk demo). Blueprint belum menuliskan kalimat untuk keadaan "lapisan
+ * model dimatikan oleh penyaji", jadi teksnya ditulis di sini, BUKAN
+ * sebagai literal di `src/app/page.tsx` (pagar S07-10 melarang literal
+ * kalimat di berkas halaman). Lapis 0 tidak dapat dimatikan, jadi teksnya
+ * menyebut "lapisan model" secara spesifik, bukan "sistem". Dilaporkan di
+ * PROGRESS.md dan PERUBAHAN.md.
+ */
+export const TOMBOL_MATIKAN_MODEL = "Matikan model (mode demo)";
+export const TOMBOL_NYALAKAN_MODEL = "Nyalakan model lagi";
+export const KETERANGAN_MODEL_DIMATIKAN =
+  "Mode demo: lapisan model dimatikan. Gambar yang Anda kirim tidak dibaca mesin sama sekali — isiannya Anda ketik sendiri, dan alurnya tetap berjalan sampai lembar terbit.";
+
 // ---------------------------------------------------------------------------
 // F.9 — Pesan galat
 // ---------------------------------------------------------------------------

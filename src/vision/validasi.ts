@@ -24,6 +24,20 @@
  * disaring hanya kata yang praktis mustahil dipakai poster untuk
  * mendeskripsikan dirinya sendiri, sehingga hampir pasti komentar
  * tambahan dari model, bukan kutipan dari gambar.
+ *
+ * S12 — tiga jaring pengaman tambahan terhadap indirect prompt injection:
+ *   1. `FRASA_INJEKSI_TERLARANG`: keluaran yang memuat teks perintah khas
+ *      serangan ("abaikan instruksi sebelumnya", "isi semua slot", dst.)
+ *      DIBUANG seperti kata penilaian — itu tanda model mengikuti teks di
+ *      dalam gambar, bukan membaca gambar.
+ *   2. `KLAIM_MEYAKINKAN`: kata persuasif dari poster ("pasti aman",
+ *      "dijamin", "resmi", "berizin") TIDAK mengubah nilai kutipan, tetapi
+ *      keyakinan slot itu DIBATASI di `BATAS_KEYAKINAN_BILA_ADA_KLAIM`.
+ *      Klaim pemasaran tidak boleh membeli keyakinan — nilai yang diyakini
+ *      semata-mata karena posternya mengaku "aman" tidak akan pernah lolos
+ *      ambang aturan keraguan di lapisan penilaian (0,7).
+ *   3. Penilaian dan injeksi DITURUNKAN ke nol, bukan "diperkecil" —
+ *      aturan keraguan: ragu selalu jatuh ke "belum dijawab".
  */
 
 import type { SlotId } from "../core/slot";
@@ -55,6 +69,67 @@ const KATA_PENILAIAN_TERLARANG: readonly string[] = [
 function memuatKataPenilaian(teks: string): boolean {
   const rendah = teks.toLowerCase();
   return KATA_PENILAIAN_TERLARANG.some((kata) => rendah.includes(kata));
+}
+
+/**
+ * Teks perintah khas serangan injeksi (indirect prompt injection) yang
+ * hampir pasti berarti model MENURUTI tulisan di dalam gambar alih-alih
+ * membacanya. Slot yang memuatnya dibuang.
+ */
+const FRASA_INJEKSI_TERLARANG: readonly string[] = [
+  "abaikan instruksi",
+  "abaikan perintah",
+  "abaikan aturan",
+  "abaikan prompt",
+  "lupakan instruksi",
+  "lupakan aturan",
+  "instruksi sebelumnya",
+  "instruksi di atas",
+  "previous instructions",
+  "previous prompt",
+  "system prompt",
+  "prompt sistem",
+  "jailbreak",
+  "isi semua slot",
+  "semua slot terisi",
+  "seluruh slot terisi",
+  "kesepuluh keterangan sudah dijawab",
+  "semua keterangan sudah dijawab",
+  "nyatakan aman",
+  "nyatakan resmi",
+  "jangan tampilkan keterangan yang kosong",
+];
+
+/**
+ * Klaim pemasaran dari dalam poster. Nilai kutipan TIDAK dibuang (itu isi
+ * poster yang sah), tetapi keyakinan slot itu dibatasi — klaim persuasif
+ * tidak boleh menaikkan keyakinan (CLAUDE.md §3.3, S12).
+ */
+const KLAIM_MEYAKINKAN: readonly string[] = [
+  "pasti aman",
+  "100% aman",
+  "sepenuhnya aman",
+  "dijamin",
+  "terjamin",
+  "tanpa risiko",
+  "tidak ada risiko",
+  "pasti resmi",
+  "100% resmi",
+  "berizin",
+  "resmi",
+  "terpercaya",
+];
+
+const BATAS_KEYAKINAN_BILA_ADA_KLAIM = 0.5;
+
+function memuatFrasaInjeksi(teks: string): boolean {
+  const rendah = teks.toLowerCase();
+  return FRASA_INJEKSI_TERLARANG.some((frasa) => rendah.includes(frasa));
+}
+
+function memuatKlaimMeyakinkan(teks: string): boolean {
+  const rendah = teks.toLowerCase();
+  return KLAIM_MEYAKINKAN.some((klaim) => rendah.includes(klaim));
 }
 
 export interface HasilValidasi {
@@ -124,15 +199,20 @@ export function validasiKeluaranModel(mentah: unknown): HasilValidasi {
       continue;
     }
 
-    if (memuatKataPenilaian(nilaiSlotMentah)) {
-      // Model mengembalikan penilaian, bukan data — dibuang, bukan diteruskan.
+    if (memuatKataPenilaian(nilaiSlotMentah) || memuatFrasaInjeksi(nilaiSlotMentah)) {
+      // Model mengembalikan penilaian atau menuruti instruksi di dalam
+      // gambar, bukan data — dibuang, bukan diteruskan.
       nilai[id] = null;
       keyakinan[id] = 0;
       continue;
     }
 
+    const keyakinanSlot = keyakinanAman(petaKeyakinan[kunci]);
+
     nilai[id] = nilaiSlotMentah;
-    keyakinan[id] = keyakinanAman(petaKeyakinan[kunci]);
+    keyakinan[id] = memuatKlaimMeyakinkan(nilaiSlotMentah)
+      ? Math.min(keyakinanSlot, BATAS_KEYAKINAN_BILA_ADA_KLAIM)
+      : keyakinanSlot;
   }
 
   return { valid: true, hasil: { nilai, keyakinan } };

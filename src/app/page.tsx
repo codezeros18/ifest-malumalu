@@ -16,7 +16,10 @@ import {
   SUBJUDUL_HALAMAN_UTAMA,
   TOMBOL_JALUR_GAMBAR,
   TOMBOL_JALUR_MANUAL,
+  TOMBOL_MATIKAN_MODEL,
+  TOMBOL_NYALAKAN_MODEL,
   KETERANGAN_KESETARAAN,
+  KETERANGAN_MODEL_DIMATIKAN,
   PESAN_GALAT,
 } from "../core/teks";
 
@@ -51,7 +54,20 @@ type HasilBacaGambar =
  * kosong, dan hasilnya SELALU jatuh ke `manualProvider` (nol jaringan,
  * nol risiko memanggil model sungguhan dari sini). Dicatat di PROGRESS.md.
  */
-async function bacaGambarSementara(berkas: File): Promise<HasilBacaGambar> {
+async function bacaGambarSementara(
+  berkas: File,
+  paksaManual: boolean,
+): Promise<HasilBacaGambar> {
+  // 🟡 S12-1 — mode demo: lapisan model dimatikan sejak di layar utama.
+  // TIDAK ADA `fetch` ke /api/baca sama sekali di cabang ini; alurnya
+  // langsung memakai `manualProvider` lewat `paksaManual`, sehingga klaim
+  // "lapisan model dapat dicabut" terlihat di depan juri, bukan disimulasikan.
+  if (paksaManual) {
+    const pembaca = pilihPembaca("gambar", { paksaManual: true });
+    const hasilBaca = await pembaca.baca({ sumber: "gambar", berkas });
+    return { jenis: "fallback-manual", hasilBaca };
+  }
+
   try {
     const formData = new FormData();
     formData.append("berkas", berkas);
@@ -78,10 +94,18 @@ export default function HalamanUtama() {
   const router = useRouter();
   const [galat, setGalat] = useState<KodeGalat | null>(null);
   const [sedangMemroses, setSedangMemroses] = useState(false);
+  // S12-1 — tombol mematikan lapisan model. Bawaan MATI (model dipakai);
+  // dinyalakan secara sadar oleh penyaji saat demo di depan juri.
+  const [modelDimatikan, setModelDimatikan] = useState(false);
 
   const tanganiJalurManual = useCallback(() => {
     router.push("/periksa");
   }, [router]);
+
+  const tanganiSaklarModel = useCallback(() => {
+    setModelDimatikan((sebelumnya) => !sebelumnya);
+    setGalat(null);
+  }, []);
 
   const tanganiBerkasDitolak = useCallback((alasan: AlasanBerkasDitolak) => {
     setGalat(alasanKeKodeGalat(alasan));
@@ -94,7 +118,7 @@ export default function HalamanUtama() {
       setSedangMemroses(true);
 
       try {
-        const hasil = await bacaGambarSementara(berkas);
+        const hasil = await bacaGambarSementara(berkas, modelDimatikan);
 
         if (hasil.jenis === "galat") {
           setGalat(hasil.kode);
@@ -115,7 +139,7 @@ export default function HalamanUtama() {
         setSedangMemroses(false);
       }
     },
-    [router, sedangMemroses],
+    [router, sedangMemroses, modelDimatikan],
   );
 
   const pesanGalatAktif = galat ? PESAN_GALAT[galat] : null;
@@ -134,6 +158,25 @@ export default function HalamanUtama() {
           onTindakan={pesanGalatAktif.tindakan ? tanganiJalurManual : undefined}
         />
       ) : null}
+
+      {/* S12-1 — saklar mematikan lapisan model untuk demo. Keadaannya
+          dinyatakan apa adanya lewat teks dari `src/core/teks.ts`, bukan
+          disembunyikan: saat menyala, layar menyebut lapisan model memang
+          dimatikan dan pembacaan gambar tidak dilakukan. */}
+      <div className="flex flex-col items-center gap-2">
+        <Tombol
+          varian={modelDimatikan ? "utama" : "sekunder"}
+          role="switch"
+          aria-checked={modelDimatikan}
+          onClick={tanganiSaklarModel}
+          disabled={sedangMemroses}
+        >
+          {modelDimatikan ? TOMBOL_NYALAKAN_MODEL : TOMBOL_MATIKAN_MODEL}
+        </Tombol>
+        {modelDimatikan ? (
+          <p className="text-center text-base text-redup">{KETERANGAN_MODEL_DIMATIKAN}</p>
+        ) : null}
+      </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <AreaUnggah

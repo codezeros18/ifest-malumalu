@@ -29,12 +29,27 @@ export interface OpsiPemilihPembaca {
   readonly kunciApiModel?: string;
   /** Penyedia jalur model — pemanggil mengoper `modelProvider` (S06). */
   readonly penyediaModel?: Pembaca;
+  /**
+   * S12-1 — tombol "Matikan model (mode demo)". Bila `true`, lapisan model
+   * dicabut SEPENUHNYA dari pemeriksaan ini: `manualProvider` dikembalikan
+   * apa pun isi `MODEL_API_KEY`, dan `penyediaModel` tidak pernah dipanggil
+   * — nol panggilan API model. Dipakai untuk membuktikan di depan juri
+   * bahwa alur inti berjalan tanpa lapisan model (CLAUDE.md §3.4), bukan
+   * hanya dinyatakan.
+   */
+  readonly paksaManual?: boolean;
 }
 
 export function pilihPembaca(
   sumber: SumberTawaran,
   opsi: OpsiPemilihPembaca = {},
 ): Pembaca {
+  // S12-1: tombol matikan model diperiksa PALING DULU — ia harus menang
+  // atas keberadaan kunci API maupun atas penyedia model yang disuntikkan.
+  if (opsi.paksaManual === true) {
+    return manualProvider;
+  }
+
   const kunciApiModel = opsi.kunciApiModel ?? process.env["MODEL_API_KEY"];
   const kunciKosong = typeof kunciApiModel !== "string" || kunciApiModel.trim().length === 0;
 

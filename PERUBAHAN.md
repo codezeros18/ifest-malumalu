@@ -33,6 +33,25 @@ Ditulis konkret, bukan "karena keterbatasan waktu" saja.]
 
 ---
 
+## [PB-017] Revert kedua commit yang menaruh warna mentah di lembar & membajak fungsi token
+
+**Jam ke-**         : ~14 (18 September 2026, 22.55 WIB)
+**Diputuskan oleh** : Window 1 (kapten), setelah `npm run verify` merah
+
+**Kondisi di proposal penyisihan**
+BLUEPRINT H.9: kepala lembar berlatar token `tinta`, dan **seluruh warna lembar lewat token `warna(...)`, nol hex mentah** — supaya `tests/ui/kontras.test.ts` (yang hanya membaca token) benar-benar memeriksa warna lembar.
+
+**Hal yang diubah**
+Commit tim `ae8b3b5` ("FIX: LEMBAR AKHIR FIX BANGET") di-*revert* penuh. Commit itu (a) membajak `warna("tinta")` menjadi `#0955d4` — dan karena `warna("tinta")` juga dipakai untuk warna teks isi (baris 146) dan teks pertanyaan (baris 431), kepala lembar yang biru sekaligus membuat seluruh teks lembar biru; (b) menaruh hex mentah `#ffd346` dan `#000000` untuk label blok 2. Ini persis kekeliruan yang sudah dibatalkan sekali lewat PB-014 (commit `83c2c21`).
+
+**Alasan perubahan**
+`npm run verify` merah: test H.9 ("kepala lembar berlatar tinta") gagal. Lebih dari sekadar test merah, pendekatannya salah: memperbaiki warna dengan menambal fungsi token merusak tiga pemakaian sekaligus dan menyembunyikan hex dari semua pagar kontras. Bila pemilik produk memang ingin kepala lembar biru, jalurnya adalah menambah token warna baru di `tailwind.config.ts` dan menamainya, bukan menambal `warna()`.
+
+**Dampak terhadap masalah inti**
+Nol. Alur inti tidak tersentuh; yang dikembalikan hanyalah tampilan lembar ke spesifikasi H.9 yang sudah disepakati dan sudah diuji. `npm run verify` kembali hijau (378 test).
+
+---
+
 ## [PB-016] Ukuran huruf lembar diturunkan ke set kompak pilihan pemilik produk — DI BAWAH lantai 14pt §3.6, dicatat terbuka
 
 **Jam ke-**         : ~16

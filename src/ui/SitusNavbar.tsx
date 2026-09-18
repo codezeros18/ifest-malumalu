@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   LABEL_GANTI_BAHASA_ID,
@@ -14,23 +14,43 @@ import { TEKS_HALAMAN_UI_JAWA } from "../core/teksJawa";
 const assetPathPrefix = "/assets";
 const imgLogo = `${assetPathPrefix}/logo.svg`;
 
+const PILIHAN_BAHASA = [
+  ["id", LABEL_GANTI_BAHASA_ID],
+  ["jv", LABEL_GANTI_BAHASA_JV],
+] as const;
+
 export interface SitusNavbarProps {
   readonly bahasa: "id" | "jv";
-  readonly onGantiBahasa: () => void;
+  readonly onPilihBahasa: (bahasa: "id" | "jv") => void;
 }
 
 /**
  * Navbar yang sama dipakai di `/`, `/periksa`, `/hasil` — logo, dua pranala
  * ("Beranda" dan "Tentang Kami", yang selalu menuju halaman utama karena
- * bagian "Tentang Kami" hanya ada di sana), saklar bahasa, dan menu
- * hamburger di bawah md. Palet warna disamakan dengan desain halaman utama
- * (biru `#0955d4` / kuning `#fac10b`), bukan token `aksen` hijau —
- * penyesuaian sadar mengikuti redesign home, dicatat di PROGRESS.md.
+ * bagian "Tentang Kami" hanya ada di sana), saklar bahasa berbentuk
+ * dropdown (S13 polish — dipencet menampilkan dua pilihan, bukan langsung
+ * bertukar), dan menu hamburger di bawah md. Palet warna disamakan dengan
+ * desain halaman utama (biru `#0955d4` / kuning `#fac10b`), bukan token
+ * `aksen` hijau — penyesuaian sadar mengikuti redesign home, dicatat di
+ * PROGRESS.md.
  */
-export default function SitusNavbar({ bahasa, onGantiBahasa }: SitusNavbarProps) {
+export default function SitusNavbar({ bahasa, onPilihBahasa }: SitusNavbarProps) {
   const router = useRouter();
+  const bahasaMenuRef = useRef<HTMLDivElement>(null);
   const [menuTerbuka, setMenuTerbuka] = useState(false);
+  const [bahasaMenuTerbuka, setBahasaMenuTerbuka] = useState(false);
   const t = bahasa === "jv" ? TEKS_HALAMAN_UI_JAWA : TEKS_HALAMAN_UI;
+
+  useEffect(() => {
+    if (!bahasaMenuTerbuka) return;
+    function tanganiKlikLuar(peristiwa: MouseEvent) {
+      if (!bahasaMenuRef.current?.contains(peristiwa.target as Node)) {
+        setBahasaMenuTerbuka(false);
+      }
+    }
+    document.addEventListener("mousedown", tanganiKlikLuar);
+    return () => document.removeEventListener("mousedown", tanganiKlikLuar);
+  }, [bahasaMenuTerbuka]);
 
   function keBeranda() {
     setMenuTerbuka(false);
@@ -42,9 +62,14 @@ export default function SitusNavbar({ bahasa, onGantiBahasa }: SitusNavbarProps)
     router.push("/?tentang=1");
   }
 
+  function pilihBahasa(baru: "id" | "jv") {
+    onPilihBahasa(baru);
+    setBahasaMenuTerbuka(false);
+  }
+
   return (
     <>
-      <header className="relative z-20 flex items-center justify-between px-4 py-4 sm:px-6 sm:py-5 lg:px-14">
+      <header className="relative z-20 mx-auto flex w-full max-w-[1440px] items-center justify-between px-4 py-4 sm:px-6 sm:py-5 lg:px-14">
         <button
           type="button"
           onClick={keBeranda}
@@ -58,14 +83,59 @@ export default function SitusNavbar({ bahasa, onGantiBahasa }: SitusNavbarProps)
         </button>
 
         <div className="hidden items-center gap-2 md:flex">
-          <button
-            type="button"
-            onClick={onGantiBahasa}
-            aria-label={LABEL_PILIH_BAHASA}
-            className="inline-flex items-center gap-1.5 rounded-full border border-[#dbe4fb] bg-white/70 px-3.5 py-1.5 text-[13px] font-semibold text-[#3f4657] backdrop-blur transition-colors hover:text-[#0955d4]"
-          >
-            🌐 {bahasa === "id" ? LABEL_GANTI_BAHASA_JV : LABEL_GANTI_BAHASA_ID}
-          </button>
+          <div ref={bahasaMenuRef} className="relative">
+            <button
+              type="button"
+              onClick={() => setBahasaMenuTerbuka((sebelumnya) => !sebelumnya)}
+              aria-label={LABEL_PILIH_BAHASA}
+              aria-haspopup="listbox"
+              aria-expanded={bahasaMenuTerbuka}
+              className="inline-flex items-center gap-1.5 rounded-full border border-[#dbe4fb] bg-white/70 px-3.5 py-1.5 text-[13px] font-semibold text-[#3f4657] backdrop-blur transition-colors hover:text-[#0955d4]"
+            >
+              🌐 {bahasa === "id" ? LABEL_GANTI_BAHASA_ID : LABEL_GANTI_BAHASA_JV}
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={`transition-transform ${bahasaMenuTerbuka ? "rotate-180" : ""}`}
+              >
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </button>
+            {bahasaMenuTerbuka ? (
+              <div
+                role="listbox"
+                className="absolute right-0 top-[calc(100%+8px)] z-30 w-44 overflow-hidden rounded-xl border border-[#dbe4fb] bg-white p-1 shadow-[0_20px_50px_-25px_rgba(11,18,32,0.35)]"
+              >
+                {PILIHAN_BAHASA.map(([kode, label]) => (
+                  <button
+                    key={kode}
+                    type="button"
+                    role="option"
+                    aria-selected={bahasa === kode}
+                    onClick={() => pilihBahasa(kode)}
+                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-[13px] font-semibold transition-colors ${
+                      bahasa === kode
+                        ? "bg-[#e7f0ff] text-[#0955d4]"
+                        : "text-[#3f4657] hover:bg-[#f2f6ff]"
+                    }`}
+                  >
+                    {label}
+                    {bahasa === kode ? (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                    ) : null}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
           <nav className="flex items-center gap-1 rounded-full border border-[#dbe4fb] bg-white/70 p-1 backdrop-blur">
             <button
               onClick={keBeranda}
@@ -125,16 +195,30 @@ export default function SitusNavbar({ bahasa, onGantiBahasa }: SitusNavbarProps)
             {t.nav.tentang}
           </button>
           <div className="my-1 h-px bg-[#eef1f6]" />
-          <button
-            type="button"
-            onClick={() => {
-              onGantiBahasa();
-              setMenuTerbuka(false);
-            }}
-            className="rounded-xl px-4 py-3 text-left text-[15px] font-semibold text-[#3f4657] hover:bg-[#f2f6ff]"
-          >
-            🌐 {bahasa === "id" ? LABEL_GANTI_BAHASA_JV : LABEL_GANTI_BAHASA_ID}
-          </button>
+          {PILIHAN_BAHASA.map(([kode, label]) => (
+            <button
+              key={kode}
+              type="button"
+              role="option"
+              aria-selected={bahasa === kode}
+              onClick={() => {
+                pilihBahasa(kode);
+                setMenuTerbuka(false);
+              }}
+              className={`flex items-center justify-between rounded-xl px-4 py-3 text-left text-[15px] font-semibold transition-colors ${
+                bahasa === kode
+                  ? "bg-[#e7f0ff] text-[#0955d4]"
+                  : "text-[#3f4657] hover:bg-[#f2f6ff]"
+              }`}
+            >
+              🌐 {label}
+              {bahasa === kode ? (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+              ) : null}
+            </button>
+          ))}
         </div>
       ) : null}
     </>

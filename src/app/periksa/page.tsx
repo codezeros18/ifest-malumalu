@@ -186,12 +186,9 @@ export default function HalamanPeriksa() {
     }
   }, []);
 
-  const gantiBahasa = useCallback(() => {
-    setBahasa((sebelumnya) => {
-      const baru = sebelumnya === "id" ? "jv" : "id";
-      localStorage.setItem("lembar_janji_bahasa", baru);
-      return baru;
-    });
+  const pilihBahasa = useCallback((baru: "id" | "jv") => {
+    setBahasa(baru);
+    localStorage.setItem("lembar_janji_bahasa", baru);
   }, []);
 
   // Muat draf tersimpan (bila ada) sekali saat halaman dibuka — S07-6.
@@ -405,7 +402,7 @@ export default function HalamanPeriksa() {
         className="pointer-events-none absolute -right-40 top-1/3 h-[420px] w-[420px] rounded-full bg-[#fac10b]/25 blur-[120px]"
       />
 
-      <SitusNavbar bahasa={bahasa} onGantiBahasa={gantiBahasa} />
+      <SitusNavbar bahasa={bahasa} onPilihBahasa={pilihBahasa} />
 
       <main className="relative z-10 mx-auto flex w-full max-w-4xl flex-1 flex-col gap-5 px-4 py-6 sm:px-6 sm:py-10 lg:px-14">
         {/* Kartu utama — satu permukaan yang menampung judul, kesepuluh

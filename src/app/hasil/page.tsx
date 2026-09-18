@@ -61,12 +61,9 @@ export default function HalamanHasil() {
     }
   }, []);
 
-  const gantiBahasa = () => {
-    setBahasa((sebelumnya) => {
-      const baru = sebelumnya === "id" ? "jv" : "id";
-      localStorage.setItem("lembar_janji_bahasa", baru);
-      return baru;
-    });
+  const pilihBahasa = (baru: "id" | "jv") => {
+    setBahasa(baru);
+    localStorage.setItem("lembar_janji_bahasa", baru);
   };
 
   useEffect(() => {
@@ -122,7 +119,7 @@ export default function HalamanHasil() {
         className="pointer-events-none absolute -right-40 top-1/3 h-[420px] w-[420px] rounded-full bg-[#fac10b]/25 blur-[120px]"
       />
 
-      <SitusNavbar bahasa={bahasa} onGantiBahasa={gantiBahasa} />
+      <SitusNavbar bahasa={bahasa} onPilihBahasa={pilihBahasa} />
 
       <main
         aria-live="polite"

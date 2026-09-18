@@ -26,7 +26,7 @@ export default function KolomIsian({
         id={idKolom}
         aria-describedby={idKeterangan}
         className={[
-          "min-h-11 rounded-lg border border-garis bg-kertas px-3 text-base text-tinta",
+          "min-h-14 rounded-xl border border-garis bg-kertas px-3 text-lg text-tinta focus:border-aksen",
           className,
         ]
           .filter(Boolean)

@@ -16,14 +16,14 @@ export default function PesanGalat({ pesan, tindakan, onTindakan }: PesanGalatPr
   return (
     <div
       role="status"
-      className="flex flex-col items-start gap-3 rounded-lg bg-latar-blok px-4 py-3"
+      className="flex flex-col items-start gap-3 rounded-xl bg-latar-blok px-4 py-4"
     >
-      <p className="text-base text-tinta-lembut">{pesan}</p>
+      <p className="text-lg text-tinta-lembut">{pesan}</p>
       {tindakan && onTindakan ? (
         <button
           type="button"
           onClick={onTindakan}
-          className="inline-flex min-h-11 items-center justify-center rounded-lg border border-aksen bg-kertas px-4 text-base font-bold text-aksen hover:bg-latar-blok"
+          className="inline-flex min-h-14 items-center justify-center rounded-full border-2 border-aksen bg-kertas px-6 text-lg font-bold text-aksen hover:bg-latar-kosong"
         >
           {tindakan}
         </button>

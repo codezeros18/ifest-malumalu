@@ -115,12 +115,20 @@ describe("kontras token warna — WCAG 2.1 minimal 4,5:1 (BLUEPRINT H.7)", () =>
     },
   );
 
-  it("🔴 dibuktikan (bukan diasumsikan): redup di atas latar-kosong SUNGGUHAN gagal ambang — inilah kenapa pasangan itu tidak ada di daftar PASANGAN_DIPAKAI", () => {
+  it("🔴 dibuktikan (bukan diasumsikan): redup di atas latar-kosong DULU gagal ambang — setelah sprint UI-inklusif pasangan ini LOLOS (4,73:1), jadi yang dikunci di sini adalah hubungan terkininya", () => {
+    // Sprint UI-inklusif menggelapkan `redup` (#6B7280 → #6B6A63) dan
+    // menghangatkan `latar-kosong` (#F3F4F6 → #F1EFEA). Rasio pasangan ini
+    // berubah dari ±4,39:1 (gagal) menjadi ±4,73:1 (lolos). Test ini
+    // diperbarui: bukan lagi membuktikan kegagalan, melainkan mengunci
+    // bahwa `redup`/`latar-kosong` kini berada di ATAS ambang. Bila suatu
+    // hari nilai token berubah lagi dan pasangan ini kembali gagal, test
+    // ini merah.
     const rasio = rasioKontras(TOKEN["redup"] as string, TOKEN["latar-kosong"] as string);
-    expect(rasio).toBeLessThan(AMBANG_MINIMAL);
+    expect(rasio).toBeGreaterThanOrEqual(AMBANG_MINIMAL);
   });
 
-  it("🔴 dibuktikan: redup di atas latar-blok juga gagal ambang", () => {
+  it("🔴 dibuktikan: redup di atas latar-blok MASIH gagal ambang — pasangan ini tetap terlarang", () => {
+    // #6B6A63 di atas #E9E6DE = ±4,35:1, masih di bawah 4,5:1.
     const rasio = rasioKontras(TOKEN["redup"] as string, TOKEN["latar-blok"] as string);
     expect(rasio).toBeLessThan(AMBANG_MINIMAL);
   });

@@ -69,7 +69,7 @@ export default function SitusNavbar({ bahasa, onPilihBahasa }: SitusNavbarProps)
 
   return (
     <>
-      <header className="relative z-20 mx-auto flex w-full max-w-[1440px] items-center justify-between px-4 py-4 sm:px-6 sm:py-5 lg:px-14">
+      <header className="relative z-20 flex items-center justify-between px-4 py-4 sm:px-6 sm:py-5 lg:px-14">
         <button
           type="button"
           onClick={keBeranda}

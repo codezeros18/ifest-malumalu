@@ -81,7 +81,7 @@ function BagianTentang({
             <span className="h-1.5 w-1.5 rounded-full bg-[#fac10b]" />
             {t.tentang.lencana}
           </span>
-          <h2 className="mt-5 text-[34px] font-extrabold leading-[1.1] tracking-tight text-[#0b1220]">
+          <h2 className="mt-5 text-[26px] font-extrabold leading-[1.15] tracking-tight text-[#0b1220] sm:text-[30px] lg:text-[34px] lg:leading-[1.1]">
             {t.tentang.judul}
           </h2>
           <p className="mt-4 text-[16px] leading-relaxed text-[#52586b]">
@@ -488,7 +488,7 @@ export default function App() {
       />
 
       {/* Header */}
-      <header className="relative z-20 mx-auto flex w-full max-w-[1440px] items-center justify-between px-4 py-4 sm:px-6 sm:py-5 lg:px-14 lg:pt-7">
+      <header className="relative z-20 flex items-center justify-between px-4 py-4 sm:px-6 sm:py-5 lg:px-14 lg:pt-7">
         <div className="flex items-center gap-2 sm:gap-3">
           <img src={imgLogo} alt={ALT_LOGO} className="h-9 w-auto sm:h-11" />
           <span className="text-[17px] font-bold tracking-tight text-[#0955d4] sm:text-[20px]">
@@ -777,14 +777,14 @@ export default function App() {
       {active === "tentang" ? (
         <BagianTentang t={t} onKembali={() => setActive("beranda")} />
       ) : (
-      <main className="relative z-10 mx-auto grid w-full max-w-[1440px] flex-1 grid-cols-1 items-center gap-10 px-4 py-8 sm:px-6 sm:py-10 lg:grid-cols-[1.05fr_0.95fr] lg:px-14 lg:py-10">
+      <main className="relative z-10 grid flex-1 grid-cols-1 items-center gap-10 px-4 py-8 sm:px-6 sm:py-10 lg:grid-cols-[1.05fr_0.95fr] lg:px-14 lg:py-10">
         <section className="max-w-[600px]">
           <span className="inline-flex items-center gap-2 rounded-full border border-[#dbe4fb] bg-white/70 px-3 py-1 text-[12px] font-semibold uppercase tracking-wider text-[#0955d4]">
             <span className="h-1.5 w-1.5 rounded-full bg-[#fac10b]" />
             {t.heroLencana}
           </span>
 
-          <h1 className="mt-5 text-[46px] font-extrabold leading-[1.05] tracking-tight text-[#0b1220]">
+          <h1 className="mt-5 text-[32px] font-extrabold leading-[1.1] tracking-tight text-[#0b1220] sm:text-[38px] lg:text-[46px] lg:leading-[1.05]">
             {t.heroJudulAwal}{" "}
             <span className="relative whitespace-nowrap">
               <span className="relative z-10">{t.heroJudulSorot}</span>
@@ -913,11 +913,11 @@ export default function App() {
                   className="hidden"
                   onChange={tanganiInputBerkas}
                 />
-                <div className="flex gap-2">
+                <div className="flex flex-col gap-2 sm:flex-row">
                   <button
                     onClick={tanganiMulaiPeriksa}
                     disabled={sedangMemroses || !berkasTerpilih}
-                    className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-[#0955d4] px-6 py-4 text-[16px] font-bold text-white shadow-[0_14px_30px_-12px_rgba(9,85,212,0.8)] transition-transform hover:-translate-y-0.5 hover:bg-[#0a4bbb] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 text-sm"
+                    className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-[#0955d4] px-4 py-3.5 text-[14px] font-bold text-white shadow-[0_14px_30px_-12px_rgba(9,85,212,0.8)] transition-transform hover:-translate-y-0.5 hover:bg-[#0a4bbb] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 sm:px-6 sm:py-4 sm:text-[16px]"
                   >
                     {sedangMemroses ? statusSedangMembaca : t.tombolMulai}
                     {!sedangMemroses ? (
@@ -938,7 +938,7 @@ export default function App() {
                   </button>
                   <button
                     onClick={tanganiJalurManual}
-                    className="mt-3 flex w-2/4 items-center justify-center gap-2 rounded-xl bg-[#ffc508] px-6 py-4 text-[16px] font-bold text-white shadow-[0_14px_30px_-12px_#FFD346] transition-transform hover:-translate-y-0.5 hover:bg-[#ffc400] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 text-sm"
+                    className="mt-0 flex w-full items-center justify-center gap-2 rounded-xl bg-[#ffc508] px-4 py-3.5 text-[14px] font-bold text-white shadow-[0_14px_30px_-12px_#FFD346] transition-transform hover:-translate-y-0.5 hover:bg-[#ffc400] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 sm:mt-3 sm:w-2/4 sm:px-6 sm:py-4 sm:text-[16px]"
                   >
                     {sedangMemroses
                       ? statusSedangMembaca
@@ -1009,7 +1009,7 @@ export default function App() {
         </main>
       )}
 
-      <footer className="relative z-10 mx-auto flex w-full max-w-[1440px] flex-col items-center gap-1 px-4 py-5 text-center text-[12px] text-[#8890a0] sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:text-left lg:px-14">
+      <footer className="relative z-10 flex flex-col items-center gap-1 px-4 py-5 text-center text-[12px] text-[#8890a0] sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:text-left lg:px-14">
         <p>{t.footerKiri}</p>
         <p>{t.footerKanan}</p>
       </footer>

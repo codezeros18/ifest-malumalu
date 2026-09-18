@@ -78,6 +78,29 @@ Layar koreksi wajib ada justru supaya manusia memverifikasi hasil bacaan sebelum
 Berpotensi menaikkan angka "sudah disebutkan" dibanding penerapan literal pseudocode E.1, khususnya pada kolom yang keyakinan OCR-nya rendah tetapi teksnya kebetulan tidak diubah pengguna. Risiko konkret: pengguna yang tidak teliti membaca ulang kolom bisa melewatkan bacaan yang sebenarnya keliru. Mitigasi yang sudah berjalan: layar koreksi tetap tidak bisa dilewati (dibuktikan `tests/alur/koreksi-wajib.test.ts`), dan pengguna tetap bebas mengedit atau menandai "tidak tahu" pada kolom mana pun — penanda "tidak tahu" itu sendiri TIDAK terpengaruh perubahan ini, tetap jalur terpisah yang selalu menghasilkan `BELUM_DIJAWAB`. Belum ada mitigasi tambahan seperti menonjolkan kolom berkeyakinan rendah untuk diperhatikan khusus; diserahkan ke peninjauan kapten atau S12.
 
 ---
+
+## [PB-003] Driver Postgres (`pg`) ditambahkan ke dependensi runtime
+
+**Jam ke-**         : ~10,5
+**Diputuskan oleh** : AI Engineer, Window 3 (S10) — dikonfirmasi eksplisit ke pengguna sebelum dikerjakan
+
+**Kondisi di proposal penyisihan**
+
+BLUEPRINT.md bagian G.1 dan G.2 menetapkan Postgres terkelola dengan "satu kueri langsung", tanpa ORM. Daftar dependensi terlarang (CLAUDE.md bagian 5) melarang ORM dan migrasinya, tetapi tidak menyebutkan driver database sama sekali — pilihan cara menyambung ke Postgres belum ditentukan di proposal.
+
+**Hal yang diubah**
+
+Ditambahkan `pg@^8` (dependencies) dan `@types/pg@^8` (devDependencies) ke `package.json`. Ini driver mentah resmi (node-postgres) — tidak ada model, migrasi, atau query builder, konsisten dengan "satu kueri langsung" yang sudah diputuskan sebelumnya, bukan penambahan lapisan abstraksi baru.
+
+**Alasan perubahan**
+
+Protokol Postgres berbentuk biner lewat TCP, bukan HTTP/REST — berbeda dari panggilan API model penglihatan di S06 yang bisa memakai `fetch` bawaan tanpa dependensi tambahan. Menulis satu kueri `INSERT` langsung ke Postgres secara teknis tidak mungkin dilakukan tanpa sebuah driver yang bicara protokol itu (autentikasi, framing pesan, dsb.), dan tidak ada driver semacam itu terpasang di proyek. `package.json` berada di luar daftar berkas yang boleh disentuh sprint S10 (dimiliki Window 1 di tabel kepemilikan berkas `TASKS.md`), sehingga keputusan ini ditanyakan eksplisit ke pengguna lebih dulu, bukan diputuskan sepihak.
+
+**Dampak terhadap masalah inti**
+
+Tidak ada dampak terhadap alur utama maupun batas privasi — `pg` hanya dipakai di satu titik (`src/app/api/catat/route.ts`) yang fire-and-forget dan bisa dinonaktifkan sepenuhnya dengan mengosongkan `DATABASE_URL` (dibuktikan `tests/alur/tanpa-basis-data.test.ts`). Dependensi runtime naik dari 3 menjadi 4, masih jauh di bawah batas 12 (CLAUDE.md bagian 4). `npm audit` diperiksa sebelum dan sesudah penambahan: tetap 4 kerentanan yang sama, seluruhnya pada dependensi dev-time yang tidak berkaitan (`@vitest/mocker`, `postcss`) dan sudah ada sejak S00 — `pg` tidak menambah satu pun kerentanan baru.
+
+---
 ---
 
 # ⚠️ TIGA CONTOH ENTRI TELADAN

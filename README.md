@@ -12,7 +12,8 @@ Lembar Janji menerima gambar itu dan menerbitkan satu lembar berisi tiga hal: ap
 src/
   app/                    Next.js App Router — halaman dan Route Handlers
     page.tsx              layar masukan: tempel gambar, unggah, atau ketik manual
-    periksa/              layar koreksi hasil pembacaan lalu penerbitan lembar
+    periksa/              layar koreksi hasil pembacaan, lalu menilai dan merakit lembar
+    hasil/                layar hasil: gambar lembar, tombol unduh gambar/PDF, bagikan
     api/baca/             satu-satunya endpoint yang memanggil model
     api/kartu/            render lembar menjadi berkas gambar
     api/catat/            pencatatan metrik anonim, tidak memblokir
@@ -22,7 +23,7 @@ src/
     kualitatif.ts         aturan kapan sebuah nilai dianggap terlalu kabur
     perakitan.ts          penyusunan kalimat lembar
     pencocokan.ts         Lapis 1 — pencocokan ke salinan daftar
-    biaya.ts              Lapis 2 — pembandingan komponen biaya
+    biaya.ts              Lapis 2 — rasio biaya terhadap upah dari tawaran itu sendiri
     teks.ts               seluruh kalimat yang dilihat pengguna
   vision/                 satu-satunya folder yang tahu soal model
     pembaca.ts            antarmuka Pembaca
@@ -32,7 +33,7 @@ src/
   lib/                    utilitas render dan pembantu
 data/
   p3mi-snapshot.json      salinan daftar perusahaan berizin, bertanggal
-  komponen-biaya.json     acuan komponen biaya untuk Lapis 2
+  komponen-biaya.json     kehadirannya jadi saklar aktif/nonaktif Lapis 2, isinya tidak dibandingkan
 tests/                    pengujian Vitest
 ```
 
@@ -112,10 +113,13 @@ Berkas `.env` dan seluruh turunannya tidak pernah ikut ter-*commit*. Lihat `.git
 | Rute | Jenis | Fungsi |
 |---|---|---|
 | `/` | Halaman | Layar masukan. Tiga jalur setara: tempel gambar, unggah berkas, atau ketik manual |
-| `/periksa` | Halaman | Menampilkan hasil pembacaan untuk dikoreksi pengguna, lalu menerbitkan lembar |
+| `/periksa` | Halaman | Menampilkan hasil pembacaan untuk dikoreksi pengguna, lalu menilai dan merakit lembar |
+| `/hasil` | Halaman | Menampilkan gambar lembar yang sudah terbit, tombol simpan gambar, simpan PDF, dan bagikan |
 | `/api/baca` | POST | Mengubah gambar menjadi data terstruktur. Satu-satunya tempat model dipanggil |
 | `/api/kartu` | POST | Merender lembar menjadi berkas gambar yang dapat diunduh dan dibagikan |
 | `/api/catat` | POST | Mencatat metrik anonim. Kegagalan di sini tidak pernah menghentikan penerbitan lembar |
+
+Total tiga halaman (`/`, `/periksa`, `/hasil`) — sesuai batas maksimal yang kami tetapkan sendiri.
 
 ---
 
@@ -127,11 +131,13 @@ Sistem dibangun dalam tiga lapis yang menurun secara bertahap.
 
 **Lapis 1** mencocokkan nama perusahaan terhadap salinan daftar perusahaan penempatan berizin. Salinan itu berupa berkas JSON di dalam repositori beserta tanggal pengambilannya, bukan sambungan langsung ke sistem mana pun, dan tanggal salinannya ditampilkan di lembar.
 
-**Lapis 2** membandingkan komponen biaya terhadap acuan yang berlaku.
+**Lapis 2** menghitung rasio biaya penempatan terhadap upah yang dijanjikan — kedua angka diambil dari tawaran itu sendiri (bukan dari sumber luar), lalu ditampilkan sebagai kalimat faktual, misalnya "biaya yang diminta setara ± 3 bulan upah yang dijanjikan". Salinan acuan komponen biaya (`data/komponen-biaya.json`) dipakai murni sebagai saklar aktif/nonaktif lapis ini, bukan sebagai pembanding nilai.
 
 Apabila Lapis 1 atau Lapis 2 tidak tersedia, keduanya dapat dinonaktifkan tanpa menghentikan alur utama. Sistem menyampaikan ketidaktersediaan itu secara terbuka kepada pengguna beserta langkah alternatif yang dapat ditempuh, dan lembarnya tetap terbit.
 
 Pembagian peran antara kecerdasan buatan dan logika biasa bersifat tegas. Model hanya dipakai pada satu langkah, yaitu mengubah gambar menjadi data terstruktur. Seluruh penilaian, pencocokan, perhitungan, dan penyusunan kalimat dilakukan aturan yang dapat ditelusuri baris demi baris, dan seluruhnya berada di `src/core`. Folder itu tidak mengimpor apa pun dari `src/vision`, sehingga lapisan model dapat dinonaktifkan dan sistem tetap berjalan penuh lewat jalur pengetikan manual.
+
+Antarmuka dan lembar hasil tersedia dalam Bahasa Indonesia dan Basa Jawa, dapat dipilih lewat saklar bahasa di navigasi. Lembar diterbitkan dalam kedua bahasa sekaligus setiap kali diterbitkan, sehingga berpindah bahasa di layar hasil tidak perlu merender ulang.
 
 ---
 
@@ -156,8 +162,8 @@ Beberapa pengujian yang ada memeriksa hal yang tidak terlihat di antarmuka tetap
 2. Pilih salah satu dari tiga jalur masukan. Ketiganya setara: menempel gambar dari papan klip, mengunggah berkas gambar, atau mengetik sendiri isi tawarannya.
 3. Bila memilih jalur gambar, gunakan foto atau tangkapan layar poster lowongan kerja luar negeri. Poster berbahasa Indonesia dengan tata letak bebas adalah kasus yang paling mewakili pemakaian nyata.
 4. Periksa hasil pembacaan pada layar berikutnya. Betulkan nilai yang keliru, dan biarkan kosong yang memang tidak diketahui.
-5. Terbitkan lembarnya. Lembar akan menampilkan keterangan yang sudah disebutkan, keterangan yang belum dijawab beserta dasar hukumnya, dan pertanyaan yang dapat diajukan.
-6. Unduh atau bagikan lembarnya.
+5. Terbitkan lembarnya. Halaman berpindah ke layar hasil (`/hasil`), menampilkan gambar lembar yang berisi keterangan yang sudah disebutkan, keterangan yang belum dijawab beserta dasar hukumnya, dan pertanyaan yang dapat diajukan.
+6. Simpan gambarnya, simpan sebagai PDF, atau bagikan langsung dari layar itu.
 
 Untuk memeriksa bahwa lapisan model benar-benar dapat dinonaktifkan, kosongkan `MODEL_API_KEY` lalu ulangi langkah di atas melalui jalur pengetikan manual. Seluruh alur harus tetap selesai sampai lembar terbit.
 
